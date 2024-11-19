@@ -29,10 +29,18 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(SDL)
 set_property(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_deps/sdl-src" PROPERTY EXCLUDE_FROM_ALL TRUE)
 
-# Build
-add_executable (DawnEngine "source/main.cpp"  "source/dawnEngine.cpp" "source/sdl3webgpu.cpp" "include/sdl3webgpu.hpp")
+#glm
+FetchContent_Declare(
+    glm
+ 	GIT_REPOSITORY	https://github.com/g-truc/glm.git
+    GIT_TAG 1.0.1
+)
+FetchContent_MakeAvailable(glm)
 
-target_link_libraries(DawnEngine dawn::webgpu_dawn SDL3::SDL3)
+# Build
+add_executable (DawnEngine "source/main.cpp"  "source/dawnEngine.cpp" "source/sdl3webgpu.cpp" "include/sdl3webgpu.hpp" "models/triangle.cpp" "source/utilities.cpp")
+
+target_link_libraries(DawnEngine dawn::webgpu_dawn SDL3::SDL3 glm::glm)
 
 set_source_files_properties(third-party/**.cpp third-party/**.h PROPERTIES COMPILE_FLAGS -w)
 
@@ -45,6 +53,15 @@ endif()
 
 
 # Post Build
+
+#Shaders
+set(SHADERS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+set(SHADERS_DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+add_custom_command(
+    TARGET DawnEngine
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${SHADERS_SOURCE_DIR} ${SHADERS_DEST_DIR}
+)
 
 #Dawn
 add_custom_command(TARGET DawnEngine POST_BUILD
