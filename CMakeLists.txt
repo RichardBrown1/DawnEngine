@@ -38,7 +38,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glm)
 
 # Build
-add_executable (DawnEngine "source/main.cpp"  "source/dawnEngine.cpp" "source/sdl3webgpu.cpp" "include/sdl3webgpu.hpp" "models/triangle.cpp" "source/utilities.cpp")
+add_executable (DawnEngine "source/main.cpp"  "source/dawnEngine.cpp" "source/sdl3webgpu.cpp" "include/sdl3webgpu.hpp" "source/utilities.cpp")
 
 target_link_libraries(DawnEngine dawn::webgpu_dawn SDL3::SDL3 glm::glm)
 

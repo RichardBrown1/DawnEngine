@@ -11,10 +11,16 @@ public:
 	void destroy();
 
 private:
+	wgpu::Instance _instance;
 	wgpu::Device _device;
 	wgpu::Surface _surface;
+	wgpu::SurfaceConfiguration _surfaceConfiguration;
 	wgpu::Queue _queue;
 	wgpu::RenderPipeline _renderPipeline;
+	wgpu::Buffer _vertexBuffer;
+
+	void initBuffers();
+	void initRenderPipeline();
 
 	void draw();
 	wgpu::TextureView getNextSurfaceTextureView();

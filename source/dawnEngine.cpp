@@ -10,6 +10,8 @@
 #include "../include/DawnEngine.hpp"
 #include <dawn/webgpu_cpp_print.h>
 
+#include "../models/triangle.hpp"
+
 static DawnEngine* loadedEngine = nullptr;
 
 const uint32_t WIDTH = 640;
@@ -17,16 +19,8 @@ const uint32_t HEIGHT = 480;
 
 const char* shaderSource = R"(
     @vertex
-	fn vs_main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position) vec4f {
-		var p = vec2f(0.0, 0.0);
-		if (in_vertex_index == 0u) {
-			p = vec2f(-0.5, -0.5);
-		} else if (in_vertex_index == 1u) {
-			p = vec2f(0.5, -0.5);
-		} else {
-			p = vec2f(0.0, 0.5);
-		}
-		return vec4f(p, 0.0, 1.0);
+	fn vs_main(@location(0) in_vertex_position: vec2f) -> @builtin(position) vec4f {
+		return vec4f(in_vertex_position, 0.0, 1.0);
 	}
 
 	@fragment
@@ -51,12 +45,12 @@ DawnEngine::DawnEngine() {
 
     wgpu::InstanceDescriptor instanceDescriptor{};
     instanceDescriptor.features.timedWaitAnyEnable = true;
-    wgpu::Instance instance = wgpu::CreateInstance(&instanceDescriptor);
-    if (instance == nullptr) {
+    _instance = wgpu::CreateInstance(&instanceDescriptor);
+    if (_instance == nullptr) {
         throw std::runtime_error("Instance creation failed!\n");
     }
 
-    _surface = wgpu::Surface(SDL_GetWGPUSurface(instance, p_sdl_window));
+    _surface = wgpu::Surface(SDL_GetWGPUSurface(_instance, p_sdl_window));
     if (!_surface) {
         throw std::runtime_error("Failed to get SDL Surface");
     }
@@ -79,7 +73,7 @@ DawnEngine::DawnEngine() {
                 *static_cast<wgpu::Adapter*>(userdata) = wgpu::Adapter::Acquire(adapter);
         };
     callbackInfo.userdata = &adapter;
-    instance.WaitAny(instance.RequestAdapter(&requestAdapterOptions, callbackInfo), UINT64_MAX);
+    _instance.WaitAny(_instance.RequestAdapter(&requestAdapterOptions, callbackInfo), UINT64_MAX);
     if (adapter == nullptr) {
         throw std::runtime_error("RequestAdapter failed!\n");
     }
@@ -97,49 +91,109 @@ DawnEngine::DawnEngine() {
     std::cout << "Name: " << info.device << "\n";
     std::cout << "Driver description: " << info.description << "\n";
 
+    //limits
+    wgpu::SupportedLimits supportedLimits;
+    adapter.GetLimits(&supportedLimits);
+    std::cout << "Vertex Attribute Limit: " << supportedLimits.limits.maxVertexAttributes << std::endl;
+    std::cout << "Vertex Buffer Limit: " << supportedLimits.limits.maxVertexBuffers << std::endl;
+  
     wgpu::DeviceDescriptor deviceDescriptor{};
     deviceDescriptor.SetUncapturedErrorCallback([](const wgpu::Device&, wgpu::ErrorType type, const char* message) {
-        std::cout << "Uncaptured device error type: " << type;
+        std::cout << "Uncaptured device error type: " << type << std::endl;
         std::cout << std::format("Uncaptured Error Message: {} \r\n", message);
-    });
+        //        wgpu::PopErrorScopeCallbackInfo popErrorScopeCallbackInfo = {
+        //            .callback = [](WGPUPopErrorScopeStatus, WGPUErrorType type, struct WGPUStringView message, void*) {
+        //                std::cout << "Type: " << type << std::endl;
+        //                std::cout << "Pop Error Message: " << message.data << std::endl;
+        //            }
+        //        };
+        //        device.PopErrorScope(popErrorScopeCallbackInfo);
+        exit(1);
+        });
     deviceDescriptor.SetDeviceLostCallback(
-	wgpu::CallbackMode::AllowSpontaneous,
-	[](const wgpu::Device&, wgpu::DeviceLostReason reason, const char* message) {
-		std::cout << "DeviceLostReason: " << reason;
-		std::cout << std::format(" Message: {}", message) << std::endl;
-	});
+        wgpu::CallbackMode::AllowSpontaneous,
+        [](const wgpu::Device&, wgpu::DeviceLostReason reason, const char* message) {
+            std::cout << "DeviceLostReason: " << reason << std::endl;
+            std::cout << std::format(" Message: {}", message) << std::endl;
+        });
 
     _device = adapter.CreateDevice(&deviceDescriptor);
-    _device.PushErrorScope(wgpu::ErrorFilter::Validation);
+    //_device.PushErrorScope(wgpu::ErrorFilter::);
+
+    int userData;
+    _device.SetLoggingCallback(
+        [](WGPULoggingType type, struct WGPUStringView message, void*) {
+            std::string_view view = { message.data, message.length };
+            std::cout << "Type: " << type << std::endl;
+            std::cout << "Log Message: " << view << std::endl;
+        }, &userData);
     
-    wgpu::SurfaceConfiguration surfaceConfiguration{};
-    surfaceConfiguration.width = WIDTH;
-    surfaceConfiguration.height = HEIGHT;
-    surfaceConfiguration.device = _device;
-    surfaceConfiguration.alphaMode = wgpu::CompositeAlphaMode::Auto;
-    surfaceConfiguration.presentMode = wgpu::PresentMode::Immediate;
-    surfaceConfiguration.usage = wgpu::TextureUsage::RenderAttachment;
+    _surfaceConfiguration.width = WIDTH;
+    _surfaceConfiguration.height = HEIGHT;
+    _surfaceConfiguration.device = _device;
+    _surfaceConfiguration.alphaMode = wgpu::CompositeAlphaMode::Auto;
+    _surfaceConfiguration.presentMode = wgpu::PresentMode::Immediate;
+    _surfaceConfiguration.usage = wgpu::TextureUsage::RenderAttachment;
     
     wgpu::SurfaceCapabilities surfaceCapabilites;    
     wgpu::ConvertibleStatus getCapabilitiesStatus = _surface.GetCapabilities(adapter, &surfaceCapabilites);
     if (getCapabilitiesStatus == wgpu::Status::Error) {
         throw std::runtime_error("failed to get surface capabilities");
     }
-    surfaceConfiguration.format = surfaceCapabilites.formats[0]; 
-    _surface.Configure(&surfaceConfiguration);
+    _surfaceConfiguration.format = surfaceCapabilites.formats[0]; 
+    _surface.Configure(&_surfaceConfiguration);
     _queue = _device.GetQueue();
+    
 
-    //Render Pipeline
+    initBuffers();
+    initRenderPipeline();
+   }
+
+void DawnEngine::initBuffers() {
+    Triangle triangle;
+    wgpu::BufferDescriptor vertexBuffer = {
+        .label = "gpu buffer description",
+        .usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex,
+        .size = sizeof(triangle.vertexData)
+    };
+    _vertexBuffer = _device.CreateBuffer(&vertexBuffer);
+    _queue.WriteBuffer(_vertexBuffer, 0, triangle.vertexData.data(), sizeof(triangle.vertexData));
+
+//    uint32_t* vertexBufferData = (uint32_t*) _buffer2.GetConstMappedRange(0, 16);
+//
+//    std::cout << "bufferData = [";
+//	for (int i = 0; i < 16; ++i) {
+//		if (i > 0) std::cout << ", ";
+//		std::cout << buffer2Data[i];
+//	}
+//	std::cout << "]" << std::endl;
+}
+
+void DawnEngine::initRenderPipeline() { 
     wgpu::ShaderSourceWGSL shaderSourceWGSL;
     shaderSourceWGSL.code = shaderSource;
     wgpu::ShaderModuleDescriptor shaderModuleDescriptor = {
         .nextInChain = &shaderSourceWGSL,
     };
     wgpu::ShaderModule shaderModule = _device.CreateShaderModule(&shaderModuleDescriptor);
+
+    wgpu::VertexAttribute positionAttribute = {
+        .format = wgpu::VertexFormat::Float32x2,
+        .offset = 0,
+        .shaderLocation = 0,
+    };
     
+    wgpu::VertexBufferLayout vertexBufferLayout = {
+        .arrayStride = 2 * sizeof(float),
+        .attributeCount = 1,
+        .attributes = &positionAttribute,
+    };
+
     wgpu::VertexState vertexState = {
         .module = shaderModule,
         .entryPoint = "vs_main",
+        .bufferCount = 1,
+        .buffers = &vertexBufferLayout,
     };
 
     wgpu::BlendState blendState = {
@@ -156,7 +210,7 @@ DawnEngine::DawnEngine() {
     };
 
     wgpu::ColorTargetState colorTargetState = {
-        .format = surfaceConfiguration.format,
+        .format = _surfaceConfiguration.format,
         .blend = &blendState,
         .writeMask = wgpu::ColorWriteMask::All,
     };
@@ -190,6 +244,8 @@ DawnEngine::DawnEngine() {
     };
 
     _renderPipeline = _device.CreateRenderPipeline(&renderPipelineDescriptor);
+
+
 }
 
 void DawnEngine::draw() {
@@ -215,6 +271,7 @@ void DawnEngine::draw() {
 
     wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
     renderPassEncoder.SetPipeline(_renderPipeline);
+    renderPassEncoder.SetVertexBuffer(0, _vertexBuffer, 0, _vertexBuffer.GetSize());
     renderPassEncoder.Draw(3, 1, 0, 0);
     renderPassEncoder.End();
 
