@@ -18,10 +18,13 @@ private:
 	wgpu::Queue _queue;
 	wgpu::RenderPipeline _renderPipeline;
 	wgpu::Buffer _vertexBuffer;
+	wgpu::Buffer _uniformBuffer;
+	wgpu::BindGroup _bindGroup;
 
 	void initBuffers();
 	void initRenderPipeline();
 
 	void draw();
+	void updateUniformBuffers();
 	wgpu::TextureView getNextSurfaceTextureView();
 };
