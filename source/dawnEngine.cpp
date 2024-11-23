@@ -178,12 +178,20 @@ DawnEngine::DawnEngine() {
 void DawnEngine::initBuffers() {
 	Triangle triangle;
 	wgpu::BufferDescriptor vertexBuffer = {
-		.label = "gpu buffer description",
+		.label = "vertex buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex,
 		.size = sizeof(triangle.vertexData)
 	};
 	_vertexBuffer = _device.CreateBuffer(&vertexBuffer);
 	_queue.WriteBuffer(_vertexBuffer, 0, triangle.vertexData.data(), sizeof(triangle.vertexData));
+
+	wgpu::BufferDescriptor indexBuffer = {
+		.label = "index buffer",
+		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Index,
+		.size = sizeof(triangle.indexData),
+	};
+	_indexBuffer = _device.CreateBuffer(&indexBuffer);
+	_queue.WriteBuffer(_indexBuffer, 0, triangle.indexData.data(), sizeof(triangle.indexData));
 
 	wgpu::BufferDescriptor uniformBufferDescriptor = {
 		.label = "ubo buffer",
@@ -333,8 +341,9 @@ void DawnEngine::draw() {
 	wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
 	renderPassEncoder.SetPipeline(_renderPipeline);
 	renderPassEncoder.SetVertexBuffer(0, _vertexBuffer, 0, _vertexBuffer.GetSize());
-	renderPassEncoder.SetBindGroup(0, _bindGroup, 0, nullptr);
-	renderPassEncoder.Draw(3, 1, 0, 0);
+	renderPassEncoder.SetIndexBuffer(_indexBuffer, wgpu::IndexFormat::Uint16, 0, _indexBuffer.GetSize());
+	renderPassEncoder.SetBindGroup(0, _bindGroup, 0, nullptr); //uniform buffer
+	renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_indexBuffer.GetSize()) / sizeof(uint16_t));
 	renderPassEncoder.End();
 
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {

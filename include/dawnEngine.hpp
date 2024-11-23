@@ -19,6 +19,7 @@ private:
 	wgpu::RenderPipeline _renderPipeline;
 	wgpu::Buffer _vertexBuffer;
 	wgpu::Buffer _uniformBuffer;
+	wgpu::Buffer _indexBuffer;
 	wgpu::BindGroup _bindGroup;
 
 	void initBuffers();
