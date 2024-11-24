@@ -15,39 +15,12 @@
 #include <dawn/webgpu_cpp_print.h>
 
 #include "../models/triangle.hpp"
+#include "../include/utilities.hpp"
 
 static DawnEngine* loadedEngine = nullptr;
 
 const uint32_t WIDTH = 640;
 const uint32_t HEIGHT = 480;
-
-const char* shaderSource = R"(
-	struct UniformBufferObject {
-		projection: mat4x4f,
-		model: mat4x4f,		
-		view: mat4x4f,
-	}
-	
-	@group(0) @binding(0) var<uniform> ubo: UniformBufferObject;
-
-	struct vs_output {
-		@builtin(position) position: vec4f,
-		@location(1) color: vec4f,
-	}
-
-    @vertex
-	fn vs_main(@location(0) input_position: vec2f) -> vs_output {
-		var out: vs_output;
-		out.position = ubo.projection * ubo.view * ubo.model * vec4f(input_position, 0.0, 1.0);
-		out.color = vec4f(0.0, 0.4, 1.0, 1.0);
-		return out;
-	}
-
-	@fragment
-	fn fs_main(in: vs_output) -> @location(0) vec4f {
-		return in.color;
-	}
-)";
 
 struct UBO {
 	alignas(16) glm::mat4x4 projection;
@@ -202,12 +175,15 @@ void DawnEngine::initBuffers() {
 }
 
 void DawnEngine::initRenderPipeline() {
-	wgpu::ShaderSourceWGSL shaderSourceWGSL;
-	shaderSourceWGSL.code = shaderSource;
-	wgpu::ShaderModuleDescriptor shaderModuleDescriptor = {
-		.nextInChain = &shaderSourceWGSL,
+	std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_shader.spv"));
+	wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
+	vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
+	vertexShaderSource.code = vertexShaderCode.data();
+	wgpu::ShaderModuleDescriptor vertexShaderModuleDescriptor = {
+		.nextInChain = &vertexShaderSource,
+		.label = "vertex shader module"
 	};
-	wgpu::ShaderModule shaderModule = _device.CreateShaderModule(&shaderModuleDescriptor);
+	wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
 
 	wgpu::VertexAttribute positionAttribute = {
 		.format = wgpu::VertexFormat::Float32x2,
@@ -222,8 +198,8 @@ void DawnEngine::initRenderPipeline() {
 	};
 
 	wgpu::VertexState vertexState = {
-		.module = shaderModule,
-		.entryPoint = "vs_main",
+		.module = vertexShaderModule,
+		.entryPoint = "VS_main",
 		.bufferCount = 1,
 		.buffers = &vertexBufferLayout,
 	};
@@ -240,16 +216,25 @@ void DawnEngine::initRenderPipeline() {
 			.dstFactor = wgpu::BlendFactor::One,
 		}
 	};
-
 	wgpu::ColorTargetState colorTargetState = {
 		.format = _surfaceConfiguration.format,
 		.blend = &blendState,
 		.writeMask = wgpu::ColorWriteMask::All,
 	};
 
+	std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_shader.spv"));
+	wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
+	fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
+	fragmentShaderSource.code = fragmentShaderCode.data();
+	wgpu::ShaderModuleDescriptor fragmentShaderModuleDescriptor = {
+		.nextInChain = &fragmentShaderSource,
+		.label = "fragment shader module"
+	};
+	wgpu::ShaderModule fragmentShaderModule = _device.CreateShaderModule(&fragmentShaderModuleDescriptor);
+
 	wgpu::FragmentState fragmentState = {
-		.module = shaderModule,
-		.entryPoint = "fs_main",
+		.module = fragmentShaderModule,
+		.entryPoint = "FS_main",
 		.constantCount = 0,
 		.constants = nullptr,
 		.targetCount = 1,
@@ -312,8 +297,6 @@ void DawnEngine::initRenderPipeline() {
 	};
 
 	_renderPipeline = _device.CreateRenderPipeline(&renderPipelineDescriptor);
-
-
 }
 
 void DawnEngine::draw() {
@@ -340,9 +323,9 @@ void DawnEngine::draw() {
 
 	wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
 	renderPassEncoder.SetPipeline(_renderPipeline);
+	renderPassEncoder.SetBindGroup(0, _bindGroup, 0, nullptr); //uniform buffer
 	renderPassEncoder.SetVertexBuffer(0, _vertexBuffer, 0, _vertexBuffer.GetSize());
 	renderPassEncoder.SetIndexBuffer(_indexBuffer, wgpu::IndexFormat::Uint16, 0, _indexBuffer.GetSize());
-	renderPassEncoder.SetBindGroup(0, _bindGroup, 0, nullptr); //uniform buffer
 	renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_indexBuffer.GetSize()) / sizeof(uint16_t));
 	renderPassEncoder.End();
 

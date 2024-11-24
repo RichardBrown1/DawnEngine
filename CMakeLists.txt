@@ -1,4 +1,4 @@
-﻿cmake_minimum_required (VERSION 3.13)
+﻿cmake_minimum_required (VERSION 3.20)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -42,10 +42,11 @@ add_executable (DawnEngine "source/main.cpp"  "source/dawnEngine.cpp" "source/sd
 
 target_link_libraries(DawnEngine dawn::webgpu_dawn SDL3::SDL3 glm::glm)
 
-set_source_files_properties(third-party/**.cpp third-party/**.h PROPERTIES COMPILE_FLAGS -w)
+file(GLOB_RECURSE THIRD_PARTY "third_party/*.c" "third_party/*.cpp" "third_party/*.h" "third_party/*.hpp")
 
 if (MSVC)
     target_compile_options(DawnEngine PRIVATE /W4 /WX /std:c++20)
+    set_source_files_properties(${THIRD_PARTY} PROPERTIES COMPILE_FLAGS /w)
 else()
     target_compile_options(DawnEngine PRIVATE -Wall -Wextra -Wpedantic -Werror -std=c++20 -fsanitize=undefined -fsanitize=address)
 endif()
