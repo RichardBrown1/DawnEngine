@@ -58,9 +58,8 @@ endif()
 #Shaders
 set(SHADERS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 set(SHADERS_DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
-add_custom_command(
-    TARGET DawnEngine
-    POST_BUILD
+
+add_custom_command(TARGET DawnEngine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${SHADERS_SOURCE_DIR} ${SHADERS_DEST_DIR}
 )
 
