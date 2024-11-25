@@ -12,7 +12,7 @@ cbuffer ubo
 
 struct VSInput
 {
-    [[vk::location(0)]] float2 Position : POSTION0;
+    [[vk::location(0)]] float3 Position : POSTION0;
 };
 
 struct VSOutput
@@ -24,7 +24,7 @@ struct VSOutput
 VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID)
 {
     VSOutput output = (VSOutput) 0;
-    output.Position = mul(ubo.projection, mul(ubo.view, mul(ubo.model, float4(input.Position,1.0, 1.0))));
+    output.Position = mul(ubo.projection, mul(ubo.view, mul(ubo.model, float4(input.Position, 1.0))));
     output.Color = float4(0.0, 0.4, 1.0, 1.0); //    input.Color;
     return output;
 }

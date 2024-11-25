@@ -14,7 +14,7 @@
 #include "../include/DawnEngine.hpp"
 #include <dawn/webgpu_cpp_print.h>
 
-#include "../models/triangle.hpp"
+#include "../models/cube.hpp"
 #include "../include/utilities.hpp"
 
 static DawnEngine* loadedEngine = nullptr;
@@ -149,22 +149,23 @@ DawnEngine::DawnEngine() {
 }
 
 void DawnEngine::initBuffers() {
-	Triangle triangle;
-	wgpu::BufferDescriptor vertexBuffer = {
+	Cube cube;
+
+	wgpu::BufferDescriptor vertexBufferDescriptor = {
 		.label = "vertex buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex,
-		.size = sizeof(triangle.vertexData)
+		.size = sizeof(float) * cube.vertexData.size(),
 	};
-	_vertexBuffer = _device.CreateBuffer(&vertexBuffer);
-	_queue.WriteBuffer(_vertexBuffer, 0, triangle.vertexData.data(), sizeof(triangle.vertexData));
+	_vertexBuffer = _device.CreateBuffer(&vertexBufferDescriptor);
+	_queue.WriteBuffer(_vertexBuffer, 0, cube.vertexData.data(), vertexBufferDescriptor.size);
 
-	wgpu::BufferDescriptor indexBuffer = {
+	wgpu::BufferDescriptor indexBufferDescriptor = {
 		.label = "index buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Index,
-		.size = sizeof(triangle.indexData),
+		.size = sizeof(uint16_t) * cube.indexData.size(),
 	};
-	_indexBuffer = _device.CreateBuffer(&indexBuffer);
-	_queue.WriteBuffer(_indexBuffer, 0, triangle.indexData.data(), sizeof(triangle.indexData));
+	_indexBuffer = _device.CreateBuffer(&indexBufferDescriptor);
+	_queue.WriteBuffer(_indexBuffer, 0, cube.indexData.data(), indexBufferDescriptor.size);
 
 	wgpu::BufferDescriptor uniformBufferDescriptor = {
 		.label = "ubo buffer",
@@ -186,13 +187,13 @@ void DawnEngine::initRenderPipeline() {
 	wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
 
 	wgpu::VertexAttribute positionAttribute = {
-		.format = wgpu::VertexFormat::Float32x2,
+		.format = wgpu::VertexFormat::Float32x3,
 		.offset = 0,
 		.shaderLocation = 0,
 	};
 
 	wgpu::VertexBufferLayout vertexBufferLayout = {
-		.arrayStride = 2 * sizeof(float),
+		.arrayStride = 3 * sizeof(float),
 		.attributeCount = 1,
 		.attributes = &positionAttribute,
 	};
