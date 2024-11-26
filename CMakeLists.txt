@@ -56,12 +56,29 @@ endif()
 # Post Build
 
 #Shaders
-set(SHADERS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
-set(SHADERS_DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+#set(SHADERS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+#set(SHADERS_DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+#
+#add_custom_command(TARGET DawnEngine POST_BUILD
+#    COMMAND ${CMAKE_COMMAND} -E copy_directory ${SHADERS_SOURCE_DIR} ${SHADERS_DEST_DIR}
+#)
 
-add_custom_command(TARGET DawnEngine POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${SHADERS_SOURCE_DIR} ${SHADERS_DEST_DIR}
-)
+# CMakeLists.txt
+
+# Define the path to the PowerShell script
+#set(PS_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/shaders/compile.ps1")
+#
+## Add a custom command to run the PowerShell script
+#add_custom_command(
+#    OUTPUT ${CMAKE_BINARY_DIR}/script_completed.txt
+#    COMMAND pwsh -ExecutionPolicy Bypass -File ${PS_SCRIPT_PATH}
+#    COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/script_completed.txt
+#    DEPENDS ${PS_SCRIPT_PATH}
+#)
+
+# Add a custom target that depends on the custom command
+#add_custom_target(run_script ALL DEPENDS ${CMAKE_BINARY_DIR}/script_completed.txt)
+
 
 #Dawn
 add_custom_command(TARGET DawnEngine POST_BUILD
