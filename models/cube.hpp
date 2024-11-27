@@ -2,14 +2,14 @@
 
 struct Cube {
 	std::vector<float> vertexData = {
-        -1.0f, -1.0f, -1.0f, 
-         1.0f, -1.0f, -1.0f, 
-         1.0f,  1.0f, -1.0f, 
-        -1.0f,  1.0f, -1.0f, 
-        -1.0f, -1.0f,  1.0f, 
-         1.0f, -1.0f,  1.0f, 
-         1.0f,  1.0f,  1.0f, 
-        -1.0f,  1.0f,  1.0f  
+		-1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, // Red
+		 1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 0.0f, // Green
+		 1.0f,  1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // Blue
+		-1.0f,  1.0f, -1.0f, 1.0f, 1.0f, 0.0f, // Yellow
+		-1.0f, -1.0f,  1.0f, 1.0f, 0.0f, 1.0f, // Magenta
+		 1.0f, -1.0f,  1.0f, 0.0f, 1.0f, 1.0f, // Cyan
+		 1.0f,  1.0f,  1.0f, 1.0f, 1.0f, 1.0f, // White
+		-1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 0.0f  // Black
 	};
 	std::vector<uint16_t> indexData = {
         0, 1, 2, 2, 3, 0, // Back face

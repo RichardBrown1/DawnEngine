@@ -22,6 +22,8 @@ static DawnEngine* loadedEngine = nullptr;
 const uint32_t WIDTH = 640;
 const uint32_t HEIGHT = 480;
 
+const wgpu::TextureFormat DEPTH_FORMAT = wgpu::TextureFormat::Depth24Plus;
+
 struct UBO {
 	alignas(16) glm::mat4x4 projection;
 	alignas(16) glm::mat4x4 model;
@@ -145,6 +147,7 @@ DawnEngine::DawnEngine() {
 
 
 	initBuffers();
+	initDepthTexture();
 	initRenderPipeline();
 }
 
@@ -175,6 +178,29 @@ void DawnEngine::initBuffers() {
 	_uniformBuffer = _device.CreateBuffer(&uniformBufferDescriptor);
 }
 
+void DawnEngine::initDepthTexture() {
+
+	wgpu::TextureDescriptor depthTextureDescriptor = {
+		.label = "depth texture",
+		.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
+		.dimension = wgpu::TextureDimension::e2D,
+		.size = wgpu::Extent3D(_surfaceConfiguration.width, _surfaceConfiguration.height),
+		.format = DEPTH_FORMAT,
+	};
+	wgpu::Texture depthTexture = _device.CreateTexture(&depthTextureDescriptor);
+
+	_depthTextureView = depthTexture.CreateView();
+	
+	wgpu::SamplerDescriptor samplerDescriptor = {
+		.label = "depth sampler",
+		.compare = wgpu::CompareFunction::Less,
+	};
+
+	_depthSampler =	_device.CreateSampler(&samplerDescriptor);
+
+	
+}
+
 void DawnEngine::initRenderPipeline() {
 	std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_shader.spv"));
 	wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
@@ -192,10 +218,18 @@ void DawnEngine::initRenderPipeline() {
 		.shaderLocation = 0,
 	};
 
+	wgpu::VertexAttribute colorAttribute = {
+		.format = wgpu::VertexFormat::Float32x3,
+		.offset = 12,
+		.shaderLocation = 1,
+	};
+
+	auto vertexAttributes = std::vector<wgpu::VertexAttribute> { positionAttribute, colorAttribute};
+
 	wgpu::VertexBufferLayout vertexBufferLayout = {
-		.arrayStride = 3 * sizeof(float),
-		.attributeCount = 1,
-		.attributes = &positionAttribute,
+		.arrayStride = 6 * sizeof(float),
+		.attributeCount = 2,
+		.attributes = vertexAttributes.data(),
 	};
 
 	wgpu::VertexState vertexState = {
@@ -277,6 +311,11 @@ void DawnEngine::initRenderPipeline() {
 	};
 	wgpu::PipelineLayout pipelineLayout = _device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	
+	wgpu::DepthStencilState depthStencilState = {
+		.format = DEPTH_FORMAT,
+		.depthWriteEnabled = true,
+		.depthCompare = wgpu::CompareFunction::Less,
+	};
 
 	wgpu::RenderPipelineDescriptor renderPipelineDescriptor = {
 		.label = "render pipeline descriptor",
@@ -284,11 +323,9 @@ void DawnEngine::initRenderPipeline() {
 		.vertex = vertexState,
 		.primitive = wgpu::PrimitiveState {
 			.topology = wgpu::PrimitiveTopology::TriangleList,
-			.stripIndexFormat = wgpu::IndexFormat::Undefined,
-			.frontFace = wgpu::FrontFace::CCW,
 			.cullMode = wgpu::CullMode::None,
 		},
-		.depthStencil = nullptr,
+		.depthStencil = &depthStencilState,
 		.multisample = wgpu::MultisampleState {
 			.count = 1,
 			.mask = ~0u,
@@ -316,9 +353,17 @@ void DawnEngine::draw() {
 	renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
 	renderPassColorAttachment.clearValue = wgpu::Color{ 0.9, 0.1, 0.2, 1.0 };
 
+	wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+		.view = _depthTextureView,
+		.depthLoadOp = wgpu::LoadOp::Clear,
+		.depthStoreOp = wgpu::StoreOp::Store,
+		.depthClearValue = 1.0f,		
+	};
+
 	wgpu::RenderPassDescriptor renderPassDescriptor = {
 		.colorAttachmentCount = 1,
 		.colorAttachments = &renderPassColorAttachment,
+		.depthStencilAttachment = &renderPassDepthStencilAttachment,
 	};
 
 

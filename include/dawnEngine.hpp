@@ -21,8 +21,12 @@ private:
 	wgpu::Buffer _uniformBuffer;
 	wgpu::Buffer _indexBuffer;
 	wgpu::BindGroup _bindGroup;
+	wgpu::TextureView _depthTextureView;
+	wgpu::Sampler _depthSampler;
+
 
 	void initBuffers();
+	void initDepthTexture();
 	void initRenderPipeline();
 
 	void draw();
