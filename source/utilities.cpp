@@ -18,4 +18,21 @@ namespace Utilities {
 
 		return buffer;
 	}
+
+	void checkFastGltfError(const fastgltf::Error& error, const std::string& additionalMessage) {
+		if (error == fastgltf::Error::None) {
+			return;
+		}
+		throw std::runtime_error(
+			std::format(" \
+				fastgltf error name: {} \r\n \
+				additionalMessage: {} \r\n \
+				errorMessage: {} \r\n", 
+				getErrorName(error), 
+				additionalMessage, 
+				getErrorMessage(error)
+			)
+		);
+	}
+
 };

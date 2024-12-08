@@ -1,4 +1,4 @@
-﻿cmake_minimum_required (VERSION 3.20)
+﻿cmake_minimum_required (VERSION 3.28)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -8,15 +8,20 @@ endif()
 
 project ("DawnEngine")
 
-
 # Dawn
 list(APPEND CMAKE_PREFIX_PATH "third-party/dawn")
 find_package(Dawn REQUIRED)
 set(ENV(DAWN_DEBUG_BREAK_ON_ERROR) 1)
 
+add_subdirectory("third-party/fastgltf" SYSTEM)
 
-# SDL3
+#list(APPEND CMAKE_PREFIX_PATH "third-party/fastgltf")
+#find_package(fastgltf REQUIRED)
+
+#FetchContent Dependencies
 include(FetchContent)
+
+## SDL3
 set(SDL_SHARED TRUE CACHE BOOL "Build a SDL shared library (if available)")
 set(SDL_STATIC TRUE CACHE BOOL "Build a SDL static library (if available)")
 FetchContent_Declare(
@@ -29,7 +34,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(SDL)
 set_property(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_deps/sdl-src" PROPERTY EXCLUDE_FROM_ALL TRUE)
 
-#glm
+## glm
 FetchContent_Declare(
     glm
  	GIT_REPOSITORY	https://github.com/g-truc/glm.git
@@ -37,10 +42,19 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glm)
 
-# Build
-add_executable (DawnEngine "source/main.cpp"  "source/dawnEngine.cpp" "source/sdl3webgpu.cpp" "include/sdl3webgpu.hpp" "source/utilities.cpp")
+## fastgltf
+#option(FASTGLTF_ENABLE_CPP_MODULES 1)
+#FetchContent_Declare(
+#    fastgltf
+#    GIT_REPOSITORY https://github.com/spnda/fastgltf
+#    GIT_TAG v0.8.0
+#)
+#FetchContent_MakeAvailable(fastgltf)
 
-target_link_libraries(DawnEngine dawn::webgpu_dawn SDL3::SDL3 glm::glm)
+# Build
+add_executable (DawnEngine "source/main.cpp"  "source/dawnEngine.cpp" "source/sdl3webgpu.cpp" "include/sdl3webgpu.hpp" "source/utilities.cpp" )
+
+target_link_libraries(DawnEngine dawn::webgpu_dawn SDL3::SDL3 glm::glm fastgltf::fastgltf)
 
 file(GLOB_RECURSE THIRD_PARTY "third_party/*.c" "third_party/*.cpp" "third_party/*.h" "third_party/*.hpp")
 
@@ -51,13 +65,28 @@ else()
     target_compile_options(DawnEngine PRIVATE -Wall -Wextra -Wpedantic -Werror -std=c++20 -fsanitize=undefined -fsanitize=address)
 endif()
 
+#Models
+set(MODELS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/models)
+set(MODELS_DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/models)
 
-
-# Post Build
+add_custom_target(CopyModels
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different 
+    ${MODELS_SOURCE_DIR}
+    ${MODELS_DEST_DIR}
+) 
+add_dependencies(DawnEngine CopyModels)
 
 #Shaders
-#set(SHADERS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
-#set(SHADERS_DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+set(SHADERS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+set(SHADERS_DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+set(PS_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/shaders/compile.ps1")
+
+add_custom_target(CopyShaders
+    COMMAND powershell -ExecutionPolicy Bypass -File ${PS_SCRIPT_PATH}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${SHADERS_SOURCE_DIR} ${SHADERS_DEST_DIR}
+)
+add_dependencies(DawnEngine CopyShaders)
+
 #
 #add_custom_command(TARGET DawnEngine POST_BUILD
 #    COMMAND ${CMAKE_COMMAND} -E copy_directory ${SHADERS_SOURCE_DIR} ${SHADERS_DEST_DIR}
@@ -66,7 +95,6 @@ endif()
 # CMakeLists.txt
 
 # Define the path to the PowerShell script
-#set(PS_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/shaders/compile.ps1")
 #
 ## Add a custom command to run the PowerShell script
 #add_custom_command(
@@ -79,6 +107,7 @@ endif()
 # Add a custom target that depends on the custom command
 #add_custom_target(run_script ALL DEPENDS ${CMAKE_BINARY_DIR}/script_completed.txt)
 
+# Post Build
 
 #Dawn
 add_custom_command(TARGET DawnEngine POST_BUILD

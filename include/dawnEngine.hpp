@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
-
 #include <webgpu/webgpu_cpp.h>
+#include <fastgltf/core.hpp>
 
 class DawnEngine {
 
@@ -11,6 +11,8 @@ public:
 	void destroy();
 
 private:
+	fastgltf::Parser _gltfParser;
+
 	wgpu::Instance _instance;
 	wgpu::Device _device;
 	wgpu::Surface _surface;
@@ -24,7 +26,7 @@ private:
 	wgpu::TextureView _depthTextureView;
 	wgpu::Sampler _depthSampler;
 
-
+	void initGltf();
 	void initBuffers();
 	void initDepthTexture();
 	void initRenderPipeline();

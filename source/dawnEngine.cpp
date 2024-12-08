@@ -1,3 +1,4 @@
+#pragma once 
 #include <cstdlib>
 #include <iostream>
 #include <format>
@@ -13,6 +14,9 @@
 
 #include "../include/DawnEngine.hpp"
 #include <dawn/webgpu_cpp_print.h>
+
+#include <fastgltf/core.hpp>
+#include <fastgltf/tools.hpp>
 
 #include "../models/cube.hpp"
 #include "../include/utilities.hpp"
@@ -145,30 +149,54 @@ DawnEngine::DawnEngine() {
 	_surface.Configure(&_surfaceConfiguration);
 	_queue = _device.GetQueue();
 
-
+	initGltf();
 	initBuffers();
 	initDepthTexture();
 	initRenderPipeline();
 }
 
-void DawnEngine::initBuffers() {
-	Cube cube;
+void DawnEngine::initGltf() {
+	_gltfParser = fastgltf::Parser::Parser();
+	
+}
 
+void DawnEngine::initBuffers() {
+	//std::filesystem::path path("models/cube.gltf");
+	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cube.gltf");
+	Utilities::checkFastGltfError(gltfFile.error(), "cube databuffer fromPath");
+	
+	auto cubeAsset = _gltfParser.loadGltf(gltfFile.get(), "models", fastgltf::Options::LoadExternalBuffers);
+	Utilities::checkFastGltfError(cubeAsset.error(), "cube loadGltf");
+
+	auto& asset = cubeAsset.get();
+	
 	wgpu::BufferDescriptor vertexBufferDescriptor = {
 		.label = "vertex buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex,
-		.size = sizeof(float) * cube.vertexData.size(),
+		.size = asset.buffers[0].byteLength,
 	};
 	_vertexBuffer = _device.CreateBuffer(&vertexBufferDescriptor);
-	_queue.WriteBuffer(_vertexBuffer, 0, cube.vertexData.data(), vertexBufferDescriptor.size);
+	_queue.WriteBuffer(_vertexBuffer, 0, &asset.buffers[0].data, vertexBufferDescriptor.size);
+
+	fastgltf::Primitive& primitive = asset.meshes[0].primitives[0];
+	if (!primitive.indicesAccessor.has_value()) {
+		throw std::runtime_error("no indicies accessor value");
+	}
+	auto& accessor = asset.accessors[primitive.indicesAccessor.value()];
+	auto indices = std::vector<uint16_t>(accessor.count);
+	fastgltf::iterateAccessorWithIndex<uint16_t>(
+		asset, accessor, [&](uint16_t index, size_t i) {
+			indices[i] = index;
+		}
+	);
 
 	wgpu::BufferDescriptor indexBufferDescriptor = {
 		.label = "index buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Index,
-		.size = sizeof(uint16_t) * cube.indexData.size(),
+		.size = sizeof(uint16_t) * indices.size(),
 	};
 	_indexBuffer = _device.CreateBuffer(&indexBufferDescriptor);
-	_queue.WriteBuffer(_indexBuffer, 0, cube.indexData.data(), indexBufferDescriptor.size);
+	_queue.WriteBuffer(_indexBuffer, 0, &indices, indexBufferDescriptor.size);
 
 	wgpu::BufferDescriptor uniformBufferDescriptor = {
 		.label = "ubo buffer",
