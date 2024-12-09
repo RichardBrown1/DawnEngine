@@ -17,6 +17,7 @@
 
 #include <fastgltf/core.hpp>
 #include <fastgltf/tools.hpp>
+#include <fastgltf/types.hpp>
 
 #include "../models/cube.hpp"
 #include "../include/utilities.hpp"
@@ -170,15 +171,25 @@ void DawnEngine::initBuffers() {
 
 	auto& asset = cubeAsset.get();
 	
+	fastgltf::Primitive& primitive = asset.meshes[0].primitives[0];
+	fastgltf::Attribute& positionAttribute = *primitive.findAttribute("POSITION");
+	fastgltf::Accessor& positionAccessor = asset.accessors[positionAttribute.accessorIndex];
+	//fastgltf::BufferView& positionBufferView = asset.bufferViews[positionAccessor.bufferViewIndex.value()];
+
+	auto vertices = std::vector<fastgltf::math::f32vec3>(positionAccessor.count);
+	fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
+		asset, positionAccessor, [&](fastgltf::math::f32vec3 vertex, size_t i) {
+			vertices[i] = vertex;
+		}
+	);
 	wgpu::BufferDescriptor vertexBufferDescriptor = {
 		.label = "vertex buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex,
-		.size = asset.buffers[0].byteLength,
+		.size = sizeof(fastgltf::math::f32vec3) * vertices.size(),
 	};
 	_vertexBuffer = _device.CreateBuffer(&vertexBufferDescriptor);
-	_queue.WriteBuffer(_vertexBuffer, 0, &asset.buffers[0].data, vertexBufferDescriptor.size);
+	_queue.WriteBuffer(_vertexBuffer, 0, vertices.data(), vertexBufferDescriptor.size);
 
-	fastgltf::Primitive& primitive = asset.meshes[0].primitives[0];
 	if (!primitive.indicesAccessor.has_value()) {
 		throw std::runtime_error("no indicies accessor value");
 	}
@@ -187,8 +198,9 @@ void DawnEngine::initBuffers() {
 	fastgltf::iterateAccessorWithIndex<uint16_t>(
 		asset, accessor, [&](uint16_t index, size_t i) {
 			indices[i] = index;
+			std::cout << indices[i] << std::endl;
 		}
-	);
+	); 
 
 	wgpu::BufferDescriptor indexBufferDescriptor = {
 		.label = "index buffer",
@@ -196,7 +208,7 @@ void DawnEngine::initBuffers() {
 		.size = sizeof(uint16_t) * indices.size(),
 	};
 	_indexBuffer = _device.CreateBuffer(&indexBufferDescriptor);
-	_queue.WriteBuffer(_indexBuffer, 0, &indices, indexBufferDescriptor.size);
+	_queue.WriteBuffer(_indexBuffer, 0, indices.data(), indexBufferDescriptor.size);
 
 	wgpu::BufferDescriptor uniformBufferDescriptor = {
 		.label = "ubo buffer",
@@ -246,17 +258,17 @@ void DawnEngine::initRenderPipeline() {
 		.shaderLocation = 0,
 	};
 
-	wgpu::VertexAttribute colorAttribute = {
-		.format = wgpu::VertexFormat::Float32x3,
-		.offset = 12,
-		.shaderLocation = 1,
-	};
+//	wgpu::VertexAttribute colorAttribute = {
+//		.format = wgpu::VertexFormat::Float32x3,
+//		.offset = 12,
+//		.shaderLocation = 1,
+//	};
 
-	auto vertexAttributes = std::vector<wgpu::VertexAttribute> { positionAttribute, colorAttribute};
+	auto vertexAttributes = std::vector<wgpu::VertexAttribute> { positionAttribute, /*colorAttribute*/};
 
 	wgpu::VertexBufferLayout vertexBufferLayout = {
-		.arrayStride = 6 * sizeof(float),
-		.attributeCount = 2,
+		.arrayStride = sizeof(float) * 3, //6
+		.attributeCount = vertexAttributes.size(),
 		.attributes = vertexAttributes.data(),
 	};
 
@@ -401,6 +413,9 @@ void DawnEngine::draw() {
 	renderPassEncoder.SetVertexBuffer(0, _vertexBuffer, 0, _vertexBuffer.GetSize());
 	renderPassEncoder.SetIndexBuffer(_indexBuffer, wgpu::IndexFormat::Uint16, 0, _indexBuffer.GetSize());
 	renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_indexBuffer.GetSize()) / sizeof(uint16_t));
+	//renderPassEncoder.DrawIndexed(16);
+	//renderPassEncoder.Draw(16);
+
 	renderPassEncoder.End();
 
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {

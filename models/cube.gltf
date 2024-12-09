@@ -58,7 +58,7 @@
     "accessors": [
         {
             "bufferView": 0,
-            "byteOffset": 0,
+            "byteOffset": 0,            
             "componentType": 5123,
             "count": 36,
             "max": [
