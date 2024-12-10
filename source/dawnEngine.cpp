@@ -27,7 +27,7 @@ static DawnEngine* loadedEngine = nullptr;
 const uint32_t WIDTH = 640;
 const uint32_t HEIGHT = 480;
 
-const wgpu::TextureFormat DEPTH_FORMAT = wgpu::TextureFormat::Depth24Plus;
+const wgpu::TextureFormat DEPTH_FORMAT = wgpu::TextureFormat::Depth16Unorm;
 
 struct UBO {
 	alignas(16) glm::mat4x4 projection;
@@ -107,13 +107,6 @@ DawnEngine::DawnEngine() {
 	deviceDescriptor.SetUncapturedErrorCallback([](const wgpu::Device&, wgpu::ErrorType type, const char* message) {
 		std::cout << "Uncaptured device error type: " << type << std::endl;
 		std::cout << std::format("Uncaptured Error Message: {} \r\n", message);
-		//        wgpu::PopErrorScopeCallbackInfo popErrorScopeCallbackInfo = {
-		//            .callback = [](WGPUPopErrorScopeStatus, WGPUErrorType type, struct WGPUStringView message, void*) {
-		//                std::cout << "Type: " << type << std::endl;
-		//                std::cout << "Pop Error Message: " << message.data << std::endl;
-		//            }
-		//        };
-		//        device.PopErrorScope(popErrorScopeCallbackInfo);
 		exit(1);
 		});
 	deviceDescriptor.SetDeviceLostCallback(
@@ -124,7 +117,6 @@ DawnEngine::DawnEngine() {
 		});
 
 	_device = adapter.CreateDevice(&deviceDescriptor);
-	//_device.PushErrorScope(wgpu::ErrorFilter::);
 
 	int userData;
 	_device.SetLoggingCallback(
@@ -174,7 +166,6 @@ void DawnEngine::initBuffers() {
 	fastgltf::Primitive& primitive = asset.meshes[0].primitives[0];
 	fastgltf::Attribute& positionAttribute = *primitive.findAttribute("POSITION");
 	fastgltf::Accessor& positionAccessor = asset.accessors[positionAttribute.accessorIndex];
-	//fastgltf::BufferView& positionBufferView = asset.bufferViews[positionAccessor.bufferViewIndex.value()];
 
 	auto vertices = std::vector<fastgltf::math::f32vec3>(positionAccessor.count);
 	fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
@@ -257,12 +248,6 @@ void DawnEngine::initRenderPipeline() {
 		.offset = 0,
 		.shaderLocation = 0,
 	};
-
-//	wgpu::VertexAttribute colorAttribute = {
-//		.format = wgpu::VertexFormat::Float32x3,
-//		.offset = 12,
-//		.shaderLocation = 1,
-//	};
 
 	auto vertexAttributes = std::vector<wgpu::VertexAttribute> { positionAttribute, /*colorAttribute*/};
 
@@ -413,9 +398,6 @@ void DawnEngine::draw() {
 	renderPassEncoder.SetVertexBuffer(0, _vertexBuffer, 0, _vertexBuffer.GetSize());
 	renderPassEncoder.SetIndexBuffer(_indexBuffer, wgpu::IndexFormat::Uint16, 0, _indexBuffer.GetSize());
 	renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_indexBuffer.GetSize()) / sizeof(uint16_t));
-	//renderPassEncoder.DrawIndexed(16);
-	//renderPassEncoder.Draw(16);
-
 	renderPassEncoder.End();
 
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
@@ -476,7 +458,6 @@ wgpu::TextureView DawnEngine::getNextSurfaceTextureView() {
 
 	wgpu::TextureView textureView = texture.CreateView(&textureViewDescriptor);
 
-	//texture.Destroy();
 	return textureView;
 }
 
