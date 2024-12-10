@@ -19,7 +19,6 @@
 #include <fastgltf/tools.hpp>
 #include <fastgltf/types.hpp>
 
-#include "../models/cube.hpp"
 #include "../include/utilities.hpp"
 
 static DawnEngine* loadedEngine = nullptr;
@@ -189,7 +188,6 @@ void DawnEngine::initBuffers() {
 	fastgltf::iterateAccessorWithIndex<uint16_t>(
 		asset, accessor, [&](uint16_t index, size_t i) {
 			indices[i] = index;
-			std::cout << indices[i] << std::endl;
 		}
 	); 
 
