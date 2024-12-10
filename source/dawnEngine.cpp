@@ -24,8 +24,8 @@
 
 static DawnEngine* loadedEngine = nullptr;
 
-const uint32_t WIDTH = 640;
-const uint32_t HEIGHT = 480;
+const uint32_t WIDTH = 1024;
+const uint32_t HEIGHT = 720;
 
 const wgpu::TextureFormat DEPTH_FORMAT = wgpu::TextureFormat::Depth16Unorm;
 
@@ -434,7 +434,7 @@ void DawnEngine::updateUniformBuffers() {
 	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	ubo.projection = glm::perspective(glm::radians(45.0f), _surfaceConfiguration.width / (float) _surfaceConfiguration.height, 0.1f, 10.0f);
 
-	ubo.projection[1][1] *= -1; //y coordinate is inverted on OpenGL - flip it
+	//ubo.projection[1][1] *= -1; //y coordinate is inverted on OpenGL - flip it
 
 	_queue.WriteBuffer(_uniformBuffer, 0, &ubo, sizeof(ubo));
 }
