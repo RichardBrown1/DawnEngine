@@ -153,51 +153,63 @@ void DawnEngine::initGltf() {
 }
 
 void DawnEngine::initBuffers() {
-	//std::filesystem::path path("models/cube.gltf");
-	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cube.gltf");
+	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/BoxAnimated.gltf");
+	//auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cube.gltf");
 	Utilities::checkFastGltfError(gltfFile.error(), "cube databuffer fromPath");
 	
-	auto cubeAsset = _gltfParser.loadGltf(gltfFile.get(), "models", fastgltf::Options::LoadExternalBuffers);
-	Utilities::checkFastGltfError(cubeAsset.error(), "cube loadGltf");
+	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models", fastgltf::Options::LoadExternalBuffers);
+	Utilities::checkFastGltfError(wholeGltf.error(), "cube loadGltf");
 
-	auto& asset = cubeAsset.get();
+	auto& asset = wholeGltf.get();
+
 	
-	fastgltf::Primitive& primitive = asset.meshes[0].primitives[0];
-	fastgltf::Attribute& positionAttribute = *primitive.findAttribute("POSITION");
-	fastgltf::Accessor& positionAccessor = asset.accessors[positionAttribute.accessorIndex];
+	//todo meshes loop
+	auto vertices = std::vector<fastgltf::math::f32vec3>(0);
+	auto indices = std::vector<uint16_t>(0);
 
-	auto vertices = std::vector<fastgltf::math::f32vec3>(positionAccessor.count);
-	fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
-		asset, positionAccessor, [&](fastgltf::math::f32vec3 vertex, size_t i) {
-			vertices[i] = vertex;
+	for (auto& mesh : asset.meshes) {
+		for (auto& primitive : mesh.primitives) {
+			fastgltf::Attribute& positionAttribute = *primitive.findAttribute("POSITION");
+			fastgltf::Accessor& positionAccessor = asset.accessors[positionAttribute.accessorIndex];
+			uint64_t verticesOffset = vertices.size();
+			vertices.resize(vertices.size() + positionAccessor.count);
+			fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
+				asset, positionAccessor, [&](fastgltf::math::f32vec3 vertex, size_t i) {
+					vertices[i + verticesOffset] = vertex;
+				}
+			);
+
+			if (!primitive.indicesAccessor.has_value()) {
+				throw std::runtime_error("no indicies accessor value");
+			}
+			auto& accessor = asset.accessors[primitive.indicesAccessor.value()];
+			uint64_t indicesOffset = indices.size();
+			indices.resize(indices.size() + accessor.count);
+			fastgltf::iterateAccessorWithIndex<uint16_t>(
+				asset, accessor, [&](uint16_t index, size_t i) {
+					indices[i + indicesOffset] = static_cast<uint16_t>(verticesOffset) + index;
+				}
+			);
 		}
-	);
+	}
+	
+
 	wgpu::BufferDescriptor vertexBufferDescriptor = {
-		.label = "vertex buffer",
-		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex,
-		.size = sizeof(fastgltf::math::f32vec3) * vertices.size(),
+			.label = "vertex buffer",
+			.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex,
+			.size = sizeof(fastgltf::math::f32vec3) * vertices.size(),
 	};
 	_vertexBuffer = _device.CreateBuffer(&vertexBufferDescriptor);
 	_queue.WriteBuffer(_vertexBuffer, 0, vertices.data(), vertexBufferDescriptor.size);
 
-	if (!primitive.indicesAccessor.has_value()) {
-		throw std::runtime_error("no indicies accessor value");
-	}
-	auto& accessor = asset.accessors[primitive.indicesAccessor.value()];
-	auto indices = std::vector<uint16_t>(accessor.count);
-	fastgltf::iterateAccessorWithIndex<uint16_t>(
-		asset, accessor, [&](uint16_t index, size_t i) {
-			indices[i] = index;
-		}
-	); 
-
 	wgpu::BufferDescriptor indexBufferDescriptor = {
-		.label = "index buffer",
-		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Index,
-		.size = sizeof(uint16_t) * indices.size(),
+				.label = "index buffer",
+				.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Index,
+				.size = sizeof(uint16_t) * indices.size(),
 	};
 	_indexBuffer = _device.CreateBuffer(&indexBufferDescriptor);
 	_queue.WriteBuffer(_indexBuffer, 0, indices.data(), indexBufferDescriptor.size);
+
 
 	wgpu::BufferDescriptor uniformBufferDescriptor = {
 		.label = "ubo buffer",
