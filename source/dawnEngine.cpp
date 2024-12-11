@@ -4,7 +4,6 @@
 #include <format>
 #include <chrono>
 
-#include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 
@@ -15,7 +14,6 @@
 #include "../include/DawnEngine.hpp"
 #include <dawn/webgpu_cpp_print.h>
 
-#include <fastgltf/core.hpp>
 #include <fastgltf/tools.hpp>
 #include <fastgltf/types.hpp>
 
@@ -28,10 +26,8 @@ const uint32_t HEIGHT = 720;
 
 const wgpu::TextureFormat DEPTH_FORMAT = wgpu::TextureFormat::Depth16Unorm;
 
-struct UBO {
-	alignas(16) glm::mat4x4 projection;
-	alignas(16) glm::mat4x4 model;
-	alignas(16) glm::mat4x4 view;
+struct Material {
+	fastgltf::math::nvec4 baseColor;
 };
 
 DawnEngine::DawnEngine() {
@@ -142,7 +138,6 @@ DawnEngine::DawnEngine() {
 	_queue = _device.GetQueue();
 
 	initGltf();
-	initBuffers();
 	initDepthTexture();
 	initRenderPipeline();
 }
@@ -150,25 +145,26 @@ DawnEngine::DawnEngine() {
 void DawnEngine::initGltf() {
 	_gltfParser = fastgltf::Parser::Parser();
 	
-}
-
-void DawnEngine::initBuffers() {
 	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/BoxAnimated.gltf");
 	//auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cube.gltf");
 	Utilities::checkFastGltfError(gltfFile.error(), "cube databuffer fromPath");
-	
+
 	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models", fastgltf::Options::LoadExternalBuffers);
 	Utilities::checkFastGltfError(wholeGltf.error(), "cube loadGltf");
 
 	auto& asset = wholeGltf.get();
 
-	
-	//todo meshes loop
+	initMeshBuffers(asset);
+	initMaterialBuffer(asset);
+}
+
+void DawnEngine::initMeshBuffers(fastgltf::Asset& asset) {
 	auto vertices = std::vector<fastgltf::math::f32vec3>(0);
 	auto indices = std::vector<uint16_t>(0);
 
 	for (auto& mesh : asset.meshes) {
 		for (auto& primitive : mesh.primitives) {
+			//vertice
 			fastgltf::Attribute& positionAttribute = *primitive.findAttribute("POSITION");
 			fastgltf::Accessor& positionAccessor = asset.accessors[positionAttribute.accessorIndex];
 			uint64_t verticesOffset = vertices.size();
@@ -179,6 +175,7 @@ void DawnEngine::initBuffers() {
 				}
 			);
 
+			//indice
 			if (!primitive.indicesAccessor.has_value()) {
 				throw std::runtime_error("no indicies accessor value");
 			}
@@ -190,9 +187,17 @@ void DawnEngine::initBuffers() {
 					indices[i + indicesOffset] = static_cast<uint16_t>(verticesOffset) + index;
 				}
 			);
+
+			//ubo
+			UBO	ubo = {
+				.projection = glm::mat4x4(),
+				.model = glm::mat4x4(),
+				.view = glm::mat4x4(),
+				.materialIndex = static_cast<uint16_t>(primitive.materialIndex.value_or(asset.materials.size())), //default material is last
+			};
+			_ubos.emplace_back(ubo);
 		}
 	}
-	
 
 	wgpu::BufferDescriptor vertexBufferDescriptor = {
 			.label = "vertex buffer",
@@ -210,13 +215,38 @@ void DawnEngine::initBuffers() {
 	_indexBuffer = _device.CreateBuffer(&indexBufferDescriptor);
 	_queue.WriteBuffer(_indexBuffer, 0, indices.data(), indexBufferDescriptor.size);
 
-
 	wgpu::BufferDescriptor uniformBufferDescriptor = {
 		.label = "ubo buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
-		.size = sizeof(UBO),
+		.size = sizeof(UBO) * _ubos.size(),
 	};
 	_uniformBuffer = _device.CreateBuffer(&uniformBufferDescriptor);
+}
+
+//Default Material will be at end of material buffer
+void DawnEngine::initMaterialBuffer(fastgltf::Asset& asset) {
+	auto materials = std::vector<Material>(asset.materials.size() + 1);
+	
+	for (int i = 0; auto & material : asset.materials) {
+		Material m = {
+			.baseColor = material.pbrData.baseColorFactor,
+		};
+		materials[i] = m;
+		i++;
+	}
+
+	Material defaultMaterial = {
+		.baseColor = fastgltf::math::nvec4(1.0f, 1.0f, 1.0f, 1.0f),
+	};
+	materials[asset.materials.size()] = defaultMaterial;
+
+	wgpu::BufferDescriptor materialBufferDescriptor = {
+		.label = "ubo buffer",
+		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
+		.size = sizeof(Material) * materials.size(),
+	};
+	_materialBuffer = _device.CreateBuffer(&materialBufferDescriptor);
+	_queue.WriteBuffer(_materialBuffer, 0, materials.data(), materialBufferDescriptor.size);
 }
 
 void DawnEngine::initDepthTexture() {
@@ -237,9 +267,7 @@ void DawnEngine::initDepthTexture() {
 		.compare = wgpu::CompareFunction::Less,
 	};
 
-	_depthSampler =	_device.CreateSampler(&samplerDescriptor);
-
-	
+	_depthSampler =	_device.CreateSampler(&samplerDescriptor);	
 }
 
 void DawnEngine::initRenderPipeline() {
@@ -310,7 +338,45 @@ void DawnEngine::initRenderPipeline() {
 		.targetCount = 1,
 		.targets = &colorTargetState,
 	};
+		
+	wgpu::DepthStencilState depthStencilState = {
+		.format = DEPTH_FORMAT,
+		.depthWriteEnabled = true,
+		.depthCompare = wgpu::CompareFunction::Less,
+	};
 
+	wgpu::RenderPipelineDescriptor renderPipelineDescriptor = {
+		.label = "render pipeline descriptor",
+		.layout = initPipelineLayout(),
+		.vertex = vertexState,
+		.primitive = wgpu::PrimitiveState {
+			.topology = wgpu::PrimitiveTopology::TriangleList,
+			.cullMode = wgpu::CullMode::None,
+		},
+		.depthStencil = &depthStencilState,
+		.multisample = wgpu::MultisampleState {
+			.count = 1,
+			.mask = ~0u,
+			.alphaToCoverageEnabled = false,
+		},
+		.fragment = &fragmentState,
+	};
+
+	_renderPipeline = _device.CreateRenderPipeline(&renderPipelineDescriptor);
+}
+
+wgpu::PipelineLayout DawnEngine::initPipelineLayout() {
+	
+	std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = { initUniformBindGroupLayout(), initMaterialBindGroupLayout() };
+	wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
+		.label = "Pipeline Layout",
+		.bindGroupLayoutCount = 2,
+		.bindGroupLayouts = bindGroupLayouts.data(),
+	};
+	return _device.CreatePipelineLayout(&pipelineLayoutDescriptor);
+}
+
+wgpu::BindGroupLayout DawnEngine::initUniformBindGroupLayout() {
 	wgpu::BindGroupLayoutEntry bindGroupLayoutEntry = {
 		.binding = 0,
 		.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
@@ -329,7 +395,7 @@ void DawnEngine::initRenderPipeline() {
 	wgpu::BindGroupEntry bindGroupEntry = {
 		.binding = 0,
 		.buffer = _uniformBuffer,
-		.size = sizeof(UBO),
+		.size = _uniformBuffer.GetSize(),
 	};
 	wgpu::BindGroupDescriptor bindGroupDescriptor = {
 		.label = "uniform bind group",
@@ -337,40 +403,44 @@ void DawnEngine::initRenderPipeline() {
 		.entryCount = bindGroupLayoutDescriptor.entryCount,
 		.entries = &bindGroupEntry,
 	};
-	_bindGroup = _device.CreateBindGroup(&bindGroupDescriptor);
+	_bindGroups.push_back(_device.CreateBindGroup(&bindGroupDescriptor));
 
-	wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
-		.label = "Pipeline Layout",
-		.bindGroupLayoutCount = 1,
-		.bindGroupLayouts = &bindGroupLayout,
-	};
-	wgpu::PipelineLayout pipelineLayout = _device.CreatePipelineLayout(&pipelineLayoutDescriptor);
-	
-	wgpu::DepthStencilState depthStencilState = {
-		.format = DEPTH_FORMAT,
-		.depthWriteEnabled = true,
-		.depthCompare = wgpu::CompareFunction::Less,
-	};
-
-	wgpu::RenderPipelineDescriptor renderPipelineDescriptor = {
-		.label = "render pipeline descriptor",
-		.layout = pipelineLayout,
-		.vertex = vertexState,
-		.primitive = wgpu::PrimitiveState {
-			.topology = wgpu::PrimitiveTopology::TriangleList,
-			.cullMode = wgpu::CullMode::None,
-		},
-		.depthStencil = &depthStencilState,
-		.multisample = wgpu::MultisampleState {
-			.count = 1,
-			.mask = ~0u,
-			.alphaToCoverageEnabled = false,
-		},
-		.fragment = &fragmentState,
-	};
-
-	_renderPipeline = _device.CreateRenderPipeline(&renderPipelineDescriptor);
+	return bindGroupLayout;
 }
+
+wgpu::BindGroupLayout DawnEngine::initMaterialBindGroupLayout() {
+	wgpu::BindGroupLayoutEntry bindGroupLayoutEntry = {
+		.binding = 0,
+		.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
+		.buffer = {
+			.type = wgpu::BufferBindingType::ReadOnlyStorage,
+			.minBindingSize = sizeof(Material),
+		}
+	};
+	wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
+		.label = "Bind Group Layout - Material",
+		.entryCount = 1,
+		.entries = &bindGroupLayoutEntry
+	};
+	wgpu::BindGroupLayout bindGroupLayout = _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+
+	wgpu::BindGroupEntry bindGroupEntry = {
+		.binding = 0,
+		.buffer = _materialBuffer,
+		.size = _materialBuffer.GetSize(),
+	};
+	wgpu::BindGroupDescriptor bindGroupDescriptor = {
+		.label = "material bind group",
+		.layout = bindGroupLayout,
+		.entryCount = bindGroupLayoutDescriptor.entryCount,
+		.entries = &bindGroupEntry,
+	};
+	_bindGroups.push_back(_device.CreateBindGroup(&bindGroupDescriptor));
+
+	return bindGroupLayout;
+}
+
+
 
 void DawnEngine::draw() {
 	updateUniformBuffers();
@@ -404,7 +474,8 @@ void DawnEngine::draw() {
 
 	wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
 	renderPassEncoder.SetPipeline(_renderPipeline);
-	renderPassEncoder.SetBindGroup(0, _bindGroup, 0, nullptr); //uniform buffer
+	renderPassEncoder.SetBindGroup(0, _bindGroups[0]);
+	renderPassEncoder.SetBindGroup(1, _bindGroups[1], 0, nullptr); //uniform buffer
 	renderPassEncoder.SetVertexBuffer(0, _vertexBuffer, 0, _vertexBuffer.GetSize());
 	renderPassEncoder.SetIndexBuffer(_indexBuffer, wgpu::IndexFormat::Uint16, 0, _indexBuffer.GetSize());
 	renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_indexBuffer.GetSize()) / sizeof(uint16_t));
@@ -446,7 +517,7 @@ void DawnEngine::updateUniformBuffers() {
 
 	//ubo.projection[1][1] *= -1; //y coordinate is inverted on OpenGL - flip it
 
-	_queue.WriteBuffer(_uniformBuffer, 0, &ubo, sizeof(ubo));
+	_queue.WriteBuffer(_uniformBuffer, 0, _ubos.data(), sizeof(UBO) * _ubos.size());
 }
 
 wgpu::TextureView DawnEngine::getNextSurfaceTextureView() {
