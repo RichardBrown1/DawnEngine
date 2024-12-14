@@ -8,8 +8,16 @@ struct UBO {
 	alignas(sizeof(glm::mat4x4)) glm::mat4x4 projection;
 	alignas(sizeof(glm::mat4x4)) glm::mat4x4 model;
 	alignas(sizeof(glm::mat4x4)) glm::mat4x4 view;
-	alignas(sizeof(uint16_t)) uint16_t materialIndex;
 };
+
+struct DrawInfo {
+	uint32_t indexCount;
+	uint32_t instanceCount;
+	uint32_t firstIndex;
+	uint32_t baseVertex;
+	uint32_t firstInstance; //requires indirect-first-instance feature
+};
+
 
 class DawnEngine {
 
@@ -34,8 +42,7 @@ private:
 	std::vector<wgpu::BindGroup> _bindGroups;
 	wgpu::TextureView _depthTextureView;
 	wgpu::Sampler _depthSampler;
-
-	std::vector<UBO> _ubos;
+	std::vector<DrawInfo> _drawCalls;
 
 	void initGltf();
 	void initMeshBuffers(fastgltf::Asset& asset);

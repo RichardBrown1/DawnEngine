@@ -13,6 +13,6 @@ if (-Not (Test-Path -Path $compiledShadersPath)) {
 Get-ChildItem -Path $shaderSourcePath -Filter *.hlsl | ForEach-Object {
     $shortName = $_.Name -replace "\..*", "" 
     echo "compiling $shortname"
-    & $dxcPath -T vs_6_0 -E VS_main -spirv -Fo $compiledShadersPath/v_$shortName.spv $_.FullName
-    & $dxcPath -T ps_6_0 -E FS_main -spirv -Fo $compiledShadersPath/f_$shortName.spv $_.FullName
+    & $dxcPath -T vs_6_7 -E VS_main -spirv -enable-16bit-types -Fo $compiledShadersPath/v_$shortName.spv $_.FullName
+    & $dxcPath -T ps_6_7 -E FS_main -spirv -enable-16bit-types -Fo $compiledShadersPath/f_$shortName.spv $_.FullName
 }

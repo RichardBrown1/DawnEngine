@@ -27,7 +27,7 @@ const uint32_t HEIGHT = 720;
 const wgpu::TextureFormat DEPTH_FORMAT = wgpu::TextureFormat::Depth16Unorm;
 
 struct Material {
-	fastgltf::math::nvec4 baseColor;
+	glm::vec4 baseColor;
 };
 
 DawnEngine::DawnEngine() {
@@ -98,7 +98,10 @@ DawnEngine::DawnEngine() {
 	std::cout << "Vertex Attribute Limit: " << supportedLimits.limits.maxVertexAttributes << std::endl;
 	std::cout << "Vertex Buffer Limit: " << supportedLimits.limits.maxVertexBuffers << std::endl;
 
-	wgpu::DeviceDescriptor deviceDescriptor{};
+	wgpu::FeatureName requiredFeatures =  wgpu::FeatureName::IndirectFirstInstance;
+	wgpu::DeviceDescriptor deviceDescriptor = {};
+	deviceDescriptor.label = "device";
+	deviceDescriptor.requiredFeatures = &requiredFeatures;
 	deviceDescriptor.SetUncapturedErrorCallback([](const wgpu::Device&, wgpu::ErrorType type, const char* message) {
 		std::cout << "Uncaptured device error type: " << type << std::endl;
 		std::cout << std::format("Uncaptured Error Message: {} \r\n", message);
@@ -161,13 +164,14 @@ void DawnEngine::initGltf() {
 void DawnEngine::initMeshBuffers(fastgltf::Asset& asset) {
 	auto vertices = std::vector<fastgltf::math::f32vec3>(0);
 	auto indices = std::vector<uint16_t>(0);
+	auto drawIndirects = std::vector<DrawInfo>(0);
 
 	for (auto& mesh : asset.meshes) {
 		for (auto& primitive : mesh.primitives) {
 			//vertice
 			fastgltf::Attribute& positionAttribute = *primitive.findAttribute("POSITION");
 			fastgltf::Accessor& positionAccessor = asset.accessors[positionAttribute.accessorIndex];
-			uint64_t verticesOffset = vertices.size();
+			size_t verticesOffset = vertices.size();
 			vertices.resize(vertices.size() + positionAccessor.count);
 			fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
 				asset, positionAccessor, [&](fastgltf::math::f32vec3 vertex, size_t i) {
@@ -180,7 +184,7 @@ void DawnEngine::initMeshBuffers(fastgltf::Asset& asset) {
 				throw std::runtime_error("no indicies accessor value");
 			}
 			auto& accessor = asset.accessors[primitive.indicesAccessor.value()];
-			uint64_t indicesOffset = indices.size();
+			size_t indicesOffset = indices.size();
 			indices.resize(indices.size() + accessor.count);
 			fastgltf::iterateAccessorWithIndex<uint16_t>(
 				asset, accessor, [&](uint16_t index, size_t i) {
@@ -188,14 +192,15 @@ void DawnEngine::initMeshBuffers(fastgltf::Asset& asset) {
 				}
 			);
 
-			//ubo
-			UBO	ubo = {
-				.projection = glm::mat4x4(),
-				.model = glm::mat4x4(),
-				.view = glm::mat4x4(),
-				.materialIndex = static_cast<uint16_t>(primitive.materialIndex.value_or(asset.materials.size())), //default material is last
-			};
-			_ubos.emplace_back(ubo);
+			DrawInfo drawIndirect = {
+				.indexCount = static_cast<uint32_t>(accessor.count),
+				.instanceCount = 1,
+				.firstIndex = static_cast<uint32_t>(indicesOffset),
+//#ifdef DEBUG_DRAWS
+				.firstInstance = static_cast<uint32_t>(drawIndirects.size()),
+//#endif                
+			};                 
+			drawIndirects.push_back(drawIndirect);
 		}
 	}
 
@@ -215,10 +220,18 @@ void DawnEngine::initMeshBuffers(fastgltf::Asset& asset) {
 	_indexBuffer = _device.CreateBuffer(&indexBufferDescriptor);
 	_queue.WriteBuffer(_indexBuffer, 0, indices.data(), indexBufferDescriptor.size);
 
+	_drawCalls = drawIndirects;
+
+	//ubo
+	UBO	ubo = {
+		.projection = glm::mat4x4(1),
+		.model = glm::mat4x4(1),
+		.view = glm::mat4x4(1),
+	};
 	wgpu::BufferDescriptor uniformBufferDescriptor = {
 		.label = "ubo buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
-		.size = sizeof(UBO) * _ubos.size(),
+		.size = sizeof(UBO),
 	};
 	_uniformBuffer = _device.CreateBuffer(&uniformBufferDescriptor);
 }
@@ -229,14 +242,22 @@ void DawnEngine::initMaterialBuffer(fastgltf::Asset& asset) {
 	
 	for (int i = 0; auto & material : asset.materials) {
 		Material m = {
-			.baseColor = material.pbrData.baseColorFactor,
+			.baseColor = [&]() {
+				auto& baseColor = material.pbrData.baseColorFactor;
+				auto result = glm::vec4();
+				result.x = static_cast<float_t>(baseColor.x());
+				result.y = static_cast<float_t>(baseColor.y());
+				result.z = static_cast<float_t>(baseColor.z());
+				result.w = static_cast<float_t>(baseColor.w());
+				return result;
+			}(),
 		};
 		materials[i] = m;
 		i++;
 	}
 
 	Material defaultMaterial = {
-		.baseColor = fastgltf::math::nvec4(1.0f, 1.0f, 1.0f, 1.0f),
+		.baseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
 	};
 	materials[asset.materials.size()] = defaultMaterial;
 
@@ -478,7 +499,11 @@ void DawnEngine::draw() {
 	renderPassEncoder.SetBindGroup(1, _bindGroups[1], 0, nullptr); //uniform buffer
 	renderPassEncoder.SetVertexBuffer(0, _vertexBuffer, 0, _vertexBuffer.GetSize());
 	renderPassEncoder.SetIndexBuffer(_indexBuffer, wgpu::IndexFormat::Uint16, 0, _indexBuffer.GetSize());
-	renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_indexBuffer.GetSize()) / sizeof(uint16_t));
+
+	for (auto& dc : _drawCalls) {
+		renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+	}
+	//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_indexBuffer.GetSize()) / sizeof(uint16_t)); //todo
 	renderPassEncoder.End();
 
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
@@ -509,15 +534,14 @@ void DawnEngine::updateUniformBuffers() {
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-	UBO ubo{};
+	
+	UBO ubo;
 	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.projection = glm::perspective(glm::radians(45.0f), _surfaceConfiguration.width / (float) _surfaceConfiguration.height, 0.1f, 10.0f);
-
+	ubo.projection = glm::perspective(glm::radians(45.0f), _surfaceConfiguration.width / (float)_surfaceConfiguration.height, 0.1f, 10.0f);
 	//ubo.projection[1][1] *= -1; //y coordinate is inverted on OpenGL - flip it
 
-	_queue.WriteBuffer(_uniformBuffer, 0, _ubos.data(), sizeof(UBO) * _ubos.size());
+	_queue.WriteBuffer(_uniformBuffer, 0, &ubo, sizeof(UBO));
 }
 
 wgpu::TextureView DawnEngine::getNextSurfaceTextureView() {
