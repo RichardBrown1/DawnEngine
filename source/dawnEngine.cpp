@@ -178,7 +178,6 @@ void DawnEngine::initNodes(fastgltf::Asset& asset) {
 
 void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t meshIndex) {
 
-	_transforms.push_back(transform);
 
 	if (_meshIndexToDrawInfoMap.count(meshIndex)) {
 		++_meshIndexToDrawInfoMap[meshIndex]->instanceCount;
@@ -187,42 +186,47 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 
 	auto& mesh = asset.meshes[meshIndex];
 	//for (auto& mesh : asset.meshes) {
-		for (auto& primitive : mesh.primitives) {
-			//vertice
-			fastgltf::Attribute& positionAttribute = *primitive.findAttribute("POSITION");
-			fastgltf::Accessor& positionAccessor = asset.accessors[positionAttribute.accessorIndex];
-			size_t verticesOffset = _vertices.size();
-			_vertices.resize(_vertices.size() + positionAccessor.count);
-			fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
-				asset, positionAccessor, [&](fastgltf::math::f32vec3 vertex, size_t i) {
-					_vertices[i + verticesOffset] = vertex;
-				}
-			);
-
-			//indice
-			if (!primitive.indicesAccessor.has_value()) {
-				throw std::runtime_error("no indicies accessor value");
+	for (auto& primitive : mesh.primitives) {
+		//vertice
+		fastgltf::Attribute& positionAttribute = *primitive.findAttribute("POSITION");
+		fastgltf::Accessor& positionAccessor = asset.accessors[positionAttribute.accessorIndex];
+		size_t verticesOffset = _vertices.size();
+		_vertices.resize(_vertices.size() + positionAccessor.count);
+		fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
+			asset, positionAccessor, [&](fastgltf::math::f32vec3 vertex, size_t i) {
+				_vertices[i + verticesOffset] = vertex;
 			}
-			auto& accessor = asset.accessors[primitive.indicesAccessor.value()];
-			size_t indicesOffset = _indices.size();
-			_indices.resize(_indices.size() + accessor.count);
-			fastgltf::iterateAccessorWithIndex<uint16_t>(
-				asset, accessor, [&](uint16_t index, size_t i) {
-					_indices[i + indicesOffset] = static_cast<uint16_t>(verticesOffset) + index;
-				}
-			);
+		);
 
-			DrawInfo drawCall = {
-				.indexCount = static_cast<uint32_t>(accessor.count),
-				.instanceCount = 1,
-				.firstIndex = static_cast<uint32_t>(indicesOffset),
-				.firstInstance = static_cast<uint32_t>(_drawCalls.size()),
-			};                 
-
-			
-			_meshIndexToDrawInfoMap.insert(std::make_pair(meshIndex, &_drawCalls.emplace_back(drawCall)));
+		//indice
+		if (!primitive.indicesAccessor.has_value()) {
+			throw std::runtime_error("no indicies accessor value");
 		}
-	
+		auto& accessor = asset.accessors[primitive.indicesAccessor.value()];
+		size_t indicesOffset = _indices.size();
+		_indices.resize(_indices.size() + accessor.count);
+		fastgltf::iterateAccessorWithIndex<uint16_t>(
+			asset, accessor, [&](uint16_t index, size_t i) {
+				_indices[i + indicesOffset] = static_cast<uint16_t>(verticesOffset) + index;
+			}
+		);
+
+		DrawInfo drawCall = {
+			.indexCount = static_cast<uint32_t>(accessor.count),
+			.instanceCount = 1,
+			.firstIndex = static_cast<uint32_t>(indicesOffset),
+			.firstInstance = static_cast<uint32_t>(_drawCalls.size()),
+		};
+		_meshIndexToDrawInfoMap.insert(std::make_pair(meshIndex, &_drawCalls.emplace_back(drawCall)));
+
+		InstanceProperty instanceProperty = {
+			.materialIndex = static_cast<uint32_t>(primitive.materialIndex.value_or(asset.materials.size())),
+		};
+		_instanceProperties.push_back(instanceProperty);
+		_transforms.push_back(transform);
+
+	}
+
 }
 
 void DawnEngine::initMeshBuffers() {
@@ -255,6 +259,14 @@ void DawnEngine::initMeshBuffers() {
 	};
 	_indexBuffer = _device.CreateBuffer(&indexBufferDescriptor);
 	_queue.WriteBuffer(_indexBuffer, 0, _indices.data(), indexBufferDescriptor.size);
+
+	wgpu::BufferDescriptor instancePropertiesBufferDescriptor{
+				.label = "instance property buffer",
+				.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
+				.size = sizeof(uint32_t) * _instanceProperties.size(),
+	};
+	_instancePropertiesBuffer = _device.CreateBuffer(&instancePropertiesBufferDescriptor);
+	_queue.WriteBuffer(_instancePropertiesBuffer, 0, _instanceProperties.data(), instancePropertiesBufferDescriptor.size);
 
 	wgpu::BufferDescriptor transformBufferDescriptor = {
 		.label = "transform buffer",
@@ -417,7 +429,7 @@ void DawnEngine::initRenderPipeline() {
 
 wgpu::PipelineLayout DawnEngine::initPipelineLayout() {
 	
-	std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = { initUniformBindGroupLayout(), initMaterialBindGroupLayout() };
+	std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = { initStaticBindGroupLayout(), initInfrequentBindGroupLayout() };
 	wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
 		.label = "Pipeline Layout",
 		.bindGroupLayoutCount = 2,
@@ -426,10 +438,10 @@ wgpu::PipelineLayout DawnEngine::initPipelineLayout() {
 	return _device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 }
 
-wgpu::BindGroupLayout DawnEngine::initUniformBindGroupLayout() {
+wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
 	wgpu::BindGroupLayoutEntry uboBindGroupLayoutEntry = {
 		.binding = 0,
-		.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
+		.visibility = wgpu::ShaderStage::Vertex,
 		.buffer = {
 			.type = wgpu::BufferBindingType::Uniform,
 			.minBindingSize = sizeof(UBO),
@@ -443,11 +455,23 @@ wgpu::BindGroupLayout DawnEngine::initUniformBindGroupLayout() {
 			.minBindingSize = sizeof(glm::f32mat4x4) * _transforms.size(),
 		}
 	};
-	std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = { uboBindGroupLayoutEntry, transformsBindGroupLayoutEntry };
+	wgpu::BindGroupLayoutEntry instancePropertiesBindGroupLayoutEntry = {
+		.binding = 2,
+		.visibility = wgpu::ShaderStage::Vertex,
+		.buffer = {
+			.type = wgpu::BufferBindingType::ReadOnlyStorage,
+			.minBindingSize = sizeof(InstanceProperty) * _instanceProperties.size(),
+		}
+	};
+	std::array<wgpu::BindGroupLayoutEntry, 3> bindGroupLayoutEntries = { 
+		uboBindGroupLayoutEntry, 
+		transformsBindGroupLayoutEntry,
+		instancePropertiesBindGroupLayoutEntry,
+	};
 
 	wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-		.label = "Bind Group Layout - Uniform",
-		.entryCount = 2,
+		.label = "static bind group",
+		.entryCount = bindGroupLayoutEntries.size(),
 		.entries = bindGroupLayoutEntries.data(),
 	};
 	wgpu::BindGroupLayout bindGroupLayout = _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
@@ -463,30 +487,39 @@ wgpu::BindGroupLayout DawnEngine::initUniformBindGroupLayout() {
 		.buffer = _transformBuffer,
 		.size = _transformBuffer.GetSize(),
 	};
-	std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = { uboBindGroupEntry, transformsBindGroupEntry };
+	wgpu::BindGroupEntry instancePropertiesBindGroupEntry = {
+		.binding = 2,
+		.buffer = _instancePropertiesBuffer,
+		.size = _instancePropertiesBuffer.GetSize(),
+	};
+	std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = { 
+		uboBindGroupEntry,
+		transformsBindGroupEntry,
+		instancePropertiesBindGroupEntry 
+	};
 
 	wgpu::BindGroupDescriptor bindGroupDescriptor = {
-		.label = "uniform bind group",
+		.label = "static bind group",
 		.layout = bindGroupLayout,
-		.entryCount = bindGroupLayoutDescriptor.entryCount,
-		.entries = bindGroupEntries.data(),
+		.entryCount = bindGroupEntries.size(),
+		.entries = bindGroupEntries.data() ,
 	};
 	_bindGroups.push_back(_device.CreateBindGroup(&bindGroupDescriptor));
 
 	return bindGroupLayout;
 }
 
-wgpu::BindGroupLayout DawnEngine::initMaterialBindGroupLayout() {
+wgpu::BindGroupLayout DawnEngine::initInfrequentBindGroupLayout() {
 	wgpu::BindGroupLayoutEntry bindGroupLayoutEntry = {
 		.binding = 0,
-		.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
+		.visibility = wgpu::ShaderStage::Vertex,
 		.buffer = {
 			.type = wgpu::BufferBindingType::ReadOnlyStorage,
 			.minBindingSize = sizeof(Material),
 		}
 	};
 	wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-		.label = "Bind Group Layout - Material",
+		.label = "infrequent bind group",
 		.entryCount = 1,
 		.entries = &bindGroupLayoutEntry
 	};
@@ -498,7 +531,7 @@ wgpu::BindGroupLayout DawnEngine::initMaterialBindGroupLayout() {
 		.size = _materialBuffer.GetSize(),
 	};
 	wgpu::BindGroupDescriptor bindGroupDescriptor = {
-		.label = "material bind group",
+		.label = "infrequent bind group",
 		.layout = bindGroupLayout,
 		.entryCount = bindGroupLayoutDescriptor.entryCount,
 		.entries = &bindGroupEntry,

@@ -18,6 +18,10 @@ struct DrawInfo {
 	uint32_t firstInstance; //requires indirect-first-instance feature
 };
 
+struct InstanceProperty {
+		uint32_t materialIndex;
+};
+
 class DawnEngine {
 
 public:
@@ -38,10 +42,12 @@ private:
 	std::vector<uint16_t> _indices;
 	std::vector<DrawInfo> _drawCalls;
 	std::vector<glm::f32mat4x4> _transforms;
+	std::vector<InstanceProperty> _instanceProperties;
 	std::unordered_map<uint32_t, DrawInfo*> _meshIndexToDrawInfoMap;
 	wgpu::Buffer _uniformBuffer;
 	wgpu::Buffer _vertexBuffer;
 	wgpu::Buffer _indexBuffer;
+	wgpu::Buffer _instancePropertiesBuffer;
 	wgpu::Buffer _transformBuffer;
 	wgpu::Buffer _materialBuffer;
 	std::vector<wgpu::BindGroup> _bindGroups;
@@ -56,8 +62,10 @@ private:
 	void initDepthTexture();
 	void initRenderPipeline();
 	wgpu::PipelineLayout initPipelineLayout();
-	wgpu::BindGroupLayout initUniformBindGroupLayout();
-	wgpu::BindGroupLayout initMaterialBindGroupLayout();
+	wgpu::BindGroupLayout initStaticBindGroupLayout();
+	wgpu::BindGroupLayout initInfrequentBindGroupLayout();
+	//wgpu::BindGroupLayout initFrequentBindGroupLayout();
+	//wgpu::BindGroupLayout initPerFrameBindGroupLayout():
 
 	void draw();
 	void updateUniformBuffers();
