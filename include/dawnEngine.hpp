@@ -18,7 +18,6 @@ struct DrawInfo {
 	uint32_t firstInstance; //requires indirect-first-instance feature
 };
 
-
 class DawnEngine {
 
 public:
@@ -35,17 +34,24 @@ private:
 	wgpu::SurfaceConfiguration _surfaceConfiguration;
 	wgpu::Queue _queue;
 	wgpu::RenderPipeline _renderPipeline;
-	wgpu::Buffer _vertexBuffer;
+	std::vector<fastgltf::math::f32vec3> _vertices;
+	std::vector<uint16_t> _indices;
+	std::vector<DrawInfo> _drawCalls;
+	std::vector<glm::f32mat4x4> _transforms;
+	std::unordered_map<uint32_t, DrawInfo*> _meshIndexToDrawInfoMap;
 	wgpu::Buffer _uniformBuffer;
+	wgpu::Buffer _vertexBuffer;
 	wgpu::Buffer _indexBuffer;
-	wgpu::Buffer _materialBuffer; //todo storage buffer
+	wgpu::Buffer _transformBuffer;
+	wgpu::Buffer _materialBuffer;
 	std::vector<wgpu::BindGroup> _bindGroups;
 	wgpu::TextureView _depthTextureView;
 	wgpu::Sampler _depthSampler;
-	std::vector<DrawInfo> _drawCalls;
 
 	void initGltf();
-	void initMeshBuffers(fastgltf::Asset& asset);
+	void initNodes(fastgltf::Asset& asset);
+	void addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t meshIndex);
+	void initMeshBuffers();
 	void initMaterialBuffer(fastgltf::Asset& asset);
 	void initDepthTexture();
 	void initRenderPipeline();

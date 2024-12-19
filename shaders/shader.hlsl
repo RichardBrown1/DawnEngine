@@ -10,6 +10,8 @@ cbuffer ubo : register(b0, space0)
     UniformBufferControl ubo;
 }
 
+StructuredBuffer<float4x4> transforms : register(t1, space0);
+
 struct Material
 {
     float4 baseColor;
@@ -31,7 +33,10 @@ struct VSOutput
 VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceIndex : SV_InstanceID)
 {
     VSOutput output = (VSOutput) 0;
-    output.Position = mul(ubo.projection, mul(ubo.view, mul(ubo.model, float4(input.Position, 1.0))));
+    
+    
+    output.Position = mul(ubo.projection, mul(ubo.view, mul(ubo.model, mul(transforms[InstanceIndex], float4(input.Position, 1.0)))));
+
     output.Color = materials[InstanceIndex].baseColor;
     //output.Color = float4(input.Color, 1.0); //    input.Color;
     return output;

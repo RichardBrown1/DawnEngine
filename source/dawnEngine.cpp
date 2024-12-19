@@ -73,82 +73,84 @@ DawnEngine::DawnEngine() {
 				}
 				*static_cast<wgpu::Adapter*>(userdata) = wgpu::Adapter::Acquire(adapter);
 		};
-	callbackInfo.userdata = &adapter;
-	_instance.WaitAny(_instance.RequestAdapter(&requestAdapterOptions, callbackInfo), UINT64_MAX);
-	if (adapter == nullptr) {
-		throw std::runtime_error("RequestAdapter failed!\n");
-	}
+		callbackInfo.userdata = &adapter;
+		_instance.WaitAny(_instance.RequestAdapter(&requestAdapterOptions, callbackInfo), UINT64_MAX);
+		if (adapter == nullptr) {
+			throw std::runtime_error("RequestAdapter failed!\n");
+		}
 
-	wgpu::DawnAdapterPropertiesPowerPreference power_props{};
+		wgpu::DawnAdapterPropertiesPowerPreference power_props{};
 
-	wgpu::AdapterInfo info{};
-	info.nextInChain = &power_props;
+		wgpu::AdapterInfo info{};
+		info.nextInChain = &power_props;
 
-	adapter.GetInfo(&info);
-	std::cout << "VendorID: " << std::hex << info.vendorID << std::dec << "\n";
-	std::cout << "Vendor: " << info.vendor << "\n";
-	std::cout << "Architecture: " << info.architecture << "\n";
-	std::cout << "DeviceID: " << std::hex << info.deviceID << std::dec << "\n";
-	std::cout << "Name: " << info.device << "\n";
-	std::cout << "Driver description: " << info.description << "\n";
+		adapter.GetInfo(&info);
+		std::cout << "VendorID: " << std::hex << info.vendorID << std::dec << "\n";
+		std::cout << "Vendor: " << info.vendor << "\n";
+		std::cout << "Architecture: " << info.architecture << "\n";
+		std::cout << "DeviceID: " << std::hex << info.deviceID << std::dec << "\n";
+		std::cout << "Name: " << info.device << "\n";
+		std::cout << "Driver description: " << info.description << "\n";
 
-	//limits
-	wgpu::SupportedLimits supportedLimits;
-	adapter.GetLimits(&supportedLimits);
-	std::cout << "Vertex Attribute Limit: " << supportedLimits.limits.maxVertexAttributes << std::endl;
-	std::cout << "Vertex Buffer Limit: " << supportedLimits.limits.maxVertexBuffers << std::endl;
+		//limits
+		wgpu::SupportedLimits supportedLimits;
+		adapter.GetLimits(&supportedLimits);
+		std::cout << "Vertex Attribute Limit: " << supportedLimits.limits.maxVertexAttributes << std::endl;
+		std::cout << "Vertex Buffer Limit: " << supportedLimits.limits.maxVertexBuffers << std::endl;
+		std::cout << "BindGroup Limit: " << supportedLimits.limits.maxBindGroups << std::endl;
+		std::cout << "Max Bindings/BindGroup Limit: " << supportedLimits.limits.maxBindingsPerBindGroup << std::endl;
 
-	wgpu::FeatureName requiredFeatures =  wgpu::FeatureName::IndirectFirstInstance;
-	wgpu::DeviceDescriptor deviceDescriptor = {};
-	deviceDescriptor.label = "device";
-	deviceDescriptor.requiredFeatures = &requiredFeatures;
-	deviceDescriptor.SetUncapturedErrorCallback([](const wgpu::Device&, wgpu::ErrorType type, const char* message) {
-		std::cout << "Uncaptured device error type: " << type << std::endl;
-		std::cout << std::format("Uncaptured Error Message: {} \r\n", message);
-		exit(1);
-		});
-	deviceDescriptor.SetDeviceLostCallback(
-		wgpu::CallbackMode::AllowSpontaneous,
-		[](const wgpu::Device&, wgpu::DeviceLostReason reason, const char* message) {
-			std::cout << "DeviceLostReason: " << reason << std::endl;
-			std::cout << std::format(" Message: {}", message) << std::endl;
-		});
+		wgpu::FeatureName requiredFeatures = wgpu::FeatureName::IndirectFirstInstance;
+		wgpu::DeviceDescriptor deviceDescriptor = {};
+		deviceDescriptor.label = "device";
+		deviceDescriptor.requiredFeatures = &requiredFeatures;
+		deviceDescriptor.SetUncapturedErrorCallback([](const wgpu::Device&, wgpu::ErrorType type, const char* message) {
+			std::cout << "Uncaptured device error type: " << type << std::endl;
+			std::cout << std::format("Uncaptured Error Message: {} \r\n", message);
+			exit(1);
+			});
+		deviceDescriptor.SetDeviceLostCallback(
+			wgpu::CallbackMode::AllowSpontaneous,
+			[](const wgpu::Device&, wgpu::DeviceLostReason reason, const char* message) {
+				std::cout << "DeviceLostReason: " << reason << std::endl;
+				std::cout << std::format(" Message: {}", message) << std::endl;
+			});
 
-	_device = adapter.CreateDevice(&deviceDescriptor);
+		_device = adapter.CreateDevice(&deviceDescriptor);
 
-	int userData;
-	_device.SetLoggingCallback(
-		[](WGPULoggingType type, struct WGPUStringView message, void*) {
-			std::string_view view = { message.data, message.length };
-			std::cout << "Type: " << type << std::endl;
-			std::cout << "Log Message: " << view << std::endl;
-		}, &userData);
+		int userData;
+		_device.SetLoggingCallback(
+			[](WGPULoggingType type, struct WGPUStringView message, void*) {
+				std::string_view view = { message.data, message.length };
+				std::cout << "Type: " << type << std::endl;
+				std::cout << "Log Message: " << view << std::endl;
+			}, &userData);
 
-	_surfaceConfiguration.width = WIDTH;
-	_surfaceConfiguration.height = HEIGHT;
-	_surfaceConfiguration.device = _device;
-	_surfaceConfiguration.alphaMode = wgpu::CompositeAlphaMode::Auto;
-	_surfaceConfiguration.presentMode = wgpu::PresentMode::Immediate;
-	_surfaceConfiguration.usage = wgpu::TextureUsage::RenderAttachment;
+		_surfaceConfiguration.width = WIDTH;
+		_surfaceConfiguration.height = HEIGHT;
+		_surfaceConfiguration.device = _device;
+		_surfaceConfiguration.alphaMode = wgpu::CompositeAlphaMode::Auto;
+		_surfaceConfiguration.presentMode = wgpu::PresentMode::Immediate;
+		_surfaceConfiguration.usage = wgpu::TextureUsage::RenderAttachment;
 
-	wgpu::SurfaceCapabilities surfaceCapabilites;
-	wgpu::ConvertibleStatus getCapabilitiesStatus = _surface.GetCapabilities(adapter, &surfaceCapabilites);
-	if (getCapabilitiesStatus == wgpu::Status::Error) {
-		throw std::runtime_error("failed to get surface capabilities");
-	}
-	_surfaceConfiguration.format = wgpu::TextureFormat::BGRA8Unorm;
-	_surface.Configure(&_surfaceConfiguration);
-	_queue = _device.GetQueue();
+		wgpu::SurfaceCapabilities surfaceCapabilites;
+		wgpu::ConvertibleStatus getCapabilitiesStatus = _surface.GetCapabilities(adapter, &surfaceCapabilites);
+		if (getCapabilitiesStatus == wgpu::Status::Error) {
+			throw std::runtime_error("failed to get surface capabilities");
+		}
+		_surfaceConfiguration.format = wgpu::TextureFormat::BGRA8Unorm;
+		_surface.Configure(&_surfaceConfiguration);
+		_queue = _device.GetQueue();
 
-	initGltf();
-	initDepthTexture();
-	initRenderPipeline();
+		initGltf();
+		initDepthTexture();
+		initRenderPipeline();
 }
 
 void DawnEngine::initGltf() {
 	_gltfParser = fastgltf::Parser::Parser();
-	
-	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/BoxAnimated.gltf");
+
+	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cornellbox.gltf");
 	//auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cube.gltf");
 	Utilities::checkFastGltfError(gltfFile.error(), "cube databuffer fromPath");
 
@@ -157,25 +159,43 @@ void DawnEngine::initGltf() {
 
 	auto& asset = wholeGltf.get();
 
-	initMeshBuffers(asset);
+	initNodes(asset);
+	initMeshBuffers();
 	initMaterialBuffer(asset);
 }
 
-void DawnEngine::initMeshBuffers(fastgltf::Asset& asset) {
-	auto vertices = std::vector<fastgltf::math::f32vec3>(0);
-	auto indices = std::vector<uint16_t>(0);
-	auto drawIndirects = std::vector<DrawInfo>(0);
+void DawnEngine::initNodes(fastgltf::Asset& asset) {
+	size_t sceneIndex = asset.defaultScene.value_or(0);
+	fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
+		[&](fastgltf::Node& node, fastgltf::math::fmat4x4 matrix) {
+			if (node.meshIndex.has_value()) {
+				addMeshData(asset, Utilities::convertFastGltfToGlm(matrix), static_cast<uint32_t>(node.meshIndex.value()));
+			}
+		});
+	auto translations = std::vector<glm::f32mat4x4>(0);
 
-	for (auto& mesh : asset.meshes) {
+}
+
+void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t meshIndex) {
+
+	_transforms.push_back(transform);
+
+	if (_meshIndexToDrawInfoMap.count(meshIndex)) {
+		++_meshIndexToDrawInfoMap[meshIndex]->instanceCount;
+		return;
+	};
+
+	auto& mesh = asset.meshes[meshIndex];
+	//for (auto& mesh : asset.meshes) {
 		for (auto& primitive : mesh.primitives) {
 			//vertice
 			fastgltf::Attribute& positionAttribute = *primitive.findAttribute("POSITION");
 			fastgltf::Accessor& positionAccessor = asset.accessors[positionAttribute.accessorIndex];
-			size_t verticesOffset = vertices.size();
-			vertices.resize(vertices.size() + positionAccessor.count);
+			size_t verticesOffset = _vertices.size();
+			_vertices.resize(_vertices.size() + positionAccessor.count);
 			fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
 				asset, positionAccessor, [&](fastgltf::math::f32vec3 vertex, size_t i) {
-					vertices[i + verticesOffset] = vertex;
+					_vertices[i + verticesOffset] = vertex;
 				}
 			);
 
@@ -184,47 +204,31 @@ void DawnEngine::initMeshBuffers(fastgltf::Asset& asset) {
 				throw std::runtime_error("no indicies accessor value");
 			}
 			auto& accessor = asset.accessors[primitive.indicesAccessor.value()];
-			size_t indicesOffset = indices.size();
-			indices.resize(indices.size() + accessor.count);
+			size_t indicesOffset = _indices.size();
+			_indices.resize(_indices.size() + accessor.count);
 			fastgltf::iterateAccessorWithIndex<uint16_t>(
 				asset, accessor, [&](uint16_t index, size_t i) {
-					indices[i + indicesOffset] = static_cast<uint16_t>(verticesOffset) + index;
+					_indices[i + indicesOffset] = static_cast<uint16_t>(verticesOffset) + index;
 				}
 			);
 
-			DrawInfo drawIndirect = {
+			DrawInfo drawCall = {
 				.indexCount = static_cast<uint32_t>(accessor.count),
 				.instanceCount = 1,
 				.firstIndex = static_cast<uint32_t>(indicesOffset),
-//#ifdef DEBUG_DRAWS
-				.firstInstance = static_cast<uint32_t>(drawIndirects.size()),
-//#endif                
+				.firstInstance = static_cast<uint32_t>(_drawCalls.size()),
 			};                 
-			drawIndirects.push_back(drawIndirect);
+
+			
+			_meshIndexToDrawInfoMap.insert(std::make_pair(meshIndex, &_drawCalls.emplace_back(drawCall)));
 		}
-	}
+	
+}
 
-	wgpu::BufferDescriptor vertexBufferDescriptor = {
-			.label = "vertex buffer",
-			.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex,
-			.size = sizeof(fastgltf::math::f32vec3) * vertices.size(),
-	};
-	_vertexBuffer = _device.CreateBuffer(&vertexBufferDescriptor);
-	_queue.WriteBuffer(_vertexBuffer, 0, vertices.data(), vertexBufferDescriptor.size);
-
-	wgpu::BufferDescriptor indexBufferDescriptor = {
-				.label = "index buffer",
-				.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Index,
-				.size = sizeof(uint16_t) * indices.size(),
-	};
-	_indexBuffer = _device.CreateBuffer(&indexBufferDescriptor);
-	_queue.WriteBuffer(_indexBuffer, 0, indices.data(), indexBufferDescriptor.size);
-
-	_drawCalls = drawIndirects;
-
-	//ubo
+void DawnEngine::initMeshBuffers() {
+	
 	UBO	ubo = {
-		.projection = glm::mat4x4(1),
+		.projection = glm::f32mat4x4(1),
 		.model = glm::mat4x4(1),
 		.view = glm::mat4x4(1),
 	};
@@ -234,6 +238,31 @@ void DawnEngine::initMeshBuffers(fastgltf::Asset& asset) {
 		.size = sizeof(UBO),
 	};
 	_uniformBuffer = _device.CreateBuffer(&uniformBufferDescriptor);
+
+
+	wgpu::BufferDescriptor vertexBufferDescriptor = {
+			.label = "vertex buffer",
+			.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex,
+			.size = sizeof(fastgltf::math::f32vec3) * _vertices.size(),
+	};
+	_vertexBuffer = _device.CreateBuffer(&vertexBufferDescriptor);
+	_queue.WriteBuffer(_vertexBuffer, 0, _vertices.data(), vertexBufferDescriptor.size);
+
+	wgpu::BufferDescriptor indexBufferDescriptor = {
+				.label = "index buffer",
+				.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Index,
+				.size = sizeof(uint16_t) * _indices.size(),
+	};
+	_indexBuffer = _device.CreateBuffer(&indexBufferDescriptor);
+	_queue.WriteBuffer(_indexBuffer, 0, _indices.data(), indexBufferDescriptor.size);
+
+	wgpu::BufferDescriptor transformBufferDescriptor = {
+		.label = "transform buffer",
+		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
+		.size = sizeof(glm::f32mat4x4) * _transforms.size(),
+	};
+	_transformBuffer = _device.CreateBuffer(&transformBufferDescriptor);
+	_queue.WriteBuffer(_transformBuffer, 0, _transforms.data(), transformBufferDescriptor.size);
 }
 
 //Default Material will be at end of material buffer
@@ -398,7 +427,7 @@ wgpu::PipelineLayout DawnEngine::initPipelineLayout() {
 }
 
 wgpu::BindGroupLayout DawnEngine::initUniformBindGroupLayout() {
-	wgpu::BindGroupLayoutEntry bindGroupLayoutEntry = {
+	wgpu::BindGroupLayoutEntry uboBindGroupLayoutEntry = {
 		.binding = 0,
 		.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
 		.buffer = {
@@ -406,23 +435,41 @@ wgpu::BindGroupLayout DawnEngine::initUniformBindGroupLayout() {
 			.minBindingSize = sizeof(UBO),
 		}
 	};
+	wgpu::BindGroupLayoutEntry transformsBindGroupLayoutEntry = {
+		.binding = 1,
+		.visibility = wgpu::ShaderStage::Vertex,
+		.buffer = {
+			.type = wgpu::BufferBindingType::ReadOnlyStorage,
+			.minBindingSize = sizeof(glm::f32mat4x4) * _transforms.size(),
+		}
+	};
+	std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = { uboBindGroupLayoutEntry, transformsBindGroupLayoutEntry };
+
 	wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
 		.label = "Bind Group Layout - Uniform",
-		.entryCount = 1,
-		.entries = &bindGroupLayoutEntry
+		.entryCount = 2,
+		.entries = bindGroupLayoutEntries.data(),
 	};
 	wgpu::BindGroupLayout bindGroupLayout = _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 
-	wgpu::BindGroupEntry bindGroupEntry = {
+
+	wgpu::BindGroupEntry uboBindGroupEntry = {
 		.binding = 0,
 		.buffer = _uniformBuffer,
 		.size = _uniformBuffer.GetSize(),
 	};
+	wgpu::BindGroupEntry transformsBindGroupEntry = {
+		.binding = 1,
+		.buffer = _transformBuffer,
+		.size = _transformBuffer.GetSize(),
+	};
+	std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = { uboBindGroupEntry, transformsBindGroupEntry };
+
 	wgpu::BindGroupDescriptor bindGroupDescriptor = {
 		.label = "uniform bind group",
 		.layout = bindGroupLayout,
 		.entryCount = bindGroupLayoutDescriptor.entryCount,
-		.entries = &bindGroupEntry,
+		.entries = bindGroupEntries.data(),
 	};
 	_bindGroups.push_back(_device.CreateBindGroup(&bindGroupDescriptor));
 
@@ -495,8 +542,8 @@ void DawnEngine::draw() {
 
 	wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
 	renderPassEncoder.SetPipeline(_renderPipeline);
-	renderPassEncoder.SetBindGroup(0, _bindGroups[0]);
-	renderPassEncoder.SetBindGroup(1, _bindGroups[1], 0, nullptr); //uniform buffer
+	renderPassEncoder.SetBindGroup(0, _bindGroups[0]); //material buffer
+	renderPassEncoder.SetBindGroup(1, _bindGroups[1]); //uniform buffer
 	renderPassEncoder.SetVertexBuffer(0, _vertexBuffer, 0, _vertexBuffer.GetSize());
 	renderPassEncoder.SetIndexBuffer(_indexBuffer, wgpu::IndexFormat::Uint16, 0, _indexBuffer.GetSize());
 
@@ -530,15 +577,16 @@ void DawnEngine::draw() {
 }
 
 void DawnEngine::updateUniformBuffers() {
-	static auto startTime = std::chrono::high_resolution_clock::now();
+	//static auto startTime = std::chrono::high_resolution_clock::now();
 
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+	//auto currentTime = std::chrono::high_resolution_clock::now();
+	//float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 	
-	UBO ubo;
-	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.projection = glm::perspective(glm::radians(45.0f), _surfaceConfiguration.width / (float)_surfaceConfiguration.height, 0.1f, 10.0f);
+	UBO ubo{};
+	ubo.model = glm::mat4x4(1.0f);
+	//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.view = glm::lookAt(glm::vec3(-278.0f, 273.0f, 800.0f), glm::vec3(-278.0f, 273.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	ubo.projection = glm::perspective(glm::radians(45.0f), _surfaceConfiguration.width / (float)_surfaceConfiguration.height, 0.1f, 1500.0f);
 	//ubo.projection[1][1] *= -1; //y coordinate is inverted on OpenGL - flip it
 
 	_queue.WriteBuffer(_uniformBuffer, 0, &ubo, sizeof(UBO));
