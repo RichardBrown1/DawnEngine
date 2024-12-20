@@ -45,7 +45,6 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
 
     InstanceProperties ip = instanceProperties[InstanceIndex];
     output.Color = materials[ip.materialIndex].baseColor;
-    //output.Color = float4(input.Color, 1.0); //    input.Color;
     return output;
 }
 
