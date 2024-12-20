@@ -575,8 +575,8 @@ void DawnEngine::draw() {
 
 	wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
 	renderPassEncoder.SetPipeline(_renderPipeline);
-	renderPassEncoder.SetBindGroup(0, _bindGroups[0]); //material buffer
-	renderPassEncoder.SetBindGroup(1, _bindGroups[1]); //uniform buffer
+	renderPassEncoder.SetBindGroup(0, _bindGroups[0]); //static buffer
+	renderPassEncoder.SetBindGroup(1, _bindGroups[1]); //infrequent buffer
 	renderPassEncoder.SetVertexBuffer(0, _vertexBuffer, 0, _vertexBuffer.GetSize());
 	renderPassEncoder.SetIndexBuffer(_indexBuffer, wgpu::IndexFormat::Uint16, 0, _indexBuffer.GetSize());
 
