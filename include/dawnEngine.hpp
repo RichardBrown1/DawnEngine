@@ -43,6 +43,7 @@ private:
 	wgpu::Queue _queue;
 	wgpu::RenderPipeline _renderPipeline;
 	std::vector<fastgltf::math::f32vec3> _vertices;
+	std::vector<fastgltf::math::f32vec3> _normals;
 	std::vector<uint16_t> _indices;
 	std::vector<DrawInfo> _drawCalls;
 	std::vector<glm::f32mat4x4> _transforms;
@@ -50,6 +51,7 @@ private:
 	std::unordered_map<uint32_t, DrawInfo*> _meshIndexToDrawInfoMap;
 	wgpu::Buffer _uniformBuffer;
 	wgpu::Buffer _vertexBuffer;
+	wgpu::Buffer _normalBuffer;
 	wgpu::Buffer _indexBuffer;
 	wgpu::Buffer _instancePropertiesBuffer;
 	wgpu::Buffer _transformBuffer;

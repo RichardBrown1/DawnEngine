@@ -201,6 +201,17 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 				_vertices[i + verticesOffset] = vertex;
 			}
 		);
+	
+		//normal
+		fastgltf::Attribute& normalAttribute = *primitive.findAttribute("NORMAL");
+		fastgltf::Accessor& normalAccessor = asset.accessors[normalAttribute.accessorIndex];
+		size_t normalsOffset = _normals.size();
+		_normals.resize(_normals.size() + normalAccessor.count);
+		fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
+			asset, normalAccessor, [&](fastgltf::math::f32vec3 normal, size_t i) {
+				_normals[i + normalsOffset] = normal;
+			}
+		);
 
 		//indice
 		if (!primitive.indicesAccessor.has_value()) {
@@ -256,6 +267,15 @@ void DawnEngine::initMeshBuffers() {
 	};
 	_vertexBuffer = _device.CreateBuffer(&vertexBufferDescriptor);
 	_queue.WriteBuffer(_vertexBuffer, 0, _vertices.data(), vertexBufferDescriptor.size);
+	
+	wgpu::BufferDescriptor normalBufferDescriptor = {
+			.label = "normal buffer",
+			.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
+			.size = sizeof(fastgltf::math::f32vec3) * _normals.size(),
+	};
+	_normalBuffer = _device.CreateBuffer(&normalBufferDescriptor);
+	_queue.WriteBuffer(_normalBuffer, 0, _normals.data(), normalBufferDescriptor.size);
+
 
 	wgpu::BufferDescriptor indexBufferDescriptor = {
 				.label = "index buffer",
@@ -468,10 +488,19 @@ wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
 			.minBindingSize = sizeof(InstanceProperty) * _instanceProperties.size(),
 		}
 	};
-	std::array<wgpu::BindGroupLayoutEntry, 3> bindGroupLayoutEntries = { 
+	wgpu::BindGroupLayoutEntry normalsBindGroupLayoutEntry = {
+		.binding = 3,
+		.visibility = wgpu::ShaderStage::Vertex,
+		.buffer = {
+			.type = wgpu::BufferBindingType::ReadOnlyStorage,
+			.minBindingSize = sizeof(glm::f32vec3) * _normals.size(),
+		}
+	};
+	std::array<wgpu::BindGroupLayoutEntry, 4> bindGroupLayoutEntries = { 
 		uboBindGroupLayoutEntry, 
 		transformsBindGroupLayoutEntry,
 		instancePropertiesBindGroupLayoutEntry,
+		normalsBindGroupLayoutEntry
 	};
 
 	wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
@@ -497,10 +526,16 @@ wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
 		.buffer = _instancePropertiesBuffer,
 		.size = _instancePropertiesBuffer.GetSize(),
 	};
-	std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = { 
+	wgpu::BindGroupEntry normalsBindGroupEntry = { 
+		.binding = 3,
+		.buffer = _normalBuffer,
+		.size = _normalBuffer.GetSize(),
+	};
+	std::array<wgpu::BindGroupEntry, 4> bindGroupEntries = { 
 		uboBindGroupEntry,
 		transformsBindGroupEntry,
-		instancePropertiesBindGroupEntry 
+		instancePropertiesBindGroupEntry,
+		normalsBindGroupEntry,
 	};
 
 	wgpu::BindGroupDescriptor bindGroupDescriptor = {
