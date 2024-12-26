@@ -100,10 +100,14 @@ DawnEngine::DawnEngine() {
 		std::cout << "BindGroup Limit: " << supportedLimits.limits.maxBindGroups << std::endl;
 		std::cout << "Max Bindings/BindGroup Limit: " << supportedLimits.limits.maxBindingsPerBindGroup << std::endl;
 
-		wgpu::FeatureName requiredFeatures = wgpu::FeatureName::IndirectFirstInstance;
+		std::array<wgpu::FeatureName, 1> requiredFeatures = { 
+			wgpu::FeatureName::IndirectFirstInstance
+		};
+		//wgpu::FeatureName requiredFeatures = wgpu::FeatureName::IndirectFirstInstance;
 		wgpu::DeviceDescriptor deviceDescriptor = {};
 		deviceDescriptor.label = "device";
-		deviceDescriptor.requiredFeatures = &requiredFeatures;
+		deviceDescriptor.requiredFeatures = requiredFeatures.data();
+		deviceDescriptor.requiredFeatureCount = requiredFeatures.size();
 		deviceDescriptor.SetUncapturedErrorCallback([](const wgpu::Device&, wgpu::ErrorType type, const char* message) {
 			std::cout << "Uncaptured device error type: " << type << std::endl;
 			std::cout << std::format("Uncaptured Error Message: {} \r\n", message);
@@ -220,6 +224,7 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 		_meshIndexToDrawInfoMap.insert(std::make_pair(meshIndex, &_drawCalls.emplace_back(drawCall)));
 
 		InstanceProperty instanceProperty = {
+			.transform = transform,
 			.materialIndex = static_cast<uint32_t>(primitive.materialIndex.value_or(asset.materials.size())),
 		};
 		_instanceProperties.push_back(instanceProperty);
@@ -263,7 +268,7 @@ void DawnEngine::initMeshBuffers() {
 	wgpu::BufferDescriptor instancePropertiesBufferDescriptor{
 				.label = "instance property buffer",
 				.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
-				.size = sizeof(uint32_t) * _instanceProperties.size(),
+				.size = sizeof(InstanceProperty) * _instanceProperties.size(),
 	};
 	_instancePropertiesBuffer = _device.CreateBuffer(&instancePropertiesBufferDescriptor);
 	_queue.WriteBuffer(_instancePropertiesBuffer, 0, _instanceProperties.data(), instancePropertiesBufferDescriptor.size);

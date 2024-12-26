@@ -12,7 +12,11 @@ cbuffer ubo : register(b0, space0)
 
 struct InstanceProperties
 {
+    float4x4 transform;
     uint materialIndex;
+    uint pad1;
+    uint pad2;
+    uint pad3;
 };
 
 StructuredBuffer<InstanceProperties> instanceProperties : register(t2, space0);
