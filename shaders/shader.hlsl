@@ -54,10 +54,16 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
 
 float4 FS_main(VSOutput input) : SV_Target
 {
-    //return input.Color;
+    float3 lightColor = float3(1.0, 1.0, 1.0);
+    float ambientStrength = float(0.1);
+    float3 ambientLight = lightColor * ambientStrength;
+    
+    float3 normal = normalize(input.Normal);
     float3 lightDirection = float3(0.5, -0.9, 0.1);
-    float shading = dot(lightDirection, input.Normal);
-    float4 output = input.Color * shading;
-    output.a = 1.0;
-    return output;
+    float diff = max(dot(normal, lightDirection), 0.0);
+    float3 diffuse = lightColor * diff;
+    
+    float3 result = (ambientLight + diffuse) * input.Color.xyz;
+    
+    return float4(result, 1.0);
 }
