@@ -10,6 +10,11 @@ struct UBO {
 	alignas(sizeof(glm::mat4x4)) glm::mat4x4 view;
 };
 
+struct VBO {
+	glm::f32vec3 vertex;
+	glm::f32vec3 normal;
+};
+
 struct DrawInfo {
 	uint32_t indexCount;
 	uint32_t instanceCount;
@@ -42,16 +47,14 @@ private:
 	wgpu::SurfaceConfiguration _surfaceConfiguration;
 	wgpu::Queue _queue;
 	wgpu::RenderPipeline _renderPipeline;
-	std::vector<fastgltf::math::f32vec3> _vertices;
-	std::vector<fastgltf::math::f32vec3> _normals;
+	std::vector<VBO> _vbos;
 	std::vector<uint16_t> _indices;
 	std::vector<DrawInfo> _drawCalls;
 	std::vector<glm::f32mat4x4> _transforms;
 	std::vector<InstanceProperty> _instanceProperties;
 	std::unordered_map<uint32_t, DrawInfo*> _meshIndexToDrawInfoMap;
 	wgpu::Buffer _uniformBuffer;
-	wgpu::Buffer _vertexBuffer;
-	wgpu::Buffer _normalBuffer;
+	wgpu::Buffer _vboBuffer;
 	wgpu::Buffer _indexBuffer;
 	wgpu::Buffer _instancePropertiesBuffer;
 	wgpu::Buffer _transformBuffer;

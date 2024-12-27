@@ -181,35 +181,36 @@ void DawnEngine::initNodes(fastgltf::Asset& asset) {
 }
 
 void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t meshIndex) {
-
-
 	if (_meshIndexToDrawInfoMap.count(meshIndex)) {
 		++_meshIndexToDrawInfoMap[meshIndex]->instanceCount;
 		return;
 	};
 
 	auto& mesh = asset.meshes[meshIndex];
-	//for (auto& mesh : asset.meshes) {
+
 	for (auto& primitive : mesh.primitives) {
 		//vertice
 		fastgltf::Attribute& positionAttribute = *primitive.findAttribute("POSITION");
 		fastgltf::Accessor& positionAccessor = asset.accessors[positionAttribute.accessorIndex];
-		size_t verticesOffset = _vertices.size();
-		_vertices.resize(_vertices.size() + positionAccessor.count);
+		size_t vbosOffset = _vbos.size();
+		_vbos.resize(_vbos.size() + positionAccessor.count);
 		fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
 			asset, positionAccessor, [&](fastgltf::math::f32vec3 vertex, size_t i) {
-				_vertices[i + verticesOffset] = vertex;
+			  //_vbos[i + vbosOffset].vertex = glm::f32vec3(vertex[0], vertex[1], vertex[2]);
+				_vbos[i + vbosOffset].vertex.x = vertex[0];
+				_vbos[i + vbosOffset].vertex.y = vertex[1];
+				_vbos[i + vbosOffset].vertex.z = vertex[2];
 			}
 		);
 	
 		//normal
 		fastgltf::Attribute& normalAttribute = *primitive.findAttribute("NORMAL");
 		fastgltf::Accessor& normalAccessor = asset.accessors[normalAttribute.accessorIndex];
-		size_t normalsOffset = _normals.size();
-		_normals.resize(_normals.size() + normalAccessor.count);
 		fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
 			asset, normalAccessor, [&](fastgltf::math::f32vec3 normal, size_t i) {
-				_normals[i + normalsOffset] = normal;
+				_vbos[i + vbosOffset].normal.x = normal[0];
+				_vbos[i + vbosOffset].normal.y = normal[1];
+				_vbos[i + vbosOffset].normal.z = normal[2];
 			}
 		);
 
@@ -222,7 +223,7 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 		_indices.resize(_indices.size() + accessor.count);
 		fastgltf::iterateAccessorWithIndex<uint16_t>(
 			asset, accessor, [&](uint16_t index, size_t i) {
-				_indices[i + indicesOffset] = static_cast<uint16_t>(verticesOffset) + index;
+				_indices[i + indicesOffset] = static_cast<uint16_t>(vbosOffset) + index;
 			}
 		);
 
@@ -246,12 +247,6 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 }
 
 void DawnEngine::initMeshBuffers() {
-	
-	UBO	ubo = {
-		.projection = glm::f32mat4x4(1),
-		.model = glm::mat4x4(1),
-		.view = glm::mat4x4(1),
-	};
 	wgpu::BufferDescriptor uniformBufferDescriptor = {
 		.label = "ubo buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
@@ -260,23 +255,14 @@ void DawnEngine::initMeshBuffers() {
 	_uniformBuffer = _device.CreateBuffer(&uniformBufferDescriptor);
 
 
-	wgpu::BufferDescriptor vertexBufferDescriptor = {
-			.label = "vertex buffer",
+	wgpu::BufferDescriptor vboBufferDescriptor = {
+			.label = "vbo buffer",
 			.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex,
-			.size = sizeof(fastgltf::math::f32vec3) * _vertices.size(),
+			.size = sizeof(VBO) * _vbos.size(),
 	};
-	_vertexBuffer = _device.CreateBuffer(&vertexBufferDescriptor);
-	_queue.WriteBuffer(_vertexBuffer, 0, _vertices.data(), vertexBufferDescriptor.size);
+	_vboBuffer = _device.CreateBuffer(&vboBufferDescriptor);
+	_queue.WriteBuffer(_vboBuffer, 0, _vbos.data(), vboBufferDescriptor.size);
 	
-	wgpu::BufferDescriptor normalBufferDescriptor = {
-			.label = "normal buffer",
-			.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
-			.size = sizeof(fastgltf::math::f32vec3) * _normals.size(),
-	};
-	_normalBuffer = _device.CreateBuffer(&normalBufferDescriptor);
-	_queue.WriteBuffer(_normalBuffer, 0, _normals.data(), normalBufferDescriptor.size);
-
-
 	wgpu::BufferDescriptor indexBufferDescriptor = {
 				.label = "index buffer",
 				.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Index,
@@ -373,11 +359,17 @@ void DawnEngine::initRenderPipeline() {
 		.offset = 0,
 		.shaderLocation = 0,
 	};
+	wgpu::VertexAttribute normalAttribute = {
+		.format = wgpu::VertexFormat::Float32x3,
+		.offset = offsetof(VBO, normal),
+		.shaderLocation = 1,
+	};
 
-	auto vertexAttributes = std::vector<wgpu::VertexAttribute> { positionAttribute, /*colorAttribute*/};
+
+	auto vertexAttributes = std::vector<wgpu::VertexAttribute> { positionAttribute, normalAttribute };
 
 	wgpu::VertexBufferLayout vertexBufferLayout = {
-		.arrayStride = sizeof(float) * 3, //6
+		.arrayStride = sizeof(VBO),
 		.attributeCount = vertexAttributes.size(),
 		.attributes = vertexAttributes.data(),
 	};
@@ -488,19 +480,10 @@ wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
 			.minBindingSize = sizeof(InstanceProperty) * _instanceProperties.size(),
 		}
 	};
-	wgpu::BindGroupLayoutEntry normalsBindGroupLayoutEntry = {
-		.binding = 3,
-		.visibility = wgpu::ShaderStage::Vertex,
-		.buffer = {
-			.type = wgpu::BufferBindingType::ReadOnlyStorage,
-			.minBindingSize = sizeof(glm::f32vec3) * _normals.size(),
-		}
-	};
-	std::array<wgpu::BindGroupLayoutEntry, 4> bindGroupLayoutEntries = { 
+	std::array<wgpu::BindGroupLayoutEntry, 3> bindGroupLayoutEntries = { 
 		uboBindGroupLayoutEntry, 
 		transformsBindGroupLayoutEntry,
 		instancePropertiesBindGroupLayoutEntry,
-		normalsBindGroupLayoutEntry
 	};
 
 	wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
@@ -526,16 +509,10 @@ wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
 		.buffer = _instancePropertiesBuffer,
 		.size = _instancePropertiesBuffer.GetSize(),
 	};
-	wgpu::BindGroupEntry normalsBindGroupEntry = { 
-		.binding = 3,
-		.buffer = _normalBuffer,
-		.size = _normalBuffer.GetSize(),
-	};
-	std::array<wgpu::BindGroupEntry, 4> bindGroupEntries = { 
+	std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = { 
 		uboBindGroupEntry,
 		transformsBindGroupEntry,
 		instancePropertiesBindGroupEntry,
-		normalsBindGroupEntry,
 	};
 
 	wgpu::BindGroupDescriptor bindGroupDescriptor = {
@@ -597,7 +574,7 @@ void DawnEngine::draw() {
 	renderPassColorAttachment.view = surfaceTextureView;
 	renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
 	renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
-	renderPassColorAttachment.clearValue = wgpu::Color{ 0.9, 0.1, 0.2, 1.0 };
+	renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
 
 	wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
 		.view = _depthTextureView,
@@ -617,7 +594,7 @@ void DawnEngine::draw() {
 	renderPassEncoder.SetPipeline(_renderPipeline);
 	renderPassEncoder.SetBindGroup(0, _bindGroups[0]); //static buffer
 	renderPassEncoder.SetBindGroup(1, _bindGroups[1]); //infrequent buffer
-	renderPassEncoder.SetVertexBuffer(0, _vertexBuffer, 0, _vertexBuffer.GetSize());
+	renderPassEncoder.SetVertexBuffer(0, _vboBuffer, 0, _vboBuffer.GetSize());
 	renderPassEncoder.SetIndexBuffer(_indexBuffer, wgpu::IndexFormat::Uint16, 0, _indexBuffer.GetSize());
 
 	for (auto& dc : _drawCalls) {
