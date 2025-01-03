@@ -25,7 +25,6 @@ struct DrawInfo {
 };
 
 struct InstanceProperty {
-		glm::f32mat4x4 transform;
 		uint32_t materialIndex;
 		uint32_t pad1;
 		uint32_t pad2;

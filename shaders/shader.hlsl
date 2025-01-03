@@ -14,7 +14,6 @@ StructuredBuffer<float4x4> transforms : register(t1, space0);
 
 struct InstanceProperties
 {
-    float4x4 transform;
     uint materialIndex;
     uint pad1;
     uint pad2;

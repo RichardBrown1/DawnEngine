@@ -189,6 +189,8 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 	auto& mesh = asset.meshes[meshIndex];
 
 	for (auto& primitive : mesh.primitives) {
+		_transforms.push_back(transform);
+
 		//vertice
 		fastgltf::Attribute& positionAttribute = *primitive.findAttribute("POSITION");
 		fastgltf::Accessor& positionAccessor = asset.accessors[positionAttribute.accessorIndex];
@@ -222,6 +224,13 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 			}
 		);
 
+		//instanceProperty
+		InstanceProperty instanceProperty = {
+			.materialIndex = static_cast<uint32_t>(primitive.materialIndex.value_or(asset.materials.size())),
+		};
+		_instanceProperties.push_back(instanceProperty);
+
+		//drawCall
 		DrawInfo drawCall = {
 			.indexCount = static_cast<uint32_t>(accessor.count),
 			.instanceCount = 1,
@@ -229,13 +238,6 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 			.firstInstance = static_cast<uint32_t>(_drawCalls.size()),
 		};
 		_meshIndexToDrawInfoMap.insert(std::make_pair(meshIndex, &_drawCalls.emplace_back(drawCall)));
-
-		InstanceProperty instanceProperty = {
-			.transform = transform,
-			.materialIndex = static_cast<uint32_t>(primitive.materialIndex.value_or(asset.materials.size())),
-		};
-		_instanceProperties.push_back(instanceProperty);
-		_transforms.push_back(transform);
 
 	}
 
