@@ -196,10 +196,7 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 		_vbos.resize(_vbos.size() + positionAccessor.count);
 		fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
 			asset, positionAccessor, [&](fastgltf::math::f32vec3 vertex, size_t i) {
-			  //_vbos[i + vbosOffset].vertex = glm::f32vec3(vertex[0], vertex[1], vertex[2]);
-				_vbos[i + vbosOffset].vertex.x = vertex[0];
-				_vbos[i + vbosOffset].vertex.y = vertex[1];
-				_vbos[i + vbosOffset].vertex.z = vertex[2];
+				memcpy(&_vbos[i + vbosOffset].vertex, &vertex, sizeof(glm::f32vec3));
 			}
 		);
 	
@@ -208,9 +205,7 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 		fastgltf::Accessor& normalAccessor = asset.accessors[normalAttribute.accessorIndex];
 		fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
 			asset, normalAccessor, [&](fastgltf::math::f32vec3 normal, size_t i) {
-				_vbos[i + vbosOffset].normal.x = normal[0];
-				_vbos[i + vbosOffset].normal.y = normal[1];
-				_vbos[i + vbosOffset].normal.z = normal[2];
+				memcpy(&_vbos[i + vbosOffset].normal, &normal, sizeof(glm::f32vec3));			
 			}
 		);
 
@@ -293,18 +288,7 @@ void DawnEngine::initMaterialBuffer(fastgltf::Asset& asset) {
 	auto materials = std::vector<Material>(asset.materials.size() + 1);
 	
 	for (int i = 0; auto & material : asset.materials) {
-		Material m = {
-			.baseColor = [&]() {
-				auto& baseColor = material.pbrData.baseColorFactor;
-				auto result = glm::vec4();
-				result.x = static_cast<float_t>(baseColor.x());
-				result.y = static_cast<float_t>(baseColor.y());
-				result.z = static_cast<float_t>(baseColor.z());
-				result.w = static_cast<float_t>(baseColor.w());
-				return result;
-			}(),
-		};
-		materials[i] = m;
+		memcpy(&materials[i].baseColor, &material.pbrData.baseColorFactor, sizeof(glm::f32vec4));
 		i++;
 	}
 
