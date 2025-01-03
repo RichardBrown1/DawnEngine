@@ -621,6 +621,7 @@ void DawnEngine::updateUniformBuffers() {
 	//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	ubo.view = glm::lookAt(glm::vec3(-278.0f, 273.0f, 800.0f), glm::vec3(-278.0f, 273.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	ubo.projection = glm::perspective(glm::radians(45.0f), _surfaceConfiguration.width / (float)_surfaceConfiguration.height, 0.1f, 1500.0f);
+	ubo.inversedTransposedModel = glm::transpose(glm::inverse(ubo.model));
 	//ubo.projection[1][1] *= -1; //y coordinate is inverted on OpenGL - flip it
 
 	_queue.WriteBuffer(_uniformBuffer, 0, &ubo, sizeof(UBO));

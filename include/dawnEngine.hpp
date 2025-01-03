@@ -8,6 +8,7 @@ struct UBO {
 	alignas(sizeof(glm::mat4x4)) glm::mat4x4 projection;
 	alignas(sizeof(glm::mat4x4)) glm::mat4x4 model;
 	alignas(sizeof(glm::mat4x4)) glm::mat4x4 view;
+	alignas(sizeof(glm::mat4x4)) glm::mat4x4 inversedTransposedModel;
 };
 
 struct VBO {
