@@ -52,6 +52,14 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
     return output;
 }
 
+float3 directionalLighting(float3 normal)
+{
+    float3 lightColor = float3(1.0, 1.0, 0.8);
+    float3 lightDirection = float3(0.5, -0.9, 0.1);
+    float diff = max(dot(normal, lightDirection), 0.0);
+    return lightColor * diff;
+}
+
 float4 FS_main(VSOutput input) : SV_Target
 {
     float3 lightColor = float3(1.0, 1.0, 1.0);
@@ -59,13 +67,7 @@ float4 FS_main(VSOutput input) : SV_Target
     float ambientStrength = float(0.1);
     float3 ambientLight = lightColor * ambientStrength;
     
-    float3 normal = input.Normal;
-    float3 lightDirection = float3(0.5, -0.9, 0.1);
-    float diff = max(dot(normal, lightDirection), 0.0);
-    float3 diffuse = lightColor * diff;
-    
-    float3 result = (ambientLight + diffuse) * input.Color.xyz;
-    //float3 result = (diffuse) * input.Color.xyz;
+    float3 result = (ambientLight + directionalLighting(input.Normal)) * input.Color.xyz;
     
     return float4(result, 1.0);
 }
