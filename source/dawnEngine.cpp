@@ -152,7 +152,7 @@ DawnEngine::DawnEngine() {
 }
 
 void DawnEngine::initGltf() {
-	_gltfParser = fastgltf::Parser::Parser();
+	_gltfParser = fastgltf::Parser::Parser(fastgltf::Extensions::KHR_lights_punctual);
 
 	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cornellbox.gltf");
 	//auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cube.gltf");
@@ -165,15 +165,22 @@ void DawnEngine::initGltf() {
 
 	initNodes(asset);
 	initMeshBuffers();
+	initLightBuffer();
 	initMaterialBuffer(asset);
 }
+
 
 void DawnEngine::initNodes(fastgltf::Asset& asset) {
 	size_t sceneIndex = asset.defaultScene.value_or(0);
 	fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 		[&](fastgltf::Node& node, fastgltf::math::fmat4x4 matrix) {
+			
 			if (node.meshIndex.has_value()) {
-				addMeshData(asset, Utilities::convertFastGltfToGlm(matrix), static_cast<uint32_t>(node.meshIndex.value()));
+				addMeshData(asset, Utilities::toGlmFormat(matrix), static_cast<uint32_t>(node.meshIndex.value()));
+				return;
+			}
+			if (node.lightIndex.has_value()) {
+				addLightData(asset, Utilities::toGlmFormat(matrix), static_cast<uint32_t>(node.lightIndex.value()));
 			}
 		});
 	auto translations = std::vector<glm::f32mat4x4>(0);
@@ -223,7 +230,7 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 				_indices[i + indicesOffset] = static_cast<uint16_t>(vbosOffset) + index;
 			}
 		);
-
+		
 		//instanceProperty
 		InstanceProperty instanceProperty = {
 			.materialIndex = static_cast<uint32_t>(primitive.materialIndex.value_or(asset.materials.size())),
@@ -238,9 +245,15 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 			.firstInstance = static_cast<uint32_t>(_drawCalls.size()),
 		};
 		_meshIndexToDrawInfoMap.insert(std::make_pair(meshIndex, &_drawCalls.emplace_back(drawCall)));
-
 	}
+}
 
+void::DawnEngine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t lightIndex) {
+	Light l;
+	l.transform = transform;
+	l.type = static_cast<uint32_t>(asset.lights[lightIndex].type);
+	memcpy(&l.color, &asset.lights[lightIndex], sizeof(Light) - sizeof(glm::f32mat4x4) - sizeof(glm::u32));
+	_lights.push_back(l);
 }
 
 void DawnEngine::initMeshBuffers() {
@@ -283,6 +296,16 @@ void DawnEngine::initMeshBuffers() {
 	};
 	_transformBuffer = _device.CreateBuffer(&transformBufferDescriptor);
 	_queue.WriteBuffer(_transformBuffer, 0, _transforms.data(), transformBufferDescriptor.size);
+}
+
+void DawnEngine::initLightBuffer() {	
+	wgpu::BufferDescriptor lightBufferDescriptor = {
+		.label = "ubo buffer",
+		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
+		.size = sizeof(Light) * _lights.size(),
+	};
+	_lightBuffer = _device.CreateBuffer(&lightBufferDescriptor);
+	_queue.WriteBuffer(_lightBuffer, 0, _lights.data(), lightBufferDescriptor.size);
 }
 
 //Default Material will be at end of material buffer
@@ -444,7 +467,7 @@ wgpu::PipelineLayout DawnEngine::initPipelineLayout() {
 wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
 	wgpu::BindGroupLayoutEntry uboBindGroupLayoutEntry = {
 		.binding = 0,
-		.visibility = wgpu::ShaderStage::Vertex,
+		.visibility = (wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment),
 		.buffer = {
 			.type = wgpu::BufferBindingType::Uniform,
 			.minBindingSize = sizeof(UBO),
@@ -455,7 +478,7 @@ wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
 		.visibility = wgpu::ShaderStage::Vertex,
 		.buffer = {
 			.type = wgpu::BufferBindingType::ReadOnlyStorage,
-			.minBindingSize = sizeof(glm::f32mat4x4) * _transforms.size(),
+			.minBindingSize = sizeof(glm::f32mat4x4),
 		}
 	};
 	wgpu::BindGroupLayoutEntry instancePropertiesBindGroupLayoutEntry = {
@@ -463,7 +486,7 @@ wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
 		.visibility = wgpu::ShaderStage::Vertex,
 		.buffer = {
 			.type = wgpu::BufferBindingType::ReadOnlyStorage,
-			.minBindingSize = sizeof(InstanceProperty) * _instanceProperties.size(),
+			.minBindingSize = sizeof(InstanceProperty),
 		}
 	};
 	std::array<wgpu::BindGroupLayoutEntry, 3> bindGroupLayoutEntries = { 
@@ -513,7 +536,7 @@ wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
 }
 
 wgpu::BindGroupLayout DawnEngine::initInfrequentBindGroupLayout() {
-	wgpu::BindGroupLayoutEntry bindGroupLayoutEntry = {
+	wgpu::BindGroupLayoutEntry materialBindGroupLayoutEntry = {
 		.binding = 0,
 		.visibility = wgpu::ShaderStage::Vertex,
 		.buffer = {
@@ -521,23 +544,46 @@ wgpu::BindGroupLayout DawnEngine::initInfrequentBindGroupLayout() {
 			.minBindingSize = sizeof(Material),
 		}
 	};
+	wgpu::BindGroupLayoutEntry lightBindGroupLayoutEntry = {
+		.binding = 1,
+		.visibility = wgpu::ShaderStage::Fragment,
+		.buffer = {
+			.type = wgpu::BufferBindingType::ReadOnlyStorage,
+			.minBindingSize = sizeof(Light),
+		}
+	};
+	std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
+		materialBindGroupLayoutEntry,
+		lightBindGroupLayoutEntry,
+	};
+
 	wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
 		.label = "infrequent bind group",
-		.entryCount = 1,
-		.entries = &bindGroupLayoutEntry
+		.entryCount = bindGroupLayoutEntries.size(),
+		.entries = bindGroupLayoutEntries.data(),
 	};
 	wgpu::BindGroupLayout bindGroupLayout = _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 
-	wgpu::BindGroupEntry bindGroupEntry = {
+	wgpu::BindGroupEntry materialBindGroupEntry = {
 		.binding = 0,
 		.buffer = _materialBuffer,
 		.size = _materialBuffer.GetSize(),
 	};
+	wgpu::BindGroupEntry lightBindGroupEntry = {
+		.binding = 1,
+		.buffer = _lightBuffer,
+		.size = _lightBuffer.GetSize()
+	};
+	std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
+		materialBindGroupEntry,
+		lightBindGroupEntry,
+	};
+
 	wgpu::BindGroupDescriptor bindGroupDescriptor = {
 		.label = "infrequent bind group",
 		.layout = bindGroupLayout,
 		.entryCount = bindGroupLayoutDescriptor.entryCount,
-		.entries = &bindGroupEntry,
+		.entries = bindGroupEntries.data(),
 	};
 	_bindGroups.push_back(_device.CreateBindGroup(&bindGroupDescriptor));
 
@@ -620,13 +666,28 @@ void DawnEngine::updateUniformBuffers() {
 	
 	UBO ubo{};
 	ubo.model = glm::mat4x4(1.0f);
-	//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	ubo.view = glm::lookAt(glm::vec3(-278.0f, 273.0f, 800.0f), glm::vec3(-278.0f, 273.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	ubo.projection = glm::perspective(glm::radians(45.0f), _surfaceConfiguration.width / (float)_surfaceConfiguration.height, 0.1f, 1500.0f);
 	ubo.inversedTransposedModel = glm::transpose(glm::inverse(ubo.model));
 	//ubo.projection[1][1] *= -1; //y coordinate is inverted on OpenGL - flip it
 
 	_queue.WriteBuffer(_uniformBuffer, 0, &ubo, sizeof(UBO));
+
+	//Debug
+	Light light = _lights[0];
+	float lightConstant = 1.0f;
+	float lightLinear = 0.5f;
+	float lightQuadratic = 0.1f;
+	//glm::vec3 lightPosition = glm::vec3(light.transform[0][3], light.transform[1][3], light.transform[2][3]);
+	glm::vec3 point = glm::vec3(471.90326,  665.84003,  1359.18103);
+	glm::vec3 normal = glm::vec3(0.0, 0.0, 1.0);
+	glm::vec3 lightPosition = glm::vec3(light.transform[3][0], light.transform[3][1], light.transform[3][2]);
+//	glm::vec3 lightDirection = glm::normalize(lightPosition - point);
+	glm::vec3 lightDirection = glm::normalize(point - lightPosition);
+	float diff = glm::max(glm::dot(normal, lightDirection), 0.0f);
+	float distance = glm::length(lightPosition - point);
+	float attenuation = 1.0f / (lightConstant + lightLinear * distance + lightQuadratic * (distance * distance));
+	diff *= attenuation;
 }
 
 wgpu::TextureView DawnEngine::getNextSurfaceTextureView() {

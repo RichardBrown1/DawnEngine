@@ -9,5 +9,5 @@ namespace Utilities {
 
 	void checkFastGltfError(const fastgltf::Error& error, const std::string& additionalMessage = "");
 	
-	glm::f32mat4x4 convertFastGltfToGlm(fastgltf::math::fmat4x4& matrix);
+	glm::f32mat4x4 toGlmFormat(fastgltf::math::fmat4x4& matrix);
 };

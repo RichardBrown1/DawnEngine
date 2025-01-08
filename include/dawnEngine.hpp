@@ -24,6 +24,16 @@ struct DrawInfo {
 	uint32_t firstInstance; //requires indirect-first-instance feature
 };
 
+struct Light { //glm version of fastgltf::Light
+	glm::f32mat4x4 transform;
+	glm::u32 type; //this is u32 instead of u8 for shader compatibility
+	glm::f32vec3 color;
+	glm::f32 intensity;
+	glm::f32 range;
+	glm::f32 innerConeAngle;
+	glm::f32 outerConeAngle;
+};
+
 struct InstanceProperty {
 		uint32_t materialIndex;
 		uint32_t pad1;
@@ -53,12 +63,14 @@ private:
 	std::vector<glm::f32mat4x4> _transforms;
 	std::vector<InstanceProperty> _instanceProperties;
 	std::unordered_map<uint32_t, DrawInfo*> _meshIndexToDrawInfoMap;
+	std::vector<Light> _lights;
 	wgpu::Buffer _uniformBuffer;
 	wgpu::Buffer _vboBuffer;
 	wgpu::Buffer _indexBuffer;
 	wgpu::Buffer _instancePropertiesBuffer;
 	wgpu::Buffer _transformBuffer;
 	wgpu::Buffer _materialBuffer;
+	wgpu::Buffer _lightBuffer;
 	std::vector<wgpu::BindGroup> _bindGroups;
 	wgpu::TextureView _depthTextureView;
 	wgpu::Sampler _depthSampler;
@@ -66,8 +78,10 @@ private:
 	void initGltf();
 	void initNodes(fastgltf::Asset& asset);
 	void addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t meshIndex);
+	void addLightData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t lightIndex);
 	void initMeshBuffers();
 	void initMaterialBuffer(fastgltf::Asset& asset);
+	void initLightBuffer();
 	void initDepthTexture();
 	void initRenderPipeline();
 	wgpu::PipelineLayout initPipelineLayout();
