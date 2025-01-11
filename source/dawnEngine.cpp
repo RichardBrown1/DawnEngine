@@ -300,7 +300,7 @@ void DawnEngine::initMeshBuffers() {
 
 void DawnEngine::initLightBuffer() {	
 	wgpu::BufferDescriptor lightBufferDescriptor = {
-		.label = "ubo buffer",
+		.label = "light buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
 		.size = sizeof(Light) * _lights.size(),
 	};
@@ -666,7 +666,7 @@ void DawnEngine::updateUniformBuffers() {
 	
 	UBO ubo{};
 	ubo.model = glm::mat4x4(1.0f);
-	ubo.view = glm::lookAt(glm::vec3(-278.0f, 273.0f, 800.0f), glm::vec3(-278.0f, 273.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	ubo.view = glm::lookAt(glm::vec3(0.0f, 4.0f, -0.1f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 	ubo.projection = glm::perspective(glm::radians(45.0f), _surfaceConfiguration.width / (float)_surfaceConfiguration.height, 0.1f, 1500.0f);
 	ubo.inversedTransposedModel = glm::transpose(glm::inverse(ubo.model));
 	//ubo.projection[1][1] *= -1; //y coordinate is inverted on OpenGL - flip it
