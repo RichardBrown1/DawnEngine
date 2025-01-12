@@ -1,9 +1,7 @@
 struct UniformBufferControl
 {
     float4x4 projection;
-    float4x4 model;
     float4x4 view;
-    float4x4 inversedTransposedModel;
 };
 cbuffer ubo : register(b0, space0)
 {
@@ -52,12 +50,27 @@ struct VSOutput
     [[vk::location(2)]] float4 Color : COLOR0;
 };
 
+
 VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceIndex : SV_InstanceID)
 {
+    const float4x4 inverseTransposeMultiplier = float4x4(1.0f, 0.0f, 0.0f, 0.0f, 
+                                                         0.0f, 1.0f, 0.0f, 0.0f,
+                                                         0.0f, 0.0f, 1.0f, 0.0f, 
+                                                         0.0f, 0.0f, 0.0f, 1.0f);
+    
+    const float4x4 oneMatrix = float4x4(1.0f, 1.0f, 1.0f, 1.0f, 
+                                                         1.0f, 1.0f, 1.0f, 1.0f,
+                                                         1.0f, 1.0f, 1.0f, 1.0f, 
+                                                         1.0f, 1.0f, 1.0f, 1.0f);
+
     VSOutput output = (VSOutput) 0;    
     
-    output.Position = mul(ubo.projection, mul(ubo.view, mul(ubo.model, mul(transforms[InstanceIndex], float4(input.Position, 1.0)))));
-    output.Normal = normalize((float3) mul(ubo.inversedTransposedModel, mul(transforms[InstanceIndex], float4(input.Normal, 1.0))));
+    output.Position = mul(ubo.projection,
+                        mul(ubo.view,
+                        mul(transforms[InstanceIndex],
+                        float4(input.Position, 1.0))));
+    
+    output.Normal = normalize((float3) mul(inverseTransposeMultiplier, mul(transforms[InstanceIndex], float4(input.Normal, 1.0))));
 
     InstanceProperties ip = instanceProperties[InstanceIndex];
     output.Color = materials[ip.materialIndex].baseColor;

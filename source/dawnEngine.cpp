@@ -151,6 +151,7 @@ DawnEngine::DawnEngine() {
 		initRenderPipeline();
 }
 
+
 void DawnEngine::initGltf() {
 	_gltfParser = fastgltf::Parser::Parser(fastgltf::Extensions::KHR_lights_punctual);
 
@@ -164,8 +165,7 @@ void DawnEngine::initGltf() {
 	auto& asset = wholeGltf.get();
 
 	initNodes(asset);
-	initMeshBuffers();
-	initLightBuffer();
+	initSceneBuffers();
 	initMaterialBuffer(asset);
 }
 
@@ -173,15 +173,21 @@ void DawnEngine::initGltf() {
 void DawnEngine::initNodes(fastgltf::Asset& asset) {
 	size_t sceneIndex = asset.defaultScene.value_or(0);
 	fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
-		[&](fastgltf::Node& node, fastgltf::math::fmat4x4 matrix) {
-			
+		[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
+			glm::f32mat4x4 matrix = Utilities::toGlmFormat(m);
 			if (node.meshIndex.has_value()) {
-				addMeshData(asset, Utilities::toGlmFormat(matrix), static_cast<uint32_t>(node.meshIndex.value()));
+				addMeshData(asset, matrix, static_cast<uint32_t>(node.meshIndex.value()));
 				return;
 			}
 			if (node.lightIndex.has_value()) {
-				addLightData(asset, Utilities::toGlmFormat(matrix), static_cast<uint32_t>(node.lightIndex.value()));
+				addLightData(asset, matrix, static_cast<uint32_t>(node.lightIndex.value()));
+				return;
 			}
+			if (node.cameraIndex.has_value()) {
+				addCameraData(asset, matrix, static_cast<uint32_t>(node.cameraIndex.value()));
+				return;
+			}
+			std::cout << "warning: unknown node type: " << node.name << std::endl;
 		});
 	auto translations = std::vector<glm::f32mat4x4>(0);
 
@@ -256,14 +262,41 @@ void::DawnEngine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4 transform,
 	_lights.push_back(l);
 }
 
-void DawnEngine::initMeshBuffers() {
-	wgpu::BufferDescriptor uniformBufferDescriptor = {
-		.label = "ubo buffer",
-		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
-		.size = sizeof(UBO),
-	};
-	_uniformBuffer = _device.CreateBuffer(&uniformBufferDescriptor);
+void DawnEngine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t cameraIndex) {
+//	if (_cameraBuffer.GetSize() > 0) {
+		//TODO what if there is 0 cameras or more than 1 cameras
+//		return;
+//	}
 
+	Camera camera{};
+	camera.view = glm::lookAt(glm::vec3(0.0f, 4.0f, -0.1f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+	camera.projection = glm::perspective(glm::radians(45.0f), _surfaceConfiguration.width / (float)_surfaceConfiguration.height, 0.1f, 1500.0f);
+	_cameras.push_back(camera);
+	glm::f32mat4x4 test = glm::transpose(glm::inverse(glm::f32mat4x4(1.0f)));
+	test;
+	asset; transform; cameraIndex;
+	auto positionInput = glm::f32vec4(1.0f, 1.0f, -1.0f, 1.0f);
+	auto afterView = camera.view * positionInput;
+	auto afterProjection = camera.projection * positionInput;
+
+}
+
+void DawnEngine::initSceneBuffers() {
+	wgpu::BufferDescriptor cameraBufferDescriptor = {
+		.label = "camera buffer",
+		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
+		.size = sizeof(Camera),
+	};
+	_cameraBuffer = _device.CreateBuffer(&cameraBufferDescriptor);
+	_queue.WriteBuffer(_cameraBuffer, 0, _cameras.data(), cameraBufferDescriptor.size);
+
+	wgpu::BufferDescriptor lightBufferDescriptor = {
+		.label = "light buffer",
+		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
+		.size = sizeof(Light) * _lights.size(),
+	};
+	_lightBuffer = _device.CreateBuffer(&lightBufferDescriptor);
+	_queue.WriteBuffer(_lightBuffer, 0, _lights.data(), lightBufferDescriptor.size);
 
 	wgpu::BufferDescriptor vboBufferDescriptor = {
 			.label = "vbo buffer",
@@ -296,17 +329,8 @@ void DawnEngine::initMeshBuffers() {
 	};
 	_transformBuffer = _device.CreateBuffer(&transformBufferDescriptor);
 	_queue.WriteBuffer(_transformBuffer, 0, _transforms.data(), transformBufferDescriptor.size);
-}
-
-void DawnEngine::initLightBuffer() {	
-	wgpu::BufferDescriptor lightBufferDescriptor = {
-		.label = "light buffer",
-		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
-		.size = sizeof(Light) * _lights.size(),
-	};
-	_lightBuffer = _device.CreateBuffer(&lightBufferDescriptor);
-	_queue.WriteBuffer(_lightBuffer, 0, _lights.data(), lightBufferDescriptor.size);
-}
+	
+	}
 
 //Default Material will be at end of material buffer
 void DawnEngine::initMaterialBuffer(fastgltf::Asset& asset) {
@@ -323,7 +347,7 @@ void DawnEngine::initMaterialBuffer(fastgltf::Asset& asset) {
 	materials[asset.materials.size()] = defaultMaterial;
 
 	wgpu::BufferDescriptor materialBufferDescriptor = {
-		.label = "ubo buffer",
+		.label = "material buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
 		.size = sizeof(Material) * materials.size(),
 	};
@@ -465,12 +489,12 @@ wgpu::PipelineLayout DawnEngine::initPipelineLayout() {
 }
 
 wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
-	wgpu::BindGroupLayoutEntry uboBindGroupLayoutEntry = {
+	wgpu::BindGroupLayoutEntry cameraBindGroupLayoutEntry = {
 		.binding = 0,
 		.visibility = (wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment),
 		.buffer = {
 			.type = wgpu::BufferBindingType::Uniform,
-			.minBindingSize = sizeof(UBO),
+			.minBindingSize = sizeof(Camera),
 		}
 	};
 	wgpu::BindGroupLayoutEntry transformsBindGroupLayoutEntry = {
@@ -490,7 +514,7 @@ wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
 		}
 	};
 	std::array<wgpu::BindGroupLayoutEntry, 3> bindGroupLayoutEntries = { 
-		uboBindGroupLayoutEntry, 
+		cameraBindGroupLayoutEntry, 
 		transformsBindGroupLayoutEntry,
 		instancePropertiesBindGroupLayoutEntry,
 	};
@@ -503,10 +527,10 @@ wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
 	wgpu::BindGroupLayout bindGroupLayout = _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 
 
-	wgpu::BindGroupEntry uboBindGroupEntry = {
+	wgpu::BindGroupEntry cameraBindGroupEntry = {
 		.binding = 0,
-		.buffer = _uniformBuffer,
-		.size = _uniformBuffer.GetSize(),
+		.buffer = _cameraBuffer,
+		.size = _cameraBuffer.GetSize(),
 	};
 	wgpu::BindGroupEntry transformsBindGroupEntry = {
 		.binding = 1,
@@ -519,7 +543,7 @@ wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
 		.size = _instancePropertiesBuffer.GetSize(),
 	};
 	std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = { 
-		uboBindGroupEntry,
+		cameraBindGroupEntry,
 		transformsBindGroupEntry,
 		instancePropertiesBindGroupEntry,
 	};
@@ -593,7 +617,6 @@ wgpu::BindGroupLayout DawnEngine::initInfrequentBindGroupLayout() {
 
 
 void DawnEngine::draw() {
-	updateUniformBuffers();
 
 	//Get next surface texture view
 	wgpu::TextureView surfaceTextureView = getNextSurfaceTextureView();
@@ -656,38 +679,6 @@ void DawnEngine::draw() {
 
 	_surface.Present();
 
-}
-
-void DawnEngine::updateUniformBuffers() {
-	//static auto startTime = std::chrono::high_resolution_clock::now();
-
-	//auto currentTime = std::chrono::high_resolution_clock::now();
-	//float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-	
-	UBO ubo{};
-	ubo.model = glm::mat4x4(1.0f);
-	ubo.view = glm::lookAt(glm::vec3(0.0f, 4.0f, -0.1f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-	ubo.projection = glm::perspective(glm::radians(45.0f), _surfaceConfiguration.width / (float)_surfaceConfiguration.height, 0.1f, 1500.0f);
-	ubo.inversedTransposedModel = glm::transpose(glm::inverse(ubo.model));
-	//ubo.projection[1][1] *= -1; //y coordinate is inverted on OpenGL - flip it
-
-	_queue.WriteBuffer(_uniformBuffer, 0, &ubo, sizeof(UBO));
-
-	//Debug
-	Light light = _lights[0];
-	float lightConstant = 1.0f;
-	float lightLinear = 0.5f;
-	float lightQuadratic = 0.1f;
-	//glm::vec3 lightPosition = glm::vec3(light.transform[0][3], light.transform[1][3], light.transform[2][3]);
-	glm::vec3 point = glm::vec3(471.90326,  665.84003,  1359.18103);
-	glm::vec3 normal = glm::vec3(0.0, 0.0, 1.0);
-	glm::vec3 lightPosition = glm::vec3(light.transform[3][0], light.transform[3][1], light.transform[3][2]);
-//	glm::vec3 lightDirection = glm::normalize(lightPosition - point);
-	glm::vec3 lightDirection = glm::normalize(point - lightPosition);
-	float diff = glm::max(glm::dot(normal, lightDirection), 0.0f);
-	float distance = glm::length(lightPosition - point);
-	float attenuation = 1.0f / (lightConstant + lightLinear * distance + lightQuadratic * (distance * distance));
-	diff *= attenuation;
 }
 
 wgpu::TextureView DawnEngine::getNextSurfaceTextureView() {

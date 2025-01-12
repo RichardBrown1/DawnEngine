@@ -4,11 +4,9 @@
 #include <webgpu/webgpu_cpp.h>
 #include <fastgltf/core.hpp>
 
-struct UBO {
+struct Camera {
 	alignas(sizeof(glm::mat4x4)) glm::mat4x4 projection;
-	alignas(sizeof(glm::mat4x4)) glm::mat4x4 model;
 	alignas(sizeof(glm::mat4x4)) glm::mat4x4 view;
-	alignas(sizeof(glm::mat4x4)) glm::mat4x4 inversedTransposedModel;
 };
 
 struct VBO {
@@ -64,7 +62,8 @@ private:
 	std::vector<InstanceProperty> _instanceProperties;
 	std::unordered_map<uint32_t, DrawInfo*> _meshIndexToDrawInfoMap;
 	std::vector<Light> _lights;
-	wgpu::Buffer _uniformBuffer;
+	std::vector<Camera> _cameras;
+	wgpu::Buffer _cameraBuffer;
 	wgpu::Buffer _vboBuffer;
 	wgpu::Buffer _indexBuffer;
 	wgpu::Buffer _instancePropertiesBuffer;
@@ -79,9 +78,9 @@ private:
 	void initNodes(fastgltf::Asset& asset);
 	void addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t meshIndex);
 	void addLightData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t lightIndex);
-	void initMeshBuffers();
+	void addCameraData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t cameraIndex);
+	void initSceneBuffers();
 	void initMaterialBuffer(fastgltf::Asset& asset);
-	void initLightBuffer();
 	void initDepthTexture();
 	void initRenderPipeline();
 	wgpu::PipelineLayout initPipelineLayout();
@@ -91,6 +90,5 @@ private:
 	//wgpu::BindGroupLayout initPerFrameBindGroupLayout():
 
 	void draw();
-	void updateUniformBuffers();
 	wgpu::TextureView getNextSurfaceTextureView();
 };
