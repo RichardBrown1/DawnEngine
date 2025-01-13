@@ -257,8 +257,9 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 void::DawnEngine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t lightIndex) {
 	Light l;
 	l.transform = transform;
+	memcpy(&l.color, &asset.lights[lightIndex].color, sizeof(glm::f32vec3));
 	l.type = static_cast<uint32_t>(asset.lights[lightIndex].type);
-	memcpy(&l.color, &asset.lights[lightIndex], sizeof(Light) - sizeof(glm::f32mat4x4) - sizeof(glm::u32));
+	memcpy(&l.intensity, &asset.lights[lightIndex], sizeof(glm::f32) * 4);
 	_lights.push_back(l);
 }
 

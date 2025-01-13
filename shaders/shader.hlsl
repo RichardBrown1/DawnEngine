@@ -46,8 +46,9 @@ struct VSInput
 struct VSOutput
 {
     [[vk::location(0)]] float4 Position : SV_Position;
-    [[vk::location(1)]] float3 Normal : NORMAL0;
-    [[vk::location(2)]] float4 Color : COLOR0;
+    [[vk::location(1)]] float3 FragPosition : POSITION0;
+    [[vk::location(2)]] float3 Normal : NORMAL0;
+    [[vk::location(3)]] float4 Color : COLOR0;
 };
 
 
@@ -65,12 +66,12 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
 
     VSOutput output = (VSOutput) 0;    
     
+    output.FragPosition = (float3) mul(transforms[InstanceIndex], float4(input.Position, 1.0));
     output.Position = mul(ubo.projection,
                         mul(ubo.view,
-                        mul(transforms[InstanceIndex],
-                        float4(input.Position, 1.0))));
+                        float4(output.FragPosition, 1.0)));
     
-    output.Normal = normalize((float3) mul(inverseTransposeMultiplier, mul(transforms[InstanceIndex], float4(input.Normal, 1.0))));
+    output.Normal = mul((float3x3) mul(inverseTransposeMultiplier, transforms[InstanceIndex]), input.Normal);
 
     InstanceProperties ip = instanceProperties[InstanceIndex];
     output.Color = materials[ip.materialIndex].baseColor;
@@ -90,23 +91,24 @@ float3 spotLighting(VSOutput input, Light light)
     float3 lightColor = float3(1.0, 1.0, 1.0);
     float lightConstant = 1.0;
     float lightLinear = 0.5;
-    float lightQuadratic = 0.1;
-    //const float4x4 lightTransform = mul(ubo.projection, mul(ubo.view, mul(ubo.model, light.transform)));
+    float lightQuadratic = 0.0032;
+    //const float4x4 lightTransform = mul(ubo.projection, mul(ubo.view, light.transform));
     const float4x4 lightTransform = light.transform;
     float3 lightPosition = lightTransform._m30_m31_m32;
-   // float3 lightPosition = lightTransform._m03_m13_m23;
-    //lightPosition.x = 470.0f;
-    //lightPosition.y = 665.0f;
-    //lightPosition.z = 1300.0f;
+
+    float3 norm = normalize(input.Normal);
+  // float3 lightPosition = lightTransform._m03_m13_m23;
+   // lightPosition.x = 0.0f;
+    //lightPosition.y = 999.0f;
+    //lightPosition.z = 0.0f;
     //lightPosition.z = 1000.0f;
-    float3 lightDirection = normalize(lightPosition - input.Position.xyz);
-   // float3 lightDirection = normalize(input.Position.xyz -  lightPosition);
-    float diff = max(dot(input.Normal, lightDirection), 0.0);
+    float3 lightDirection = normalize(lightPosition - input.FragPosition);
+    float diff = max(dot(norm, lightDirection), 0.0);
 
     float distance = length(lightPosition - input.Position.xyz) / 1000;
     float attenuation = 1.0 / (lightConstant + lightLinear * distance + lightQuadratic * (distance * distance));
 
-    diff *= attenuation;
+   // diff *= attenuation;
     
     return lightColor * diff;
     
@@ -119,7 +121,9 @@ float4 FS_main(VSOutput input) : SV_Target
     float ambientStrength = float(0.1);
     float3 ambientLight = lightColor * ambientStrength;
 
-    float3 result = (ambientLight + directionalLighting(input.Normal) + spotLighting(input, lights[0])) * input.Color.xyz;
+    float3 result = (//ambientLight + 
+    //directionalLighting(input.Normal) + 
+    spotLighting(input, lights[0])) * input.Color.xyz;
 
     return float4(result, 1.0);
 }
