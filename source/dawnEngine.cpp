@@ -270,7 +270,7 @@ void DawnEngine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4 transform,
 //	}
 
 	Camera camera{};
-	camera.view = glm::lookAt(glm::vec3(0.0f, 4.0f, -0.1f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+	camera.view = glm::lookAt(glm::vec3(0.0f, 0.4f, 3.67f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	camera.projection = glm::perspective(glm::radians(45.0f), _surfaceConfiguration.width / (float)_surfaceConfiguration.height, 0.1f, 1500.0f);
 	_cameras.push_back(camera);
 	glm::f32mat4x4 test = glm::transpose(glm::inverse(glm::f32mat4x4(1.0f)));

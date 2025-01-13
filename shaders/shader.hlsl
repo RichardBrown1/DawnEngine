@@ -92,8 +92,8 @@ float3 spotLighting(VSOutput input, Light light)
     float lightConstant = 1.0;
     float lightLinear = 0.5;
     float lightQuadratic = 0.0032;
-    //const float4x4 lightTransform = mul(ubo.projection, mul(ubo.view, light.transform));
-    const float4x4 lightTransform = light.transform;
+    const float4x4 lightTransform = mul(ubo.projection, mul(ubo.view, light.transform));
+   // const float4x4 lightTransform = light.transform;
     float3 lightPosition = lightTransform._m30_m31_m32;
 
     float3 norm = normalize(input.Normal);
@@ -121,7 +121,7 @@ float4 FS_main(VSOutput input) : SV_Target
     float ambientStrength = float(0.1);
     float3 ambientLight = lightColor * ambientStrength;
 
-    float3 result = (//ambientLight + 
+    float3 result = (ambientLight + 
     //directionalLighting(input.Normal) + 
     spotLighting(input, lights[0])) * input.Color.xyz;
 
