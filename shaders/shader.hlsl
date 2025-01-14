@@ -59,11 +59,6 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
                                                          0.0f, 0.0f, 1.0f, 0.0f, 
                                                          0.0f, 0.0f, 0.0f, 1.0f);
     
-    const float4x4 oneMatrix = float4x4(1.0f, 1.0f, 1.0f, 1.0f, 
-                                                         1.0f, 1.0f, 1.0f, 1.0f,
-                                                         1.0f, 1.0f, 1.0f, 1.0f, 
-                                                         1.0f, 1.0f, 1.0f, 1.0f);
-
     VSOutput output = (VSOutput) 0;    
     
     output.FragPosition = (float3) mul(transforms[InstanceIndex], float4(input.Position, 1.0));
@@ -88,29 +83,23 @@ float3 directionalLighting(float3 normal)
 
 float3 spotLighting(VSOutput input, Light light)
 {
-    float3 lightColor = float3(1.0, 1.0, 1.0);
-    float lightConstant = 1.0;
-    float lightLinear = 0.5;
-    float lightQuadratic = 0.0032;
+    const float lightConstant = 1.0;
+    const float lightLinear = 0.5;
+    const float lightQuadratic = 0.0032;
+
     const float4x4 lightTransform = mul(ubo.projection, mul(ubo.view, light.transform));
-   // const float4x4 lightTransform = light.transform;
     float3 lightPosition = lightTransform._m30_m31_m32;
 
     float3 norm = normalize(input.Normal);
-  // float3 lightPosition = lightTransform._m03_m13_m23;
-   // lightPosition.x = 0.0f;
-    //lightPosition.y = 999.0f;
-    //lightPosition.z = 0.0f;
-    //lightPosition.z = 1000.0f;
     float3 lightDirection = normalize(lightPosition - input.FragPosition);
     float diff = max(dot(norm, lightDirection), 0.0);
 
-    float distance = length(lightPosition - input.Position.xyz) / 1000;
-    float attenuation = 1.0 / (lightConstant + lightLinear * distance + lightQuadratic * (distance * distance));
-
-   // diff *= attenuation;
+    float distance = length(lightPosition - input.FragPosition);
+    //float attenuation = 1.0 / (lightConstant + lightLinear * distance + lightQuadratic * (distance * distance));
+    float attenuation = max(min(1.0 - pow(distance / (light.range * 10), 4), 1), 0) / (distance * distance);
+    diff *= attenuation;
     
-    return lightColor * diff;
+    return light.color * diff;
     
 
 }
