@@ -268,21 +268,21 @@ void DawnEngine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4 transform,
 		//TODO what if there is 0 cameras or more than 1 cameras
 //		return;
 //	}
+	constexpr float forwardAmount = 8.0f;
+	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
+	const glm::vec3 forwardPosition = glm::vec3(transform[3]) - forwardAmount * forward;
+	const auto eye = glm::vec3(transform[3][0], transform[3][1], transform[3][2]);
+	Camera camera;
+	camera.view = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
 
-	auto cameraPosition = glm::vec3(transform[3][0], transform[3][1], transform[3][2]);
-
-
-	Camera camera{};
-	camera.view = glm::lookAt(cameraPosition, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	camera.projection = glm::perspective(glm::radians(45.0f), _surfaceConfiguration.width / (float)_surfaceConfiguration.height, 0.1f, 1500.0f);
+	fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera );
+	camera.projection = glm::perspective(perspectiveCamera->yfov, _surfaceConfiguration.width / (float)_surfaceConfiguration.height, perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f));
 	_cameras.push_back(camera);
-	glm::f32mat4x4 test = glm::transpose(glm::inverse(glm::f32mat4x4(1.0f)));
-	test;
-	asset; transform; cameraIndex;
-	auto positionInput = glm::f32vec4(1.0f, 1.0f, -1.0f, 1.0f);
-	auto afterView = camera.view * positionInput;
-	auto afterProjection = camera.projection * positionInput;
 
+	fastgltf::Camera::Orthographic* orthographicCamera = std::get_if<fastgltf::Camera::Orthographic>(&asset.cameras[cameraIndex].camera );
+	if (orthographicCamera != nullptr) {
+		throw std::runtime_error("orthographic camera not supported");
+	}
 }
 
 void DawnEngine::initSceneBuffers() {
