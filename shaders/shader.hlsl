@@ -86,6 +86,7 @@ float3 spotLighting(VSOutput input, Light light)
     const float lightConstant = 1.0;
     const float lightLinear = 0.5;
     const float lightQuadratic = 0.0032;
+    const float rangeMultiplier = 10.0;
 
     const float4x4 lightTransform = mul(ubo.projection, mul(ubo.view, light.transform));
     float3 lightPosition = lightTransform._m30_m31_m32;
@@ -95,8 +96,7 @@ float3 spotLighting(VSOutput input, Light light)
     float diff = max(dot(norm, lightDirection), 0.0);
 
     float distance = length(lightPosition - input.FragPosition);
-    //float attenuation = 1.0 / (lightConstant + lightLinear * distance + lightQuadratic * (distance * distance));
-    float attenuation = max(min(1.0 - pow(distance / (light.range * 10), 4), 1), 0) / (distance * distance);
+    float attenuation = max(min(1.0 - pow(distance / (light.range * rangeMultiplier), 4), 1), 0) / (distance * distance);
     diff *= attenuation;
     
     return light.color * diff;
