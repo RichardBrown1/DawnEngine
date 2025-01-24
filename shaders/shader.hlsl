@@ -146,28 +146,19 @@ float3 spotLighting(VSOutput input, Light light)
     const float rangeMultiplier = 16.0;
     const float intensityMultiplier = 2.0;
 
-    float3 lightPosition = light.position;
-
-    // Direction from light to fragment (left-handed: +Z is forward)
-    float3 lightToFrag = normalize(input.FragPosition - lightPosition);
-
-    // Compute light's forward direction from Euler angles
+    float3 lightToFrag = normalize(input.FragPosition - light.position);
     float3 lightForward = ComputeLightDirection(light.rotation);
 
-    // Calculate angle between light direction and fragment
     float cosTheta = dot(lightToFrag, lightForward);
 
-    // Convert cone angles to cosines
     float cosInner = cos(light.innerConeAngle);
     float cosOuter = cos(light.outerConeAngle);
     float epsilon = cosInner - cosOuter;
 
-    // Smooth falloff
     float intensity = clamp((cosTheta - cosOuter) / epsilon, 0.0, 1.0);
     intensity *= intensityMultiplier;
 
-    // Attenuation (existing code)
-    float distance = length(lightPosition - input.FragPosition);
+    float distance = length(light.position - input.FragPosition);
     float attenuation = max(min(1.0 - pow(distance / (light.range * rangeMultiplier), 4), 1), 0) / (distance * distance);
 
     return light.color * (attenuation * intensity);
