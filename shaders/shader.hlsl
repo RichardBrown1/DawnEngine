@@ -107,6 +107,7 @@ float3 spotLighting(VSOutput input, Light light)
     const float lightLinear = 0.5;
     const float lightQuadratic = 0.0032;
     const float rangeMultiplier = 16.0;
+    const float intensityMultiplier = 2.0;
 
     float3 lightPosition = light.position;
 
@@ -121,6 +122,7 @@ float3 spotLighting(VSOutput input, Light light)
     float theta = dot(lightDirection, normalize(light.rotation));
     float epsilon = light.innerConeAngle - light.outerConeAngle;
     float intensity = clamp((theta - light.outerConeAngle) / epsilon, 0.0, 1.0);
+    intensity *= intensityMultiplier;
     diff *= intensity;
     
     return light.color * diff;
