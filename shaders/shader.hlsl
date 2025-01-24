@@ -59,6 +59,43 @@ struct VSOutput
     [[vk::location(3)]] float4 Color : COLOR0;
 };
 
+// Helper function to compute light direction from XYZ Euler angles (radians) in a left-handed system
+float3 ComputeLightDirection(float3 eulerRadians)
+{
+    float x = eulerRadians.x; // Pitch (X-axis)
+    float y = eulerRadians.y; // Yaw (Y-axis)
+    float z = eulerRadians.z; // Roll (Z-axis)
+
+    // Left-handed rotation matrices
+    // X-axis rotation (pitch)
+    float3x3 rotX = float3x3(
+        1, 0, 0,
+        0, cos(x), sin(x),
+        0, -sin(x), cos(x)
+    );
+
+    // Y-axis rotation (yaw)
+    float3x3 rotY = float3x3(
+        cos(y), 0, -sin(y),
+        0, 1, 0,
+        sin(y), 0, cos(y)
+    );
+
+    // Z-axis rotation (roll)
+    float3x3 rotZ = float3x3(
+        cos(z), sin(z), 0,
+        -sin(z), cos(z), 0,
+        0, 0, 1
+    );
+
+    // Combine rotations: Z * Y * X (applied in XYZ order)
+    float3x3 finalRot = mul(rotZ, mul(rotY, rotX));
+
+    // Default forward direction in left-handed systems: negative Z
+    float3 forward = float3(0, 0, -1);
+
+    return normalize(mul(finalRot, forward));
+}
 
 VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceIndex : SV_InstanceID)
 {
@@ -111,21 +148,29 @@ float3 spotLighting(VSOutput input, Light light)
 
     float3 lightPosition = light.position;
 
-    float3 norm = normalize(input.Normal);
-    float3 lightDirection = normalize(lightPosition - input.FragPosition);
-    float diff = max(dot(norm, lightDirection), 0.0);
+    // Direction from light to fragment (left-handed: +Z is forward)
+    float3 lightToFrag = normalize(input.FragPosition - lightPosition);
 
+    // Compute light's forward direction from Euler angles
+    float3 lightForward = ComputeLightDirection(light.rotation);
+
+    // Calculate angle between light direction and fragment
+    float cosTheta = dot(lightToFrag, lightForward);
+
+    // Convert cone angles to cosines
+    float cosInner = cos(light.innerConeAngle);
+    float cosOuter = cos(light.outerConeAngle);
+    float epsilon = cosInner - cosOuter;
+
+    // Smooth falloff
+    float intensity = clamp((cosTheta - cosOuter) / epsilon, 0.0, 1.0);
+    intensity *= intensityMultiplier;
+
+    // Attenuation (existing code)
     float distance = length(lightPosition - input.FragPosition);
     float attenuation = max(min(1.0 - pow(distance / (light.range * rangeMultiplier), 4), 1), 0) / (distance * distance);
-    diff *= attenuation;
-    
-    float theta = dot(lightDirection, normalize(light.rotation));
-    float epsilon = light.innerConeAngle - light.outerConeAngle;
-    float intensity = clamp((theta - light.outerConeAngle) / epsilon, 0.0, 1.0);
-    intensity *= intensityMultiplier;
-    diff *= intensity;
-    
-    return light.color * diff;
+
+    return light.color * (attenuation * intensity);
 }
 
 
