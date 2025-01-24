@@ -1,6 +1,6 @@
 #pragma once
-#include <iostream>
 #include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <webgpu/webgpu_cpp.h>
 #include <fastgltf/core.hpp>
 
@@ -23,7 +23,10 @@ struct DrawInfo {
 };
 
 struct Light { //glm version of fastgltf::Light
-	glm::f32mat4x4 transform;
+  glm::f32vec3 position;
+	uint32_t PAD0;
+	glm::f32vec3 rotation;
+	uint32_t PAD1;
 	glm::f32vec3 color;
 	glm::u32 type; //this is u32 instead of u8 for shader compatibility
 	glm::f32 intensity;
@@ -34,9 +37,9 @@ struct Light { //glm version of fastgltf::Light
 
 struct InstanceProperty {
 		uint32_t materialIndex;
-		uint32_t pad1;
-		uint32_t pad2;
-		uint32_t pad3;
+		uint32_t PAD0;
+		uint32_t PAD1;
+		uint32_t PAD2;
 };
 
 class DawnEngine {
@@ -76,9 +79,9 @@ private:
 
 	void initGltf();
 	void initNodes(fastgltf::Asset& asset);
-	void addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t meshIndex);
-	void addLightData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t lightIndex);
-	void addCameraData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t cameraIndex);
+	void addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex);
+	void addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex);
+	void addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t cameraIndex);
 	void initSceneBuffers();
 	void initMaterialBuffer(fastgltf::Asset& asset);
 	void initDepthTexture();

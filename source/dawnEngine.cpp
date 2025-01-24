@@ -4,15 +4,16 @@
 #include <format>
 #include <chrono>
 
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/ext/matrix_clip_space.hpp>
-
 #define SDL_MAIN_HANDLED
 #include "../include/sdl3webgpu.hpp"
 #include "SDL3/SDL.h"
 
 #include "../include/DawnEngine.hpp"
 #include <dawn/webgpu_cpp_print.h>
+
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include <fastgltf/tools.hpp>
 #include <fastgltf/types.hpp>
@@ -193,7 +194,7 @@ void DawnEngine::initNodes(fastgltf::Asset& asset) {
 
 }
 
-void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t meshIndex) {
+void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
 	if (_meshIndexToDrawInfoMap.count(meshIndex)) {
 		++_meshIndexToDrawInfoMap[meshIndex]->instanceCount;
 		return;
@@ -254,16 +255,36 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4 transform, u
 	}
 }
 
-void::DawnEngine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t lightIndex) {
+void::DawnEngine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
 	Light l;
-	l.transform = transform;
+	glm::f32quat quaterion;
+	glm::f32vec3 scale, skew;
+	glm::f32vec4 perspective;
+	bool success = glm::decompose(transform, scale, quaterion, l.position, skew, perspective);
+	if (!success) {
+		throw std::runtime_error("could not decompose matrix");
+	}
+	
+	quaterion = glm::normalize(quaterion);
+	
+//	glm::quat delta = glm::normalize(glm::quat(0.5f, 0.5f, 0.5f, 0.5f));
+	const glm::quat delta = glm::normalize(glm::quat(0.499999940f, 0.5f, 0.499999940f, 0.5f));
+//	glm::quat target = glm::normalize(glm::quat(0.7f, 0.0f, 0.7f, 0.0f));
+//	glm::quat delta = glm::inverse(quaterion) * target;
+	quaterion = quaterion * delta;
+
+	l.rotation = glm::eulerAngles(quaterion);
+	//l.rotation.x = 0.0f;
+	//l.rotation.y = 3.14f;
+	//l.rotation.z = 0.0f;
+	///l.rotation.y = 1.5f;
 	memcpy(&l.color, &asset.lights[lightIndex].color, sizeof(glm::f32vec3));
 	l.type = static_cast<uint32_t>(asset.lights[lightIndex].type);
 	memcpy(&l.intensity, &asset.lights[lightIndex], sizeof(glm::f32) * 4);
 	_lights.push_back(l);
 }
 
-void DawnEngine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4 transform, uint32_t cameraIndex) {
+void DawnEngine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t cameraIndex) {
 //	if (_cameraBuffer.GetSize() > 0) {
 		//TODO what if there is 0 cameras or more than 1 cameras
 //		return;

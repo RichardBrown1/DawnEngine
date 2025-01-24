@@ -1,3 +1,8 @@
+//from FASTGLTF LightType
+#define LIGHTTYPE_DIRECTIONAL 0
+#define LIGHTTYPE_SPOT 1
+#define LIGHTTYPE_POINT 2
+
 struct UniformBufferControl
 {
     float4x4 projection;
@@ -13,9 +18,9 @@ StructuredBuffer<float4x4> transforms : register(t1, space0);
 struct InstanceProperties
 {
     uint materialIndex;
-    uint pad1;
-    uint pad2;
-    uint pad3;
+    uint PAD0;
+    uint PAD1;
+    uint PAD2;
 };
 StructuredBuffer<InstanceProperties> instanceProperties : register(t2, space0);
 
@@ -27,7 +32,10 @@ StructuredBuffer<Material> materials : register(t0, space1);
 
 struct Light
 {
-    float4x4 transform;
+    float3 position;
+    uint PAD0;
+    float3 rotation;
+    uint PAD1;
     float3 color;
     uint type;
     float intensity;
@@ -73,23 +81,14 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
     return output;
 }
 
-float3 directionalLighting(float3 normal)
-{
-    float3 lightColor = float3(1.0, 1.0, 0.8);
-    float3 lightDirection = float3(0.5, -0.9, 0.1);
-    float diff = max(dot(normal, lightDirection), 0.0);
-    return lightColor * diff;
-}
-
-float3 spotLighting(VSOutput input, Light light)
+float3 pointLighting(VSOutput input, Light light)
 {
     const float lightConstant = 1.0;
     const float lightLinear = 0.5;
     const float lightQuadratic = 0.0032;
     const float rangeMultiplier = 10.0;
 
-    const float4x4 lightTransform = mul(ubo.projection, mul(ubo.view, light.transform));
-    float3 lightPosition = lightTransform._m30_m31_m32;
+    float3 lightPosition = light.position;
 
     float3 norm = normalize(input.Normal);
     float3 lightDirection = normalize(lightPosition - input.FragPosition);
@@ -100,19 +99,62 @@ float3 spotLighting(VSOutput input, Light light)
     diff *= attenuation;
     
     return light.color * diff;
-    
-
 }
+
+float3 spotLighting(VSOutput input, Light light)
+{
+    const float lightConstant = 1.0;
+    const float lightLinear = 0.5;
+    const float lightQuadratic = 0.0032;
+    const float rangeMultiplier = 16.0;
+
+    float3 lightPosition = light.position;
+
+    float3 norm = normalize(input.Normal);
+    float3 lightDirection = normalize(lightPosition - input.FragPosition);
+    float diff = max(dot(norm, lightDirection), 0.0);
+
+    float distance = length(lightPosition - input.FragPosition);
+    float attenuation = max(min(1.0 - pow(distance / (light.range * rangeMultiplier), 4), 1), 0) / (distance * distance);
+    diff *= attenuation;
+    
+    float theta = dot(lightDirection, normalize(light.rotation));
+    float epsilon = light.innerConeAngle - light.outerConeAngle;
+    float intensity = clamp((theta - light.outerConeAngle) / epsilon, 0.0, 1.0);
+    diff *= intensity;
+    
+    return light.color * diff;
+}
+
 
 float4 FS_main(VSOutput input) : SV_Target
 {
     float3 lightColor = float3(1.0, 1.0, 1.0);
     float ambientStrength = float(0.1);
     float3 ambientLight = lightColor * ambientStrength;
+    float3 result = ambientLight;
+    
+    uint lightSize;
+    uint lightStride;
+    lights.GetDimensions(lightSize, lightStride);
+    
+    for (uint i = 0; i < lightSize; i++)
+    {
+        switch (lights[i].type) //TODO: All of these lights should be pre-sorted into their own arrays.
+        {
+            case LIGHTTYPE_DIRECTIONAL:
+                break;
+            case LIGHTTYPE_SPOT:
+                result += spotLighting(input, lights[i]);
+                break;
+            case LIGHTTYPE_POINT:
+                result += pointLighting(input, lights[i]);
+                break;
+        }
 
-    float3 result = (ambientLight + 
-    //directionalLighting(input.Normal) + 
-    spotLighting(input, lights[0])) * input.Color.xyz;
+    }
+
+    result *= input.Color.xyz;
 
     return float4(result, 1.0);
 }
