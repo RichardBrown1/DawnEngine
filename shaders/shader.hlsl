@@ -120,32 +120,17 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
 
 float3 pointLighting(VSOutput input, Light light)
 {
-    const float lightConstant = 1.0;
-    const float lightLinear = 0.5;
-    const float lightQuadratic = 0.0032;
-    const float rangeMultiplier = 10.0;
+    float3 lightToFrag = normalize(input.FragPosition - light.position);
+    float3 lightForward = ComputeLightDirection(light.rotation);
 
-    float3 lightPosition = light.position;
+    float distance = length(light.position - input.FragPosition);
+    float attenuation = max(min(1.0 - pow(distance / light.range, 4), 1), 0) / (distance * distance);
 
-    float3 norm = normalize(input.Normal);
-    float3 lightDirection = normalize(lightPosition - input.FragPosition);
-    float diff = max(dot(norm, lightDirection), 0.0);
-
-    float distance = length(lightPosition - input.FragPosition);
-    float attenuation = max(min(1.0 - pow(distance / (light.range * rangeMultiplier), 4), 1), 0) / (distance * distance);
-    diff *= attenuation;
-    
-    return light.color * diff;
+    return light.color * attenuation;
 }
 
 float3 spotLighting(VSOutput input, Light light)
 {
-    const float lightConstant = 1.0;
-    const float lightLinear = 0.5;
-    const float lightQuadratic = 0.0032;
-    const float rangeMultiplier = 16.0;
-    const float intensityMultiplier = 2.0;
-
     float3 lightToFrag = normalize(input.FragPosition - light.position);
     float3 lightForward = ComputeLightDirection(light.rotation);
 
@@ -156,10 +141,9 @@ float3 spotLighting(VSOutput input, Light light)
     float epsilon = cosInner - cosOuter;
 
     float intensity = clamp((cosTheta - cosOuter) / epsilon, 0.0, 1.0);
-    intensity *= intensityMultiplier;
 
     float distance = length(light.position - input.FragPosition);
-    float attenuation = max(min(1.0 - pow(distance / (light.range * rangeMultiplier), 4), 1), 0) / (distance * distance);
+    float attenuation = max(min(1.0 - pow(distance / light.range, 4), 1), 0) / (distance * distance);
 
     return light.color * (attenuation * intensity);
 }
