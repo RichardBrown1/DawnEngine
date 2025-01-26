@@ -266,11 +266,6 @@ void::DawnEngine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform
 	}
 
 	quaterion = glm::normalize(quaterion);
-// will this work on all angles? have to offset since blender 0,0,0 rotation has light pointing down;
-//	const glm::quat delta = glm::normalize(glm::quat(0.499999940f, 0.5f, 0.499999940f, 0.5f));
-	glm::quat target = glm::normalize(glm::quat(0.7f, 0.7f, 0.0f, 0.0f));
-	glm::quat delta = glm::inverse(quaterion) * target;
-	quaterion = quaterion * delta;
 	l.rotation = glm::eulerAngles(quaterion);
 
 	memcpy(&l.color, &asset.lights[lightIndex].color, sizeof(glm::f32vec3));

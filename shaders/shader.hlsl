@@ -53,8 +53,8 @@ struct VSInput
 
 struct VSOutput
 {
-    [[vk::location(0)]] float4 Position : SV_Position;
-    [[vk::location(1)]] float3 FragPosition : POSITION0;
+    [[vk::location(0)]] float4 ClipPosition : SV_Position;
+    [[vk::location(1)]] float3 Position : POSITION0;
     [[vk::location(2)]] float3 Normal : NORMAL0;
     [[vk::location(3)]] float4 Color : COLOR0;
 };
@@ -91,8 +91,8 @@ float3 ComputeLightDirection(float3 eulerRadians)
     // Combine rotations: Z * Y * X (applied in XYZ order)
     float3x3 finalRot = mul(rotZ, mul(rotY, rotX));
 
-    // Default forward direction in left-handed systems: negative Z
-    float3 forward = float3(0, 0, -1);
+    // Default forward direction in left-handed systems: positive Z
+    float3 forward = float3(0, 0, 1);
 
     return normalize(mul(finalRot, forward));
 }
@@ -106,10 +106,10 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
     
     VSOutput output = (VSOutput) 0;    
     
-    output.FragPosition = (float3) mul(transforms[InstanceIndex], float4(input.Position, 1.0));
-    output.Position = mul(ubo.projection,
+    output.Position = (float3) mul(transforms[InstanceIndex], float4(input.Position, 1.0));
+    output.ClipPosition = mul(ubo.projection,
                         mul(ubo.view,
-                        float4(output.FragPosition, 1.0)));
+                        float4(output.Position, 1.0)));
     
     output.Normal = mul((float3x3) mul(inverseTransposeMultiplier, transforms[InstanceIndex]), input.Normal);
 
@@ -120,10 +120,10 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
 
 float3 pointLighting(VSOutput input, Light light)
 {
-    float3 lightToFrag = normalize(input.FragPosition - light.position);
+    float3 lightToFrag = normalize(input.Position - light.position);
     float3 lightForward = ComputeLightDirection(light.rotation);
 
-    float distance = length(light.position - input.FragPosition);
+    float distance = length(light.position - input.Position);
     float attenuation = max(min(1.0 - pow(distance / light.range, 4), 1), 0) / (distance * distance);
 
     return light.color * attenuation;
@@ -131,7 +131,7 @@ float3 pointLighting(VSOutput input, Light light)
 
 float3 spotLighting(VSOutput input, Light light)
 {
-    float3 lightToFrag = normalize(input.FragPosition - light.position);
+    float3 lightToFrag = normalize(input.Position - light.position);
     float3 lightForward = ComputeLightDirection(light.rotation);
 
     float cosTheta = dot(lightToFrag, lightForward);
@@ -142,7 +142,7 @@ float3 spotLighting(VSOutput input, Light light)
 
     float intensity = clamp((cosTheta - cosOuter) / epsilon, 0.0, 1.0);
 
-    float distance = length(light.position - input.FragPosition);
+    float distance = length(light.position - input.Position);
     float attenuation = max(min(1.0 - pow(distance / light.range, 4), 1), 0) / (distance * distance);
 
     return light.color * (attenuation * intensity);
