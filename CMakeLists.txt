@@ -52,7 +52,7 @@ FetchContent_MakeAvailable(glm)
 #FetchContent_MakeAvailable(fastgltf)
 
 # Build
-add_executable (DawnEngine "source/main.cpp"  "source/dawnEngine.cpp" "source/sdl3webgpu.cpp" "include/sdl3webgpu.hpp" "source/utilities.cpp" )
+add_executable (DawnEngine "source/main.cpp"  "source/dawnEngine.cpp" "source/sdl3webgpu.cpp" "include/sdl3webgpu.hpp" "source/utilities.cpp"  "include/renderPipeline.hpp" "source/renderPipeline.cpp")
 
 target_link_libraries(DawnEngine dawn::webgpu_dawn SDL3::SDL3 glm::glm fastgltf::fastgltf)
 

@@ -18,18 +18,14 @@
 #include <fastgltf/tools.hpp>
 #include <fastgltf/types.hpp>
 
+#include "../include/constants.hpp"
 #include "../include/utilities.hpp"
+#include "../include/renderPipelineHelper.hpp"
 
 static DawnEngine* loadedEngine = nullptr;
 
 const uint32_t WIDTH = 1024;
 const uint32_t HEIGHT = 720;
-
-const wgpu::TextureFormat DEPTH_FORMAT = wgpu::TextureFormat::Depth16Unorm;
-
-struct Material {
-	glm::vec4 baseColor;
-};
 
 DawnEngine::DawnEngine() {
 	//Only 1 engine allowed
@@ -275,7 +271,7 @@ void::DawnEngine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform
 }
 
 void DawnEngine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t cameraIndex) {
-//	if (_cameraBuffer.GetSize() > 0) {
+//	if (_buffers.camera.GetSize() > 0) {
 		//TODO what if there is 0 cameras or more than 1 cameras
 //		return;
 //	}
@@ -302,48 +298,48 @@ void DawnEngine::initSceneBuffers() {
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
 		.size = sizeof(Camera),
 	};
-	_cameraBuffer = _device.CreateBuffer(&cameraBufferDescriptor);
-	_queue.WriteBuffer(_cameraBuffer, 0, _cameras.data(), cameraBufferDescriptor.size);
+	_buffers.camera = _device.CreateBuffer(&cameraBufferDescriptor);
+	_queue.WriteBuffer(_buffers.camera, 0, _cameras.data(), cameraBufferDescriptor.size);
 
 	wgpu::BufferDescriptor lightBufferDescriptor = {
 		.label = "light buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
 		.size = sizeof(Light) * _lights.size(),
 	};
-	_lightBuffer = _device.CreateBuffer(&lightBufferDescriptor);
-	_queue.WriteBuffer(_lightBuffer, 0, _lights.data(), lightBufferDescriptor.size);
+	_buffers.light = _device.CreateBuffer(&lightBufferDescriptor);
+	_queue.WriteBuffer(_buffers.light, 0, _lights.data(), lightBufferDescriptor.size);
 
 	wgpu::BufferDescriptor vboBufferDescriptor = {
 			.label = "vbo buffer",
 			.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex,
 			.size = sizeof(VBO) * _vbos.size(),
 	};
-	_vboBuffer = _device.CreateBuffer(&vboBufferDescriptor);
-	_queue.WriteBuffer(_vboBuffer, 0, _vbos.data(), vboBufferDescriptor.size);
+	_buffers.vbo = _device.CreateBuffer(&vboBufferDescriptor);
+	_queue.WriteBuffer(_buffers.vbo, 0, _vbos.data(), vboBufferDescriptor.size);
 	
 	wgpu::BufferDescriptor indexBufferDescriptor = {
 				.label = "index buffer",
 				.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Index,
 				.size = sizeof(uint16_t) * _indices.size(),
 	};
-	_indexBuffer = _device.CreateBuffer(&indexBufferDescriptor);
-	_queue.WriteBuffer(_indexBuffer, 0, _indices.data(), indexBufferDescriptor.size);
+	_buffers.index = _device.CreateBuffer(&indexBufferDescriptor);
+	_queue.WriteBuffer(_buffers.index, 0, _indices.data(), indexBufferDescriptor.size);
 
 	wgpu::BufferDescriptor instancePropertiesBufferDescriptor{
 				.label = "instance property buffer",
 				.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
 				.size = sizeof(InstanceProperty) * _instanceProperties.size(),
 	};
-	_instancePropertiesBuffer = _device.CreateBuffer(&instancePropertiesBufferDescriptor);
-	_queue.WriteBuffer(_instancePropertiesBuffer, 0, _instanceProperties.data(), instancePropertiesBufferDescriptor.size);
+	_buffers.instanceProperties = _device.CreateBuffer(&instancePropertiesBufferDescriptor);
+	_queue.WriteBuffer(_buffers.instanceProperties, 0, _instanceProperties.data(), instancePropertiesBufferDescriptor.size);
 
 	wgpu::BufferDescriptor transformBufferDescriptor = {
 		.label = "transform buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
 		.size = sizeof(glm::f32mat4x4) * _transforms.size(),
 	};
-	_transformBuffer = _device.CreateBuffer(&transformBufferDescriptor);
-	_queue.WriteBuffer(_transformBuffer, 0, _transforms.data(), transformBufferDescriptor.size);
+	_buffers.transform = _device.CreateBuffer(&transformBufferDescriptor);
+	_queue.WriteBuffer(_buffers.transform, 0, _transforms.data(), transformBufferDescriptor.size);
 	
 	}
 
@@ -366,8 +362,8 @@ void DawnEngine::initMaterialBuffer(fastgltf::Asset& asset) {
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
 		.size = sizeof(Material) * materials.size(),
 	};
-	_materialBuffer = _device.CreateBuffer(&materialBufferDescriptor);
-	_queue.WriteBuffer(_materialBuffer, 0, materials.data(), materialBufferDescriptor.size);
+	_buffers.material = _device.CreateBuffer(&materialBufferDescriptor);
+	_queue.WriteBuffer(_buffers.material, 0, materials.data(), materialBufferDescriptor.size);
 }
 
 void DawnEngine::initDepthTexture() {
@@ -377,7 +373,7 @@ void DawnEngine::initDepthTexture() {
 		.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
 		.dimension = wgpu::TextureDimension::e2D,
 		.size = wgpu::Extent3D(_surfaceConfiguration.width, _surfaceConfiguration.height),
-		.format = DEPTH_FORMAT,
+		.format = CONSTANTS::DEPTH_FORMAT,
 	};
 	wgpu::Texture depthTexture = _device.CreateTexture(&depthTextureDescriptor);
 
@@ -402,51 +398,6 @@ void DawnEngine::initRenderPipeline() {
 	};
 	wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
 
-	wgpu::VertexAttribute positionAttribute = {
-		.format = wgpu::VertexFormat::Float32x3,
-		.offset = 0,
-		.shaderLocation = 0,
-	};
-	wgpu::VertexAttribute normalAttribute = {
-		.format = wgpu::VertexFormat::Float32x3,
-		.offset = offsetof(VBO, normal),
-		.shaderLocation = 1,
-	};
-
-
-	auto vertexAttributes = std::vector<wgpu::VertexAttribute> { positionAttribute, normalAttribute };
-
-	wgpu::VertexBufferLayout vertexBufferLayout = {
-		.arrayStride = sizeof(VBO),
-		.attributeCount = vertexAttributes.size(),
-		.attributes = vertexAttributes.data(),
-	};
-
-	wgpu::VertexState vertexState = {
-		.module = vertexShaderModule,
-		.entryPoint = "VS_main",
-		.bufferCount = 1,
-		.buffers = &vertexBufferLayout,
-	};
-
-	wgpu::BlendState blendState = {
-		.color = wgpu::BlendComponent{
-			.operation = wgpu::BlendOperation::Add,
-			.srcFactor = wgpu::BlendFactor::SrcAlpha,
-			.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha,
-		},
-		.alpha = wgpu::BlendComponent{
-			.operation = wgpu::BlendOperation::Add,
-			.srcFactor = wgpu::BlendFactor::Zero,
-			.dstFactor = wgpu::BlendFactor::One,
-		}
-	};
-	wgpu::ColorTargetState colorTargetState = {
-		.format = _surfaceConfiguration.format,
-		.blend = &blendState,
-		.writeMask = wgpu::ColorWriteMask::All,
-	};
-
 	std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_shader.spv"));
 	wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
 	fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
@@ -457,178 +408,16 @@ void DawnEngine::initRenderPipeline() {
 	};
 	wgpu::ShaderModule fragmentShaderModule = _device.CreateShaderModule(&fragmentShaderModuleDescriptor);
 
-	wgpu::FragmentState fragmentState = {
-		.module = fragmentShaderModule,
-		.entryPoint = "FS_main",
-		.constantCount = 0,
-		.constants = nullptr,
-		.targetCount = 1,
-		.targets = &colorTargetState,
+	RenderPipelineHelper::RenderPipelineHelperDescriptor renderPipelineDescriptor = {
+		.device = _device,
+		.buffers = _buffers,
+		.bindGroups = _bindGroups,
+		.vertexShaderModule = vertexShaderModule,
+		.fragmentShaderModule = fragmentShaderModule,
+		.colorTargetStateFormat = _surfaceConfiguration.format,
 	};
-		
-	wgpu::DepthStencilState depthStencilState = {
-		.format = DEPTH_FORMAT,
-		.depthWriteEnabled = true,
-		.depthCompare = wgpu::CompareFunction::Less,
-	};
-
-	wgpu::RenderPipelineDescriptor renderPipelineDescriptor = {
-		.label = "render pipeline descriptor",
-		.layout = initPipelineLayout(),
-		.vertex = vertexState,
-		.primitive = wgpu::PrimitiveState {
-			.topology = wgpu::PrimitiveTopology::TriangleList,
-			.cullMode = wgpu::CullMode::None,
-		},
-		.depthStencil = &depthStencilState,
-		.multisample = wgpu::MultisampleState {
-			.count = 1,
-			.mask = ~0u,
-			.alphaToCoverageEnabled = false,
-		},
-		.fragment = &fragmentState,
-	};
-
-	_renderPipeline = _device.CreateRenderPipeline(&renderPipelineDescriptor);
+	_renderPipeline = RenderPipelineHelper::createRenderPipeline(renderPipelineDescriptor);
 }
-
-wgpu::PipelineLayout DawnEngine::initPipelineLayout() {
-	
-	std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = { initStaticBindGroupLayout(), initInfrequentBindGroupLayout() };
-	wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
-		.label = "Pipeline Layout",
-		.bindGroupLayoutCount = 2,
-		.bindGroupLayouts = bindGroupLayouts.data(),
-	};
-	return _device.CreatePipelineLayout(&pipelineLayoutDescriptor);
-}
-
-wgpu::BindGroupLayout DawnEngine::initStaticBindGroupLayout() {
-	wgpu::BindGroupLayoutEntry cameraBindGroupLayoutEntry = {
-		.binding = 0,
-		.visibility = (wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment),
-		.buffer = {
-			.type = wgpu::BufferBindingType::Uniform,
-			.minBindingSize = sizeof(Camera),
-		}
-	};
-	wgpu::BindGroupLayoutEntry transformsBindGroupLayoutEntry = {
-		.binding = 1,
-		.visibility = wgpu::ShaderStage::Vertex,
-		.buffer = {
-			.type = wgpu::BufferBindingType::ReadOnlyStorage,
-			.minBindingSize = sizeof(glm::f32mat4x4),
-		}
-	};
-	wgpu::BindGroupLayoutEntry instancePropertiesBindGroupLayoutEntry = {
-		.binding = 2,
-		.visibility = wgpu::ShaderStage::Vertex,
-		.buffer = {
-			.type = wgpu::BufferBindingType::ReadOnlyStorage,
-			.minBindingSize = sizeof(InstanceProperty),
-		}
-	};
-	std::array<wgpu::BindGroupLayoutEntry, 3> bindGroupLayoutEntries = { 
-		cameraBindGroupLayoutEntry, 
-		transformsBindGroupLayoutEntry,
-		instancePropertiesBindGroupLayoutEntry,
-	};
-
-	wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-		.label = "static bind group",
-		.entryCount = bindGroupLayoutEntries.size(),
-		.entries = bindGroupLayoutEntries.data(),
-	};
-	wgpu::BindGroupLayout bindGroupLayout = _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
-
-
-	wgpu::BindGroupEntry cameraBindGroupEntry = {
-		.binding = 0,
-		.buffer = _cameraBuffer,
-		.size = _cameraBuffer.GetSize(),
-	};
-	wgpu::BindGroupEntry transformsBindGroupEntry = {
-		.binding = 1,
-		.buffer = _transformBuffer,
-		.size = _transformBuffer.GetSize(),
-	};
-	wgpu::BindGroupEntry instancePropertiesBindGroupEntry = {
-		.binding = 2,
-		.buffer = _instancePropertiesBuffer,
-		.size = _instancePropertiesBuffer.GetSize(),
-	};
-	std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = { 
-		cameraBindGroupEntry,
-		transformsBindGroupEntry,
-		instancePropertiesBindGroupEntry,
-	};
-
-	wgpu::BindGroupDescriptor bindGroupDescriptor = {
-		.label = "static bind group",
-		.layout = bindGroupLayout,
-		.entryCount = bindGroupEntries.size(),
-		.entries = bindGroupEntries.data() ,
-	};
-	_bindGroups.push_back(_device.CreateBindGroup(&bindGroupDescriptor));
-
-	return bindGroupLayout;
-}
-
-wgpu::BindGroupLayout DawnEngine::initInfrequentBindGroupLayout() {
-	wgpu::BindGroupLayoutEntry materialBindGroupLayoutEntry = {
-		.binding = 0,
-		.visibility = wgpu::ShaderStage::Vertex,
-		.buffer = {
-			.type = wgpu::BufferBindingType::ReadOnlyStorage,
-			.minBindingSize = sizeof(Material),
-		}
-	};
-	wgpu::BindGroupLayoutEntry lightBindGroupLayoutEntry = {
-		.binding = 1,
-		.visibility = wgpu::ShaderStage::Fragment,
-		.buffer = {
-			.type = wgpu::BufferBindingType::ReadOnlyStorage,
-			.minBindingSize = sizeof(Light),
-		}
-	};
-	std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
-		materialBindGroupLayoutEntry,
-		lightBindGroupLayoutEntry,
-	};
-
-	wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-		.label = "infrequent bind group",
-		.entryCount = bindGroupLayoutEntries.size(),
-		.entries = bindGroupLayoutEntries.data(),
-	};
-	wgpu::BindGroupLayout bindGroupLayout = _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
-
-	wgpu::BindGroupEntry materialBindGroupEntry = {
-		.binding = 0,
-		.buffer = _materialBuffer,
-		.size = _materialBuffer.GetSize(),
-	};
-	wgpu::BindGroupEntry lightBindGroupEntry = {
-		.binding = 1,
-		.buffer = _lightBuffer,
-		.size = _lightBuffer.GetSize()
-	};
-	std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
-		materialBindGroupEntry,
-		lightBindGroupEntry,
-	};
-
-	wgpu::BindGroupDescriptor bindGroupDescriptor = {
-		.label = "infrequent bind group",
-		.layout = bindGroupLayout,
-		.entryCount = bindGroupLayoutDescriptor.entryCount,
-		.entries = bindGroupEntries.data(),
-	};
-	_bindGroups.push_back(_device.CreateBindGroup(&bindGroupDescriptor));
-
-	return bindGroupLayout;
-}
-
 
 
 void DawnEngine::draw() {
@@ -664,13 +453,13 @@ void DawnEngine::draw() {
 	renderPassEncoder.SetPipeline(_renderPipeline);
 	renderPassEncoder.SetBindGroup(0, _bindGroups[0]); //static buffer
 	renderPassEncoder.SetBindGroup(1, _bindGroups[1]); //infrequent buffer
-	renderPassEncoder.SetVertexBuffer(0, _vboBuffer, 0, _vboBuffer.GetSize());
-	renderPassEncoder.SetIndexBuffer(_indexBuffer, wgpu::IndexFormat::Uint16, 0, _indexBuffer.GetSize());
+	renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
+	renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
 
 	for (auto& dc : _drawCalls) {
 		renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
 	}
-	//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_indexBuffer.GetSize()) / sizeof(uint16_t)); //todo
+	//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
 	renderPassEncoder.End();
 
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {

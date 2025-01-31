@@ -3,44 +3,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <webgpu/webgpu_cpp.h>
 #include <fastgltf/core.hpp>
-
-struct Camera {
-	alignas(sizeof(glm::mat4x4)) glm::mat4x4 projection;
-	alignas(sizeof(glm::mat4x4)) glm::mat4x4 view;
-};
-
-struct VBO {
-	glm::f32vec3 vertex;
-	glm::f32vec3 normal;
-};
-
-struct DrawInfo {
-	uint32_t indexCount;
-	uint32_t instanceCount;
-	uint32_t firstIndex;
-	uint32_t baseVertex;
-	uint32_t firstInstance; //requires indirect-first-instance feature
-};
-
-struct Light { //glm version of fastgltf::Light
-  glm::f32vec3 position;
-	uint32_t PAD0;
-	glm::f32vec3 rotation;
-	uint32_t PAD1;
-	glm::f32vec3 color;
-	glm::u32 type; //this is u32 instead of u8 for shader compatibility
-	glm::f32 intensity;
-	glm::f32 range;
-	glm::f32 innerConeAngle;
-	glm::f32 outerConeAngle;
-};
-
-struct InstanceProperty {
-		uint32_t materialIndex;
-		uint32_t PAD0;
-		uint32_t PAD1;
-		uint32_t PAD2;
-};
+#include "structs.hpp"
 
 class DawnEngine {
 
@@ -66,13 +29,7 @@ private:
 	std::unordered_map<uint32_t, DrawInfo*> _meshIndexToDrawInfoMap;
 	std::vector<Light> _lights;
 	std::vector<Camera> _cameras;
-	wgpu::Buffer _cameraBuffer;
-	wgpu::Buffer _vboBuffer;
-	wgpu::Buffer _indexBuffer;
-	wgpu::Buffer _instancePropertiesBuffer;
-	wgpu::Buffer _transformBuffer;
-	wgpu::Buffer _materialBuffer;
-	wgpu::Buffer _lightBuffer;
+	Buffers _buffers;
 	std::vector<wgpu::BindGroup> _bindGroups;
 	wgpu::TextureView _depthTextureView;
 	wgpu::Sampler _depthSampler;
@@ -86,11 +43,6 @@ private:
 	void initMaterialBuffer(fastgltf::Asset& asset);
 	void initDepthTexture();
 	void initRenderPipeline();
-	wgpu::PipelineLayout initPipelineLayout();
-	wgpu::BindGroupLayout initStaticBindGroupLayout();
-	wgpu::BindGroupLayout initInfrequentBindGroupLayout();
-	//wgpu::BindGroupLayout initFrequentBindGroupLayout();
-	//wgpu::BindGroupLayout initPerFrameBindGroupLayout():
 
 	void draw();
 	wgpu::TextureView getNextSurfaceTextureView();
