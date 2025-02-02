@@ -476,16 +476,7 @@ void DawnEngine::draw() {
 	_queue.Submit(1, &commandBuffer);
 
 	_device.Tick();
-
-	wgpu::PopErrorScopeCallbackInfo popErrorScopeCallbackInfo = {};
-	popErrorScopeCallbackInfo.callback = [](WGPUPopErrorScopeStatus status, WGPUErrorType, struct WGPUStringView message, void*) {
-		if (wgpu::PopErrorScopeStatus(status) != wgpu::PopErrorScopeStatus::Success) {
-			return;
-		}
-		std::cout << std::format("Error: {} \r\n", message.data);
-		};
-	_device.PopErrorScope(popErrorScopeCallbackInfo);
-
+	
 	_surface.Present();
 
 }
