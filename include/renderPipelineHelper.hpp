@@ -16,5 +16,5 @@ namespace RenderPipelineHelper {
 		wgpu::TextureFormat& colorTargetStateFormat;
 	};
 
-	wgpu::RenderPipeline createRenderPipeline(RenderPipelineHelperDescriptor& descriptor);
+	wgpu::RenderPipeline createGeometryRenderPipeline(RenderPipelineHelperDescriptor& descriptor);
 };

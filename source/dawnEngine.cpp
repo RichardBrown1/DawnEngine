@@ -393,7 +393,7 @@ void DawnEngine::initDepthTexture() {
 }
 
 void DawnEngine::initRenderPipeline() {
-	std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_unlitShader.spv"));
+	std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_geometryShader.spv"));
 	wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
 	vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
 	vertexShaderSource.code = vertexShaderCode.data();
@@ -403,7 +403,7 @@ void DawnEngine::initRenderPipeline() {
 	};
 	wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
 
-	std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_unlitShader.spv"));
+	std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_geometryShader.spv"));
 	wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
 	fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
 	fragmentShaderSource.code = fragmentShaderCode.data();
@@ -421,7 +421,7 @@ void DawnEngine::initRenderPipeline() {
 		.fragmentShaderModule = fragmentShaderModule,
 		.colorTargetStateFormat = _surfaceConfiguration.format,
 	};
-	_renderPipeline = RenderPipelineHelper::createRenderPipeline(renderPipelineDescriptor);
+	_renderPipeline = RenderPipelineHelper::createGeometryRenderPipeline(renderPipelineDescriptor);
 }
 
 
@@ -457,7 +457,7 @@ void DawnEngine::draw() {
 	wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
 	renderPassEncoder.SetPipeline(_renderPipeline);
 	renderPassEncoder.SetBindGroup(0, _bindGroups[0]); //static buffer
-	renderPassEncoder.SetBindGroup(1, _bindGroups[1]); //infrequent buffer
+	//renderPassEncoder.SetBindGroup(1, _bindGroups[1]); //infrequent buffer
 	renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
 	renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
 
