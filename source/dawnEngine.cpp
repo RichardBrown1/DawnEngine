@@ -464,7 +464,6 @@ void DawnEngine::draw() {
 	for (auto& dc : _drawCalls) {
 		renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
 	}
-	//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
 	renderPassEncoder.End();
 
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
