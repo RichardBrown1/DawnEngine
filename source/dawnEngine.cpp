@@ -279,17 +279,22 @@ void DawnEngine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform
 	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
 	const glm::vec3 forwardPosition = glm::vec3(transform[3]) - forwardAmount * forward;
 	const auto eye = glm::vec3(transform[3][0], transform[3][1], transform[3][2]);
+
 	Camera camera;
 	camera.view = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera );
-	camera.projection = glm::perspective(perspectiveCamera->yfov, _surfaceConfiguration.width / (float)_surfaceConfiguration.height, perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f));
-	_cameras.push_back(camera);
+	camera.zFar = perspectiveCamera->zfar.value_or(1024.0f); //should be infinity if not found
+	camera.zNear = perspectiveCamera->znear;
+
+	camera.projection = glm::perspective(perspectiveCamera->yfov, _surfaceConfiguration.width / (float)_surfaceConfiguration.height, camera.zNear, camera.zFar);
 
 	fastgltf::Camera::Orthographic* orthographicCamera = std::get_if<fastgltf::Camera::Orthographic>(&asset.cameras[cameraIndex].camera );
 	if (orthographicCamera != nullptr) {
 		throw std::runtime_error("orthographic camera not supported");
 	}
+
+	_cameras.push_back(camera);
 }
 
 void DawnEngine::initSceneBuffers() {
@@ -388,7 +393,7 @@ void DawnEngine::initDepthTexture() {
 }
 
 void DawnEngine::initRenderPipeline() {
-	std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_shader.spv"));
+	std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_unlitShader.spv"));
 	wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
 	vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
 	vertexShaderSource.code = vertexShaderCode.data();
@@ -398,7 +403,7 @@ void DawnEngine::initRenderPipeline() {
 	};
 	wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
 
-	std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_shader.spv"));
+	std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_unlitShader.spv"));
 	wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
 	fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
 	fragmentShaderSource.code = fragmentShaderCode.data();

@@ -14,6 +14,10 @@ struct Buffers {
 struct Camera {
 	alignas(sizeof(glm::mat4x4)) glm::mat4x4 projection;
 	alignas(sizeof(glm::mat4x4)) glm::mat4x4 view;
+	glm::f32 zFar;
+	glm::f32 zNear;
+	glm::u32 PAD0;
+	glm::u32 PAD1;
 };
 
 struct VBO {
