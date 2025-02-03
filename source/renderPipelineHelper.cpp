@@ -207,7 +207,7 @@ wgpu::RenderPipeline RenderPipelineHelper::createOutputRenderPipeline(RenderPipe
 		};
 		wgpu::VertexState vertexState = {
 			.module = descriptor.vertexShaderModule,
-			.entryPoint = "VS_output",
+			.entryPoint = "VS_main",
 			.bufferCount = 1,
 			.buffers = &vertexBufferLayout,
 		};
@@ -231,7 +231,7 @@ wgpu::RenderPipeline RenderPipelineHelper::createOutputRenderPipeline(RenderPipe
 		};
 		wgpu::FragmentState fragmentState = {
 			.module = descriptor.fragmentShaderModule,
-			.entryPoint = "FS_output",
+			.entryPoint = "FS_main",
 			.constantCount = 0,
 			.constants = nullptr,
 			.targetCount = 1,

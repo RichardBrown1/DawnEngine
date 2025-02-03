@@ -147,7 +147,7 @@ Engine::Engine() {
 		initGltf();
 		initQuadBuffer();
 		initDepthTexture();
-		initRenderPipeline();
+		initRenderPipelines();
 }
 
 
@@ -384,8 +384,8 @@ void Engine::initQuadBuffer() {
 		 1.0,  1.0,
 	};
 	wgpu::BufferDescriptor quadBufferDescriptor = {
-		.label = "material buffer",
-		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
+		.label = "quad buffer",
+		.usage = wgpu::BufferUsage::Vertex | wgpu::BufferUsage::CopyDst,
 		.size = sizeof(float) * arraySize,
 	};
 	_buffers.vQuad = _device.CreateBuffer(&quadBufferDescriptor);
@@ -413,43 +413,79 @@ void Engine::initDepthTexture() {
 	_depthSampler =	_device.CreateSampler(&samplerDescriptor);	
 }
 
-void Engine::initRenderPipeline() {
-	std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_geometryShader.spv"));
-	wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
-	vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
-	vertexShaderSource.code = vertexShaderCode.data();
-	wgpu::ShaderModuleDescriptor vertexShaderModuleDescriptor = {
-		.nextInChain = &vertexShaderSource,
-		.label = "vertex shader module"
-	};
-	wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
+void Engine::initRenderPipelines() {
+	{ //GEOMETRY
+		std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_geometryShader.spv"));
+		wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
+		vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
+		vertexShaderSource.code = vertexShaderCode.data();
+		wgpu::ShaderModuleDescriptor vertexShaderModuleDescriptor = {
+			.nextInChain = &vertexShaderSource,
+			.label = "geometry vertex shader module"
+		};
+		wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
 
-	std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_geometryShader.spv"));
-	wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
-	fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
-	fragmentShaderSource.code = fragmentShaderCode.data();
-	wgpu::ShaderModuleDescriptor fragmentShaderModuleDescriptor = {
-		.nextInChain = &fragmentShaderSource,
-		.label = "fragment shader module"
-	};
-	wgpu::ShaderModule fragmentShaderModule = _device.CreateShaderModule(&fragmentShaderModuleDescriptor);
+		std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_geometryShader.spv"));
+		wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
+		fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
+		fragmentShaderSource.code = fragmentShaderCode.data();
+		wgpu::ShaderModuleDescriptor fragmentShaderModuleDescriptor = {
+			.nextInChain = &fragmentShaderSource,
+			.label = "geometry fragment shader module"
+		};
+		wgpu::ShaderModule fragmentShaderModule = _device.CreateShaderModule(&fragmentShaderModuleDescriptor);
 
-	RenderPipelineHelper::RenderPipelineHelperDescriptor geometryRenderPipelineDescriptor = {
-		.device = _device,
-		.buffers = _buffers,
-		.p_bindGroup = &_bindGroups[DawnEngine::BindGroupId::GEOMETRY_PASS],
-		.bindGroupCount = 1,
-		.vertexShaderModule = vertexShaderModule,
-		.fragmentShaderModule = fragmentShaderModule,
-		.colorTargetStateFormat = _surfaceConfiguration.format,
-	};
-	_renderPipelines[DawnEngine::RenderPipelineId::OUTPUT_PASS] = RenderPipelineHelper::createGeometryRenderPipeline(geometryRenderPipelineDescriptor);
+		RenderPipelineHelper::RenderPipelineHelperDescriptor geometryRenderPipelineDescriptor = {
+			.device = _device,
+			.buffers = _buffers,
+			.p_bindGroup = &_bindGroups[DawnEngine::BindGroupId::GEOMETRY_PASS],
+			.bindGroupCount = 1,
+			.vertexShaderModule = vertexShaderModule,
+			.fragmentShaderModule = fragmentShaderModule,
+			.colorTargetStateFormat = _surfaceConfiguration.format,
+		};
+		_renderPipelines[DawnEngine::RenderPipelineId::GEOMETRY_PASS] = RenderPipelineHelper::createGeometryRenderPipeline(geometryRenderPipelineDescriptor);
+	}
+
+	{ //OUTPUT
+		std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_outputShader.spv"));
+		wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
+		vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
+		vertexShaderSource.code = vertexShaderCode.data();
+		wgpu::ShaderModuleDescriptor vertexShaderModuleDescriptor = {
+			.nextInChain = &vertexShaderSource,
+			.label = "output vertex shader module"
+		};
+		wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
+
+		std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_outputShader.spv"));
+		wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
+		fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
+		fragmentShaderSource.code = fragmentShaderCode.data();
+		wgpu::ShaderModuleDescriptor fragmentShaderModuleDescriptor = {
+			.nextInChain = &fragmentShaderSource,
+			.label = "output fragment shader module"
+		};
+		wgpu::ShaderModule fragmentShaderModule = _device.CreateShaderModule(&fragmentShaderModuleDescriptor);
+
+		RenderPipelineHelper::RenderPipelineHelperDescriptor outputRenderPipelineDescriptor = {
+			.device = _device,
+			.buffers = _buffers,
+			.p_bindGroup = &_bindGroups[DawnEngine::BindGroupId::OUTPUT_PASS],
+			.bindGroupCount = 1,
+			.vertexShaderModule = vertexShaderModule,
+			.fragmentShaderModule = fragmentShaderModule,
+			.colorTargetStateFormat = _surfaceConfiguration.format,
+		};
+		_renderPipelines[DawnEngine::RenderPipelineId::OUTPUT_PASS] = RenderPipelineHelper::createOutputRenderPipeline(outputRenderPipelineDescriptor);
+	}
+
 }
 
 
 void Engine::draw() {
 
-	//Get next surface texture view
+	//Get next surface texture vie
 	wgpu::TextureView surfaceTextureView = getNextSurfaceTextureView();
 
 	wgpu::CommandEncoderDescriptor commandEncoderDescriptor = wgpu::CommandEncoderDescriptor();
@@ -507,7 +543,7 @@ void Engine::draw() {
 		wgpu::RenderPassEncoder outputRenderPassEncoder = commandEncoder.BeginRenderPass(&outputRenderPassDescriptor);
 		outputRenderPassEncoder.SetPipeline(_renderPipelines[DawnEngine::RenderPipelineId::OUTPUT_PASS]);
 		outputRenderPassEncoder.SetBindGroup(0, _bindGroups[DawnEngine::BindGroupId::OUTPUT_PASS]);
-		outputRenderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
+		outputRenderPassEncoder.SetVertexBuffer(0, _buffers.vQuad, 0, _buffers.vQuad.GetSize());
 
 		outputRenderPassEncoder.Draw(6, 1, 0, 0);
 		outputRenderPassEncoder.End();

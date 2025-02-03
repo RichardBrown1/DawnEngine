@@ -45,7 +45,7 @@ private:
 	void initMaterialBuffer(fastgltf::Asset& asset);
 	void initDepthTexture();
 	void initQuadBuffer();
-	void initRenderPipeline();
+	void initRenderPipelines();
 
 	void draw();
 	wgpu::TextureView getNextSurfaceTextureView();

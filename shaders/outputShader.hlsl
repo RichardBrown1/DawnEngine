@@ -8,7 +8,7 @@ struct VSOutput
     [[vk::location(0)]] float4 ClipPosition : SV_Position;
 };
 
-VSOutput VS_output(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceIndex : SV_InstanceID)
+VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceIndex : SV_InstanceID)
 {
     VSOutput output = (VSOutput) 0;
     output.ClipPosition = float4(input.Position, 0.0, 1.0);
@@ -18,7 +18,7 @@ VSOutput VS_output(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceI
     return output;
 }
 
-float4 FS_output(VSOutput input) : SV_Target
+float4 FS_main(VSOutput input) : SV_Target
 {
     return float4(0.0, 0.0, 1.0, 1.0);
 }
