@@ -434,36 +434,42 @@ void DawnEngine::draw() {
 	commandEncoderDescriptor.label = "My command encoder";
 	wgpu::CommandEncoder commandEncoder = _device.CreateCommandEncoder(&commandEncoderDescriptor);
 
-	wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
-	renderPassColorAttachment.view = surfaceTextureView;
-	renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
-	renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
-	renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
+	wgpu::RenderPassColorAttachment geometryRenderPassColorAttachment = {
+		.view = surfaceTextureView,
+		.loadOp = wgpu::LoadOp::Clear,
+		.storeOp = wgpu::StoreOp::Store,
+		.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 },
+	};
 
-	wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+	wgpu::RenderPassDepthStencilAttachment geometryRenderPassDepthStencilAttachment = {
 		.view = _depthTextureView,
 		.depthLoadOp = wgpu::LoadOp::Clear,
 		.depthStoreOp = wgpu::StoreOp::Store,
 		.depthClearValue = 1.0f,		
 	};
 
-	wgpu::RenderPassDescriptor renderPassDescriptor = {
+	wgpu::RenderPassDescriptor geometryRenderPassDescriptor = {
 		.colorAttachmentCount = 1,
-		.colorAttachments = &renderPassColorAttachment,
-		.depthStencilAttachment = &renderPassDepthStencilAttachment,
+		.colorAttachments = &geometryRenderPassColorAttachment,
+		.depthStencilAttachment = &geometryRenderPassDepthStencilAttachment,
 	};
 
 
-	wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
-	renderPassEncoder.SetPipeline(_renderPipeline);
-	renderPassEncoder.SetBindGroup(0, _bindGroups[0]);
-	renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
-	renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
+	wgpu::RenderPassEncoder geometryRenderPassEncoder = commandEncoder.BeginRenderPass(&geometryRenderPassDescriptor);
+	geometryRenderPassEncoder.SetPipeline(_renderPipeline);
+	geometryRenderPassEncoder.SetBindGroup(0, _bindGroups[0]);
+	geometryRenderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
+	geometryRenderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
 
 	for (auto& dc : _drawCalls) {
-		renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+		geometryRenderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
 	}
-	renderPassEncoder.End();
+	geometryRenderPassEncoder.End();
+
+
+
+
+
 
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
 		.label = "Command Buffer",
