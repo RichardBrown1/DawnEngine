@@ -56,7 +56,7 @@ namespace {
 		};
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-			.label = "static bind group",
+			.label = "geometry bind group",
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
@@ -92,7 +92,7 @@ namespace {
 		};
 
 		wgpu::BindGroupDescriptor bindGroupDescriptor = {
-			.label = "static bind group",
+			.label = "geometry bind group",
 			.layout = bindGroupLayout,
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data() ,
@@ -102,10 +102,10 @@ namespace {
 		return bindGroupLayout;
 	}
 	
-	wgpu::PipelineLayout initPipelineLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
+	wgpu::PipelineLayout initGeometryPipelineLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
 		std::array<wgpu::BindGroupLayout, 1> bindGroupLayouts = { initGeometryBindGroupLayout(descriptor) };
 		wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
-			.label = "Pipeline Layout",
+			.label = "Geometry Pipeline Layout",
 			.bindGroupLayoutCount = bindGroupLayouts.size(),
 			.bindGroupLayouts = bindGroupLayouts.data(),
 		};
@@ -173,8 +173,8 @@ namespace RenderPipelineHelper {
 		};
 
 		wgpu::RenderPipelineDescriptor renderPipelineDescriptor = {
-			.label = "render pipeline descriptor",
-			.layout = initPipelineLayout(descriptor),
+			.label = "Geometry Render Pipeline",
+			.layout = initGeometryPipelineLayout(descriptor),
 			.vertex = vertexState,
 			.primitive = wgpu::PrimitiveState {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
