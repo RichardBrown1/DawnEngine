@@ -1,11 +1,11 @@
 ﻿#pragma once
 #include <iostream>
-#include "../include/DawnEngine.hpp"
+#include "../include/Engine.hpp"
 
 int main()
 {
 	try {
-		DawnEngine wgpuEngine = DawnEngine();
+		Engine wgpuEngine = Engine();
 		wgpuEngine.run();
 		wgpuEngine.destroy();
 	}

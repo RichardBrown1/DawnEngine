@@ -1,14 +1,16 @@
 #pragma once
+#include <unordered_map>
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <webgpu/webgpu_cpp.h>
 #include <fastgltf/core.hpp>
 #include "structs.hpp"
+#include "enums.hpp"
 
-class DawnEngine {
+class Engine {
 
 public:
-	DawnEngine();
+	Engine();
 	void run();
 	void destroy();
 
@@ -20,7 +22,7 @@ private:
 	wgpu::Surface _surface;
 	wgpu::SurfaceConfiguration _surfaceConfiguration;
 	wgpu::Queue _queue;
-	wgpu::RenderPipeline _renderPipeline;
+	std::unordered_map<DawnEngine::RenderPipelineId, wgpu::RenderPipeline> _renderPipelines;
 	std::vector<VBO> _vbos;
 	std::vector<uint16_t> _indices;
 	std::vector<DrawInfo> _drawCalls;
@@ -30,7 +32,7 @@ private:
 	std::vector<Light> _lights;
 	std::vector<Camera> _cameras;
 	Buffers _buffers;
-	std::vector<wgpu::BindGroup> _bindGroups;
+	std::unordered_map<DawnEngine::BindGroupId, wgpu::BindGroup> _bindGroups;
 	wgpu::TextureView _depthTextureView;
 	wgpu::Sampler _depthSampler;
 

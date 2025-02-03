@@ -97,7 +97,7 @@ namespace {
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data() ,
 		};
-		descriptor.bindGroups.push_back(descriptor.device.CreateBindGroup(&bindGroupDescriptor));
+		*descriptor.p_bindGroup = descriptor.device.CreateBindGroup(&bindGroupDescriptor);
 
 		return bindGroupLayout;
 	}
@@ -167,7 +167,7 @@ namespace RenderPipelineHelper {
 		};
 
 		wgpu::DepthStencilState depthStencilState = {
-			.format = CONSTANTS::DEPTH_FORMAT,
+			.format = DawnEngine::DEPTH_FORMAT,
 			.depthWriteEnabled = true,
 			.depthCompare = wgpu::CompareFunction::Less,
 		};
