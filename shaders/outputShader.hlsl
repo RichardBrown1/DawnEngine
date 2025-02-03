@@ -1,3 +1,6 @@
+Texture2D depthTexture: register(t0, space0);
+SamplerState depthSampler;
+
 struct VSInput
 {
     [[vk::location(0)]] float2 Position : POSTION0;
@@ -20,5 +23,5 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
 
 float4 FS_main(VSOutput input) : SV_Target
 {
-    return float4(0.0, 0.0, 1.0, 1.0);
+    return depthTexture.Sample(depthSampler, input.ClipPosition.xy);
 }

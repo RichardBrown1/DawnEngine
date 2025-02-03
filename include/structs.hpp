@@ -1,6 +1,10 @@
 #pragma once
 #include <glm/glm.hpp>
 
+struct TextureViews {
+	wgpu::TextureView depthTextureView;
+};
+
 struct Buffers {
 	wgpu::Buffer vQuad;
 	wgpu::Buffer camera;

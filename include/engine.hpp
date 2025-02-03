@@ -33,7 +33,7 @@ private:
 	std::vector<Camera> _cameras;
 	Buffers _buffers;
 	std::unordered_map<DawnEngine::BindGroupId, wgpu::BindGroup> _bindGroups;
-	wgpu::TextureView _depthTextureView;
+	TextureViews _textureViews;
 	wgpu::Sampler _depthSampler;
 
 	void initGltf();

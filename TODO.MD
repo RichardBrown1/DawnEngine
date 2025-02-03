@@ -1,7 +1,6 @@
 # TODO
 ## Multipass Rendering Conversion
-- Reduce the current shader 
-    - Reduce the bindgroups into 1
+- Manually record depthtexture or convert depthTexture with a wgsl shader file since it is not compatible with spirv
 - Vertex Shader has to output a normal map
 - Vertex Shader has to output a world position map
 - Where do I get the color map from?

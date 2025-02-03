@@ -111,6 +111,63 @@ namespace {
 		};
 		return descriptor.device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	}
+
+	//OUTPUT
+	wgpu::BindGroupLayout initOutputBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
+
+		wgpu::TextureBindingLayout depthTextureBindingLayout = {
+			.sampleType = wgpu::TextureSampleType::UnfilterableFloat,
+			.viewDimension = wgpu::TextureViewDimension::e2D,
+		};
+
+		wgpu::BindGroupLayoutEntry depthBindGroupLayoutEntry = {
+			.binding = 0,
+			.visibility = (wgpu::ShaderStage::Fragment),
+			.texture = depthTextureBindingLayout
+		};
+	
+		std::array<wgpu::BindGroupLayoutEntry, 1> bindGroupLayoutEntries = {
+			depthBindGroupLayoutEntry
+		};
+
+		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
+			.label = "output bind group",
+			.entryCount = bindGroupLayoutEntries.size(),
+			.entries = bindGroupLayoutEntries.data(),
+		};
+		wgpu::BindGroupLayout bindGroupLayout = descriptor.device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+
+
+		wgpu::BindGroupEntry depthBindGroupEntry = {
+			.binding = 0,
+			.textureView = descriptor.textureViews.value().depthTextureView,
+		};
+		
+		std::array<wgpu::BindGroupEntry, 1> bindGroupEntries = {
+			depthBindGroupEntry,
+		};
+
+		wgpu::BindGroupDescriptor bindGroupDescriptor = {
+			.label = "output bind group",
+			.layout = bindGroupLayout,
+			.entryCount = bindGroupEntries.size(),
+			.entries = bindGroupEntries.data() ,
+		};
+		*descriptor.p_bindGroup = descriptor.device.CreateBindGroup(&bindGroupDescriptor);
+
+		return bindGroupLayout;
+	}
+
+	wgpu::PipelineLayout initOutputPipelineLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
+		std::array<wgpu::BindGroupLayout, 1> bindGroupLayouts = { initOutputBindGroupLayout(descriptor) };
+		wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
+			.label = "Output Pipeline Layout",
+			.bindGroupLayoutCount = bindGroupLayouts.size(),
+			.bindGroupLayouts = bindGroupLayouts.data(),
+		};
+		return descriptor.device.CreatePipelineLayout(&pipelineLayoutDescriptor);
+	}
+
 }
 
 namespace RenderPipelineHelper {
@@ -240,7 +297,7 @@ wgpu::RenderPipeline RenderPipelineHelper::createOutputRenderPipeline(RenderPipe
 
 		wgpu::RenderPipelineDescriptor renderPipelineDescriptor = {
 			.label = "Geometry Render Pipeline",
-			.layout = initGeometryPipelineLayout(descriptor),
+			.layout = initOutputPipelineLayout(descriptor),
 			.vertex = vertexState,
 			.primitive = wgpu::PrimitiveState {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
