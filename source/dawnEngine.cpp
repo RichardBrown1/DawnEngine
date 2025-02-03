@@ -3,6 +3,7 @@
 #include <iostream>
 #include <format>
 #include <chrono>
+#include <array>
 
 #define SDL_MAIN_HANDLED
 #include "../include/sdl3webgpu.hpp"
@@ -144,6 +145,7 @@ DawnEngine::DawnEngine() {
 		_queue = _device.GetQueue();
 
 		initGltf();
+		initQuadBuffer();
 		initDepthTexture();
 		initRenderPipeline();
 }
@@ -369,6 +371,25 @@ void DawnEngine::initMaterialBuffer(fastgltf::Asset& asset) {
 	};
 	_buffers.material = _device.CreateBuffer(&materialBufferDescriptor);
 	_queue.WriteBuffer(_buffers.material, 0, materials.data(), materialBufferDescriptor.size);
+}
+
+void DawnEngine::initQuadBuffer() {
+	constexpr uint32_t arraySize = 2 * 6;
+	auto quadVertices = std::array<float, arraySize>{
+		-1.0, -1.0,
+		 1.0, -1.0,
+		-1.0,  1.0,
+		-1.0,  1.0,
+		 1.0, -1.0,
+		 1.0,  1.0,
+	};
+	wgpu::BufferDescriptor quadBufferDescriptor = {
+		.label = "material buffer",
+		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
+		.size = sizeof(float) * arraySize,
+	};
+	_buffers.vQuad = _device.CreateBuffer(&quadBufferDescriptor);
+	_queue.WriteBuffer(_buffers.vQuad, 0, quadVertices.data(), quadBufferDescriptor.size);
 }
 
 void DawnEngine::initDepthTexture() {

@@ -17,4 +17,6 @@ namespace RenderPipelineHelper {
 	};
 
 	wgpu::RenderPipeline createGeometryRenderPipeline(RenderPipelineHelperDescriptor& descriptor);
+	
+	wgpu::RenderPipeline createOutputRenderPipeline(RenderPipelineHelperDescriptor& descriptor);
 };

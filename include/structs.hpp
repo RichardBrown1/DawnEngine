@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 
 struct Buffers {
+	wgpu::Buffer vQuad;
 	wgpu::Buffer camera;
 	wgpu::Buffer vbo;
 	wgpu::Buffer index;

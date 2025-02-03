@@ -42,6 +42,7 @@ private:
 	void initSceneBuffers();
 	void initMaterialBuffer(fastgltf::Asset& asset);
 	void initDepthTexture();
+	void initQuadBuffer();
 	void initRenderPipeline();
 
 	void draw();

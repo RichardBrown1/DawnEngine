@@ -191,5 +191,71 @@ namespace RenderPipelineHelper {
 
 		return descriptor.device.CreateRenderPipeline(&renderPipelineDescriptor);
 	}
+
+wgpu::RenderPipeline RenderPipelineHelper::createOutputRenderPipeline(RenderPipelineHelperDescriptor& descriptor)
+	{
+		wgpu::VertexAttribute positionAttribute = {
+			.format = wgpu::VertexFormat::Float32x2,
+			.offset = 0,
+			.shaderLocation = 0,
+		};
+		auto vertexAttributes = std::vector<wgpu::VertexAttribute>{ positionAttribute };
+		wgpu::VertexBufferLayout vertexBufferLayout = {
+			.arrayStride = sizeof(float) * 2,
+			.attributeCount = vertexAttributes.size(),
+			.attributes = vertexAttributes.data(),
+		};
+		wgpu::VertexState vertexState = {
+			.module = descriptor.vertexShaderModule,
+			.entryPoint = "VS_output",
+			.bufferCount = 1,
+			.buffers = &vertexBufferLayout,
+		};
+
+		wgpu::BlendState blendState = {
+			.color = wgpu::BlendComponent{
+				.operation = wgpu::BlendOperation::Add,
+				.srcFactor = wgpu::BlendFactor::SrcAlpha,
+				.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha,
+			},
+			.alpha = wgpu::BlendComponent{
+				.operation = wgpu::BlendOperation::Add,
+				.srcFactor = wgpu::BlendFactor::Zero,
+				.dstFactor = wgpu::BlendFactor::One,
+			}
+		};
+		wgpu::ColorTargetState colorTargetState = {
+			.format = descriptor.colorTargetStateFormat,
+			.blend = &blendState,
+			.writeMask = wgpu::ColorWriteMask::All,
+		};
+		wgpu::FragmentState fragmentState = {
+			.module = descriptor.fragmentShaderModule,
+			.entryPoint = "FS_output",
+			.constantCount = 0,
+			.constants = nullptr,
+			.targetCount = 1,
+			.targets = &colorTargetState,
+		};
+
+		wgpu::RenderPipelineDescriptor renderPipelineDescriptor = {
+			.label = "Geometry Render Pipeline",
+			.layout = initGeometryPipelineLayout(descriptor),
+			.vertex = vertexState,
+			.primitive = wgpu::PrimitiveState {
+				.topology = wgpu::PrimitiveTopology::TriangleList,
+				.cullMode = wgpu::CullMode::None,
+			},
+			.multisample = wgpu::MultisampleState {
+				.count = 1,
+				.mask = ~0u,
+				.alphaToCoverageEnabled = false,
+			},
+			.fragment = &fragmentState,
+		};
+
+		return descriptor.device.CreateRenderPipeline(&renderPipelineDescriptor);
+	}
+
 }
 
