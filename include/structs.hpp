@@ -2,7 +2,11 @@
 #include <glm/glm.hpp>
 
 struct TextureViews {
-	wgpu::TextureView depthTextureView;
+	wgpu::TextureView depth;
+};
+
+struct Samplers {
+	wgpu::Sampler depth;
 };
 
 struct Buffers {

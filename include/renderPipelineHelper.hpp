@@ -11,6 +11,7 @@ namespace RenderPipelineHelper {
 		wgpu::Device& device;
 		Buffers& buffers;
 		std::optional<TextureViews> textureViews;
+		std::optional<Samplers> samplers;
 		wgpu::BindGroup* p_bindGroup;
 		uint32_t bindGroupCount; //to be implemented
 		wgpu::ShaderModule& vertexShaderModule;

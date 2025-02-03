@@ -115,19 +115,26 @@ namespace {
 	//OUTPUT
 	wgpu::BindGroupLayout initOutputBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
 
-		wgpu::TextureBindingLayout depthTextureBindingLayout = {
-			.sampleType = wgpu::TextureSampleType::UnfilterableFloat,
-			.viewDimension = wgpu::TextureViewDimension::e2D,
-		};
-
 		wgpu::BindGroupLayoutEntry depthBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = (wgpu::ShaderStage::Fragment),
-			.texture = depthTextureBindingLayout
+			.texture = wgpu::TextureBindingLayout {
+				.sampleType = wgpu::TextureSampleType::Depth,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
+			},
+		};
+
+		wgpu::BindGroupLayoutEntry depthSamplerBindGroupLayoutEntry = {
+			.binding = 1,
+			.visibility = (wgpu::ShaderStage::Fragment),
+			.sampler = wgpu::SamplerBindingLayout {
+				.type = wgpu::SamplerBindingType::Comparison
+			},
 		};
 	
-		std::array<wgpu::BindGroupLayoutEntry, 1> bindGroupLayoutEntries = {
-			depthBindGroupLayoutEntry
+		std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
+			depthBindGroupLayoutEntry,
+			depthSamplerBindGroupLayoutEntry,
 		};
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
@@ -140,11 +147,17 @@ namespace {
 
 		wgpu::BindGroupEntry depthBindGroupEntry = {
 			.binding = 0,
-			.textureView = descriptor.textureViews.value().depthTextureView,
+			.textureView = descriptor.textureViews.value().depth,
+		};
+
+		wgpu::BindGroupEntry depthSamplerBindGroupEntry = {
+			.binding = 1,
+			.sampler = descriptor.samplers.value().depth,
 		};
 		
-		std::array<wgpu::BindGroupEntry, 1> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
 			depthBindGroupEntry,
+			depthSamplerBindGroupEntry,
 		};
 
 		wgpu::BindGroupDescriptor bindGroupDescriptor = {

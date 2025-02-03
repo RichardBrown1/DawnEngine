@@ -34,7 +34,7 @@ private:
 	Buffers _buffers;
 	std::unordered_map<DawnEngine::BindGroupId, wgpu::BindGroup> _bindGroups;
 	TextureViews _textureViews;
-	wgpu::Sampler _depthSampler;
+	Samplers _samplers;
 
 	void initGltf();
 	void initNodes(fastgltf::Asset& asset);

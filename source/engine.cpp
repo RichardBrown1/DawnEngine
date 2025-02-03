@@ -403,14 +403,14 @@ void Engine::initDepthTexture() {
 	};
 	wgpu::Texture depthTexture = _device.CreateTexture(&depthTextureDescriptor);
 
-	_textureViews.depthTextureView = depthTexture.CreateView();
+	_textureViews.depth = depthTexture.CreateView();
 	
 	wgpu::SamplerDescriptor samplerDescriptor = {
 		.label = "depth sampler",
 		.compare = wgpu::CompareFunction::Less,
 	};
 
-	_depthSampler =	_device.CreateSampler(&samplerDescriptor);	
+	_samplers.depth =	_device.CreateSampler(&samplerDescriptor);	
 }
 
 void Engine::initRenderPipelines() {
@@ -472,6 +472,7 @@ void Engine::initRenderPipelines() {
 			.device = _device,
 			.buffers = _buffers,
 			.textureViews = _textureViews,
+			.samplers = _samplers, 
 			.p_bindGroup = &_bindGroups[DawnEngine::BindGroupId::OUTPUT_PASS],
 			.bindGroupCount = 1,
 			.vertexShaderModule = vertexShaderModule,
@@ -502,9 +503,10 @@ void Engine::draw() {
 		};
 
 		wgpu::RenderPassDepthStencilAttachment geometryRenderPassDepthStencilAttachment = {
-			.view = _textureViews.depthTextureView,
-			.depthLoadOp = wgpu::LoadOp::Load,
-			.depthStoreOp = wgpu::StoreOp::Discard,
+			.view = _textureViews.depth,
+			.depthLoadOp = wgpu::LoadOp::Clear,
+			.depthStoreOp = wgpu::StoreOp::Store,
+			.depthClearValue = 1.0,
 		};
 
 		wgpu::RenderPassDescriptor geometryRenderPassDescriptor = {
