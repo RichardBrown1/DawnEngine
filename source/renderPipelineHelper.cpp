@@ -119,7 +119,7 @@ namespace {
 			.binding = 0,
 			.visibility = (wgpu::ShaderStage::Fragment),
 			.texture = wgpu::TextureBindingLayout {
-				.sampleType = wgpu::TextureSampleType::Depth,
+				.sampleType = wgpu::TextureSampleType::UnfilterableFloat,
 				.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
 		};

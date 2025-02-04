@@ -23,7 +23,14 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
 
 float4 FS_main(VSOutput input) : SV_Target
 {
-    float depth = depthTexture.SampleCmpLevelZero(depthSampler, input.Position.xy, 0.5);
-    return float4(depth, depth, depth, 1.0);
+    float depth = depthTexture.Load(input.Position.xyw).r;
+   return float4(depth, depth, depth, 1.0);
+//   float depth = depthTexture.SampleCmpLevelZero(depthSampler, input.Position.xy, 0.92);
+//    if (depth > 0.95)
+//    {
+//        return float4(0.0, 1.0, 0.0, 1.0);
+//    }
+//   return float4(depth, depth, depth, 1.0);
+    //return float4(0.0, 1.0, 0.0, 1.0);
 
 }

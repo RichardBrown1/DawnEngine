@@ -531,9 +531,9 @@ void Engine::draw() {
 	{ //Output Render Pass
 		wgpu::RenderPassColorAttachment outputRenderPassColorAttachment = {
 			.view = surfaceTextureView,
-			.loadOp = wgpu::LoadOp::Clear,
+			.loadOp = wgpu::LoadOp::Load,
 			.storeOp = wgpu::StoreOp::Store,
-			.clearValue = wgpu::Color{ 1.0, 0.0, 0.0, 1.0 },
+		//	.clearValue = wgpu::Color{ 1.0, 0.0, 0.0, 1.0 },
 		};
 
 		wgpu::RenderPassDescriptor outputRenderPassDescriptor = {
