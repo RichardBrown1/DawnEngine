@@ -4,15 +4,6 @@
 #include "../include/renderPipelineHelper.hpp"
 #include "../include/constants.hpp"
 
-//		wgpu::BindGroupLayoutEntry lightBindGroupLayoutEntry = {
-//			.binding = 1,
-//			.visibility = wgpu::ShaderStage::Fragment,
-//			.buffer = {
-//				.type = wgpu::BufferBindingType::ReadOnlyStorage,
-//				.minBindingSize = sizeof(Light),
-//			}
-//		};
-
 namespace {
 	wgpu::BindGroupLayout initGeometryBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
 		wgpu::BindGroupLayoutEntry cameraBindGroupLayoutEntry = {
@@ -101,18 +92,7 @@ namespace {
 
 		return bindGroupLayout;
 	}
-	
-	wgpu::PipelineLayout initGeometryPipelineLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
-		std::array<wgpu::BindGroupLayout, 1> bindGroupLayouts = { initGeometryBindGroupLayout(descriptor) };
-		wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
-			.label = "Geometry Pipeline Layout",
-			.bindGroupLayoutCount = bindGroupLayouts.size(),
-			.bindGroupLayouts = bindGroupLayouts.data(),
-		};
-		return descriptor.device.CreatePipelineLayout(&pipelineLayoutDescriptor);
-	}
 
-	//OUTPUT
 	wgpu::BindGroupLayout initOutputBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
 
 		wgpu::BindGroupLayoutEntry depthBindGroupLayoutEntry = {
@@ -124,17 +104,8 @@ namespace {
 			},
 		};
 
-		wgpu::BindGroupLayoutEntry depthSamplerBindGroupLayoutEntry = {
-			.binding = 1,
-			.visibility = (wgpu::ShaderStage::Fragment),
-			.sampler = wgpu::SamplerBindingLayout {
-				.type = wgpu::SamplerBindingType::Comparison
-			},
-		};
-	
-		std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
+		std::array<wgpu::BindGroupLayoutEntry, 1> bindGroupLayoutEntries = {
 			depthBindGroupLayoutEntry,
-			depthSamplerBindGroupLayoutEntry,
 		};
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
@@ -150,14 +121,8 @@ namespace {
 			.textureView = descriptor.textureViews.value().depth,
 		};
 
-		wgpu::BindGroupEntry depthSamplerBindGroupEntry = {
-			.binding = 1,
-			.sampler = descriptor.samplers.value().depth,
-		};
-		
-		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 1> bindGroupEntries = {
 			depthBindGroupEntry,
-			depthSamplerBindGroupEntry,
 		};
 
 		wgpu::BindGroupDescriptor bindGroupDescriptor = {
@@ -169,6 +134,18 @@ namespace {
 		*descriptor.p_bindGroup = descriptor.device.CreateBindGroup(&bindGroupDescriptor);
 
 		return bindGroupLayout;
+	}
+
+
+
+	wgpu::PipelineLayout initGeometryPipelineLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
+		std::array<wgpu::BindGroupLayout, 1> bindGroupLayouts = { initGeometryBindGroupLayout(descriptor) };
+		wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
+			.label = "Geometry Pipeline Layout",
+			.bindGroupLayoutCount = bindGroupLayouts.size(),
+			.bindGroupLayouts = bindGroupLayouts.data(),
+		};
+		return descriptor.device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	}
 
 	wgpu::PipelineLayout initOutputPipelineLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
