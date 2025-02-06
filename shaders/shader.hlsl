@@ -28,7 +28,7 @@ struct Material
 {
     float4 baseColor;
 };
-StructuredBuffer<Material> materials : register(t0, space1);
+StructuredBuffer<Material> materials : register(t3, space0);
 
 struct Light
 {
@@ -43,7 +43,7 @@ struct Light
     float innerConeAngle;
     float outerConeAngle;
 };
-StructuredBuffer<Light> lights : register(t1, space1);
+StructuredBuffer<Light> lights : register(t4, space0);
 
 struct VSInput
 {

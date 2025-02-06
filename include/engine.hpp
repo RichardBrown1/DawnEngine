@@ -30,7 +30,7 @@ private:
 	std::vector<Light> _lights;
 	std::vector<Camera> _cameras;
 	Buffers _buffers;
-	std::vector<wgpu::BindGroup> _bindGroups;
+	BindGroups _bindGroups;
 	wgpu::TextureView _depthTextureView;
 	wgpu::Sampler _depthSampler;
 

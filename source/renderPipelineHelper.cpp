@@ -5,7 +5,7 @@
 #include "../include/constants.hpp"
 
 namespace {
-	wgpu::BindGroupLayout initStaticBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
+	wgpu::BindGroupLayout initGeometryBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
 		wgpu::BindGroupLayoutEntry cameraBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = (wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment),
@@ -30,14 +30,33 @@ namespace {
 				.minBindingSize = sizeof(InstanceProperty),
 			}
 		};
-		std::array<wgpu::BindGroupLayoutEntry, 3> bindGroupLayoutEntries = {
+		wgpu::BindGroupLayoutEntry materialBindGroupLayoutEntry = {
+			.binding = 3,
+			.visibility = wgpu::ShaderStage::Vertex,
+			.buffer = {
+				.type = wgpu::BufferBindingType::ReadOnlyStorage,
+				.minBindingSize = sizeof(Material),
+			}
+		};
+		wgpu::BindGroupLayoutEntry lightBindGroupLayoutEntry = {
+			.binding = 4,
+			.visibility = wgpu::ShaderStage::Fragment,
+			.buffer = {
+				.type = wgpu::BufferBindingType::ReadOnlyStorage,
+				.minBindingSize = sizeof(Light),
+			}
+		};
+
+		std::array<wgpu::BindGroupLayoutEntry, 5> bindGroupLayoutEntries = {
 			cameraBindGroupLayoutEntry,
 			transformsBindGroupLayoutEntry,
 			instancePropertiesBindGroupLayoutEntry,
+			materialBindGroupLayoutEntry,
+			lightBindGroupLayoutEntry,
 		};
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-			.label = "static bind group",
+			.label = "geometry bind group",
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
@@ -59,82 +78,42 @@ namespace {
 			.buffer = descriptor.buffers.instanceProperties,
 			.size = descriptor.buffers.instanceProperties.GetSize(),
 		};
-		std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = {
-			cameraBindGroupEntry,
-			transformsBindGroupEntry,
-			instancePropertiesBindGroupEntry,
-		};
-
-		wgpu::BindGroupDescriptor bindGroupDescriptor = {
-			.label = "static bind group",
-			.layout = bindGroupLayout,
-			.entryCount = bindGroupEntries.size(),
-			.entries = bindGroupEntries.data() ,
-		};
-		descriptor.bindGroups.push_back(descriptor.device.CreateBindGroup(&bindGroupDescriptor));
-
-		return bindGroupLayout;
-	}
-
-	wgpu::BindGroupLayout initInfrequentBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor descriptor) {
-		wgpu::BindGroupLayoutEntry materialBindGroupLayoutEntry = {
-			.binding = 0,
-			.visibility = wgpu::ShaderStage::Vertex,
-			.buffer = {
-				.type = wgpu::BufferBindingType::ReadOnlyStorage,
-				.minBindingSize = sizeof(Material),
-			}
-		};
-		wgpu::BindGroupLayoutEntry lightBindGroupLayoutEntry = {
-			.binding = 1,
-			.visibility = wgpu::ShaderStage::Fragment,
-			.buffer = {
-				.type = wgpu::BufferBindingType::ReadOnlyStorage,
-				.minBindingSize = sizeof(Light),
-			}
-		};
-		std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
-			materialBindGroupLayoutEntry,
-			lightBindGroupLayoutEntry,
-		};
-
-		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-			.label = "infrequent bind group",
-			.entryCount = bindGroupLayoutEntries.size(),
-			.entries = bindGroupLayoutEntries.data(),
-		};
-		wgpu::BindGroupLayout bindGroupLayout = descriptor.device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
-
 		wgpu::BindGroupEntry materialBindGroupEntry = {
-			.binding = 0,
+			.binding = 3,
 			.buffer = descriptor.buffers.material,
 			.size = descriptor.buffers.material.GetSize(),
 		};
 		wgpu::BindGroupEntry lightBindGroupEntry = {
-			.binding = 1,
+			.binding = 4,
 			.buffer = descriptor.buffers.light,
 			.size = descriptor.buffers.light.GetSize(),
 		};
-		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
+
+
+		std::array<wgpu::BindGroupEntry, 5> bindGroupEntries = {
+			cameraBindGroupEntry,
+			transformsBindGroupEntry,
+			instancePropertiesBindGroupEntry,
 			materialBindGroupEntry,
 			lightBindGroupEntry,
 		};
 
 		wgpu::BindGroupDescriptor bindGroupDescriptor = {
-			.label = "infrequent bind group",
+			.label = "geometry bind group",
 			.layout = bindGroupLayout,
-			.entryCount = bindGroupLayoutDescriptor.entryCount,
-			.entries = bindGroupEntries.data(),
+			.entryCount = bindGroupEntries.size(),
+			.entries = bindGroupEntries.data() ,
 		};
-		descriptor.bindGroups.push_back(descriptor.device.CreateBindGroup(&bindGroupDescriptor));
+		descriptor.bindGroups.fixed = descriptor.device.CreateBindGroup(&bindGroupDescriptor);
+
 		return bindGroupLayout;
 	}
-
-	wgpu::PipelineLayout initPipelineLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
-		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = { initStaticBindGroupLayout(descriptor), initInfrequentBindGroupLayout(descriptor) };
+	
+	wgpu::PipelineLayout initGeometryPipelineLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
+		std::array<wgpu::BindGroupLayout, 1> bindGroupLayouts = { initGeometryBindGroupLayout(descriptor)};
 		wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
 			.label = "Pipeline Layout",
-			.bindGroupLayoutCount = 2,
+			.bindGroupLayoutCount = 1,
 			.bindGroupLayouts = bindGroupLayouts.data(),
 		};
 		return descriptor.device.CreatePipelineLayout(&pipelineLayoutDescriptor);
@@ -201,8 +180,8 @@ namespace RenderPipelineHelper {
 		};
 
 		wgpu::RenderPipelineDescriptor renderPipelineDescriptor = {
-			.label = "render pipeline descriptor",
-			.layout = initPipelineLayout(descriptor),
+			.label = "geometry render pipeline descriptor",
+			.layout = initGeometryPipelineLayout(descriptor),
 			.vertex = vertexState,
 			.primitive = wgpu::PrimitiveState {
 				.topology = wgpu::PrimitiveTopology::TriangleList,

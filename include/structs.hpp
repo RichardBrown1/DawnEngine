@@ -11,6 +11,11 @@ struct Buffers {
 	wgpu::Buffer light;
 };
 
+struct BindGroups {
+	wgpu::BindGroup fixed;
+	wgpu::BindGroup perFrame;
+};
+
 struct Camera {
 	alignas(sizeof(glm::mat4x4)) glm::mat4x4 projection;
 	alignas(sizeof(glm::mat4x4)) glm::mat4x4 view;

@@ -10,7 +10,7 @@ namespace RenderPipelineHelper {
 	struct RenderPipelineHelperDescriptor {
 		wgpu::Device& device;
 		Buffers& buffers;
-		std::vector<wgpu::BindGroup>& bindGroups;
+		BindGroups& bindGroups;
 		wgpu::ShaderModule& vertexShaderModule;
 		wgpu::ShaderModule& fragmentShaderModule;
 		wgpu::TextureFormat& colorTargetStateFormat;
