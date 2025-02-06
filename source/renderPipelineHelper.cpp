@@ -195,7 +195,7 @@ namespace RenderPipelineHelper {
 		};
 
 		wgpu::DepthStencilState depthStencilState = {
-			.format = CONSTANTS::DEPTH_FORMAT,
+			.format = DawnEngine::DEPTH_FORMAT,
 			.depthWriteEnabled = true,
 			.depthCompare = wgpu::CompareFunction::Less,
 		};

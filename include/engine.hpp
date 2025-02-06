@@ -5,10 +5,10 @@
 #include <fastgltf/core.hpp>
 #include "structs.hpp"
 
-class DawnEngine {
+class Engine {
 
 public:
-	DawnEngine();
+	Engine();
 	void run();
 	void destroy();
 

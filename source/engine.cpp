@@ -8,7 +8,7 @@
 #include "../include/sdl3webgpu.hpp"
 #include "SDL3/SDL.h"
 
-#include "../include/DawnEngine.hpp"
+#include "../include/engine.hpp"
 #include <dawn/webgpu_cpp_print.h>
 
 #include <glm/ext/matrix_transform.hpp>
@@ -22,12 +22,12 @@
 #include "../include/utilities.hpp"
 #include "../include/renderPipelineHelper.hpp"
 
-static DawnEngine* loadedEngine = nullptr;
+static Engine* loadedEngine = nullptr;
 
 const uint32_t WIDTH = 1024;
 const uint32_t HEIGHT = 720;
 
-DawnEngine::DawnEngine() {
+Engine::Engine() {
 	//Only 1 engine allowed
 	assert(loadedEngine == nullptr);
 	loadedEngine = this;
@@ -149,7 +149,7 @@ DawnEngine::DawnEngine() {
 }
 
 
-void DawnEngine::initGltf() {
+void Engine::initGltf() {
 	_gltfParser = fastgltf::Parser::Parser(fastgltf::Extensions::KHR_lights_punctual);
 
 	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cornellbox.gltf");
@@ -167,7 +167,7 @@ void DawnEngine::initGltf() {
 }
 
 
-void DawnEngine::initNodes(fastgltf::Asset& asset) {
+void Engine::initNodes(fastgltf::Asset& asset) {
 	size_t sceneIndex = asset.defaultScene.value_or(0);
 	fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 		[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
@@ -190,7 +190,7 @@ void DawnEngine::initNodes(fastgltf::Asset& asset) {
 
 }
 
-void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
+void Engine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
 	if (_meshIndexToDrawInfoMap.count(meshIndex)) {
 		++_meshIndexToDrawInfoMap[meshIndex]->instanceCount;
 		return;
@@ -251,7 +251,7 @@ void DawnEngine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, 
 	}
 }
 
-void::DawnEngine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
+void::Engine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
 	Light l;
 	glm::f32quat quaterion;
 	glm::f32vec3 scale, skew;
@@ -270,7 +270,7 @@ void::DawnEngine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform
 	_lights.push_back(l);
 }
 
-void DawnEngine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t cameraIndex) {
+void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t cameraIndex) {
 //	if (_buffers.camera.GetSize() > 0) {
 		//TODO what if there is 0 cameras or more than 1 cameras
 //		return;
@@ -292,7 +292,7 @@ void DawnEngine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform
 	}
 }
 
-void DawnEngine::initSceneBuffers() {
+void Engine::initSceneBuffers() {
 	wgpu::BufferDescriptor cameraBufferDescriptor = {
 		.label = "camera buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
@@ -344,7 +344,7 @@ void DawnEngine::initSceneBuffers() {
 	}
 
 //Default Material will be at end of material buffer
-void DawnEngine::initMaterialBuffer(fastgltf::Asset& asset) {
+void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 	auto materials = std::vector<Material>(asset.materials.size() + 1);
 	
 	for (int i = 0; auto & material : asset.materials) {
@@ -366,14 +366,14 @@ void DawnEngine::initMaterialBuffer(fastgltf::Asset& asset) {
 	_queue.WriteBuffer(_buffers.material, 0, materials.data(), materialBufferDescriptor.size);
 }
 
-void DawnEngine::initDepthTexture() {
+void Engine::initDepthTexture() {
 
 	wgpu::TextureDescriptor depthTextureDescriptor = {
 		.label = "depth texture",
 		.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
 		.dimension = wgpu::TextureDimension::e2D,
 		.size = wgpu::Extent3D(_surfaceConfiguration.width, _surfaceConfiguration.height),
-		.format = CONSTANTS::DEPTH_FORMAT,
+		.format = DawnEngine::DEPTH_FORMAT,
 	};
 	wgpu::Texture depthTexture = _device.CreateTexture(&depthTextureDescriptor);
 
@@ -387,7 +387,7 @@ void DawnEngine::initDepthTexture() {
 	_depthSampler =	_device.CreateSampler(&samplerDescriptor);	
 }
 
-void DawnEngine::initRenderPipeline() {
+void Engine::initRenderPipeline() {
 	std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_shader.spv"));
 	wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
 	vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
@@ -420,7 +420,7 @@ void DawnEngine::initRenderPipeline() {
 }
 
 
-void DawnEngine::draw() {
+void Engine::draw() {
 
 	//Get next surface texture view
 	wgpu::TextureView surfaceTextureView = getNextSurfaceTextureView();
@@ -485,7 +485,7 @@ void DawnEngine::draw() {
 
 }
 
-wgpu::TextureView DawnEngine::getNextSurfaceTextureView() {
+wgpu::TextureView Engine::getNextSurfaceTextureView() {
 	wgpu::SurfaceTexture surfaceTexture;
 	_surface.GetCurrentTexture(&surfaceTexture);
 	if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::Success) {
@@ -508,7 +508,7 @@ wgpu::TextureView DawnEngine::getNextSurfaceTextureView() {
 }
 
 
-void DawnEngine::run() {
+void Engine::run() {
 	SDL_Event e;
 	bool bQuit = false;
 	bool stopRendering = false;
@@ -541,7 +541,7 @@ void DawnEngine::run() {
 	}
 }
 
-void DawnEngine::destroy() {
+void Engine::destroy() {
 	_surface.Unconfigure();
 	_device.Destroy();
 	//aSDL_DestroyWindow(_p_sdl_window);
