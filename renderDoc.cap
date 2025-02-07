@@ -1,0 +1,28 @@
+{
+    "rdocCaptureSettings": 1,
+    "settings": {
+        "autoStart": false,
+        "commandLine": "",
+        "environment": [
+        ],
+        "executable": "E:\\Projects\\dawnEngine\\DawnEngine\\out\\build\\x64-debug\\DawnEngine.exe",
+        "inject": false,
+        "numQueuedFrames": 1,
+        "options": {
+            "allowFullscreen": false,
+            "allowVSync": false,
+            "apiValidation": true,
+            "captureAllCmdLists": true,
+            "captureCallstacks": true,
+            "captureCallstacksOnlyDraws": false,
+            "debugOutputMute": true,
+            "delayForDebugger": 0,
+            "hookIntoChildren": false,
+            "refAllResources": true,
+            "softMemoryLimit": 0,
+            "verifyBufferAccess": true
+        },
+        "queuedFrameCap": 10,
+        "workingDir": ""
+    }
+}
