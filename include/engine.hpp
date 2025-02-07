@@ -20,7 +20,7 @@ private:
 	wgpu::Surface _surface;
 	wgpu::SurfaceConfiguration _surfaceConfiguration;
 	wgpu::Queue _queue;
-	wgpu::RenderPipeline _renderPipeline;
+	RenderPipelines _renderPipelines;
 	std::vector<VBO> _vbos;
 	std::vector<uint16_t> _indices;
 	std::vector<DrawInfo> _drawCalls;

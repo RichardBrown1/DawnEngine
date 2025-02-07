@@ -13,7 +13,12 @@ struct Buffers {
 
 struct BindGroups {
 	wgpu::BindGroup fixed;
-	wgpu::BindGroup perFrame;
+	wgpu::BindGroup lights;
+};
+
+struct RenderPipelines {
+	wgpu::RenderPipeline shadow;
+	wgpu::RenderPipeline geometry;
 };
 
 struct Camera {

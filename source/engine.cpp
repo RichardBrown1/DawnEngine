@@ -388,35 +388,69 @@ void Engine::initDepthTexture() {
 }
 
 void Engine::initRenderPipeline() {
-	std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_shader.spv"));
-	wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
-	vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
-	vertexShaderSource.code = vertexShaderCode.data();
-	wgpu::ShaderModuleDescriptor vertexShaderModuleDescriptor = {
-		.nextInChain = &vertexShaderSource,
-		.label = "vertex shader module"
-	};
-	wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
+	{
+		std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_shadowShader.spv"));
+		wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
+		vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
+		vertexShaderSource.code = vertexShaderCode.data();
+		wgpu::ShaderModuleDescriptor vertexShaderModuleDescriptor = {
+			.nextInChain = &vertexShaderSource,
+			.label = "vertex shadow shader module"
+		};
+		wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
 
-	std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_shader.spv"));
-	wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
-	fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
-	fragmentShaderSource.code = fragmentShaderCode.data();
-	wgpu::ShaderModuleDescriptor fragmentShaderModuleDescriptor = {
-		.nextInChain = &fragmentShaderSource,
-		.label = "fragment shader module"
-	};
-	wgpu::ShaderModule fragmentShaderModule = _device.CreateShaderModule(&fragmentShaderModuleDescriptor);
+		std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_shadowShader.spv"));
+		wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
+		fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
+		fragmentShaderSource.code = fragmentShaderCode.data();
+		wgpu::ShaderModuleDescriptor fragmentShaderModuleDescriptor = {
+			.nextInChain = &fragmentShaderSource,
+			.label = "fragment shadow shader module"
+		};
+		wgpu::ShaderModule fragmentShaderModule = _device.CreateShaderModule(&fragmentShaderModuleDescriptor);
 
-	RenderPipelineHelper::RenderPipelineHelperDescriptor renderPipelineDescriptor = {
-		.device = _device,
-		.buffers = _buffers,
-		.bindGroups = _bindGroups,
-		.vertexShaderModule = vertexShaderModule,
-		.fragmentShaderModule = fragmentShaderModule,
-		.colorTargetStateFormat = _surfaceConfiguration.format,
-	};
-	_renderPipeline = RenderPipelineHelper::createRenderPipeline(renderPipelineDescriptor);
+		RenderPipelineHelper::RenderPipelineHelperDescriptor renderPipelineDescriptor = {
+			.device = _device,
+			.buffers = _buffers,
+			.bindGroups = _bindGroups,
+			.vertexShaderModule = vertexShaderModule,
+			.fragmentShaderModule = fragmentShaderModule,
+			.colorTargetStateFormat = _surfaceConfiguration.format,
+		};
+		_renderPipelines.shadow = RenderPipelineHelper::createShadowRenderPipeline(renderPipelineDescriptor);
+	}
+
+	{
+		std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_shader.spv"));
+		wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
+		vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
+		vertexShaderSource.code = vertexShaderCode.data();
+		wgpu::ShaderModuleDescriptor vertexShaderModuleDescriptor = {
+			.nextInChain = &vertexShaderSource,
+			.label = "vertex output shader module"
+		};
+		wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
+
+		std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_shader.spv"));
+		wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
+		fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
+		fragmentShaderSource.code = fragmentShaderCode.data();
+		wgpu::ShaderModuleDescriptor fragmentShaderModuleDescriptor = {
+			.nextInChain = &fragmentShaderSource,
+			.label = "fragment output shader module"
+		};
+		wgpu::ShaderModule fragmentShaderModule = _device.CreateShaderModule(&fragmentShaderModuleDescriptor);
+
+		RenderPipelineHelper::RenderPipelineHelperDescriptor renderPipelineDescriptor = {
+			.device = _device,
+			.buffers = _buffers,
+			.bindGroups = _bindGroups,
+			.vertexShaderModule = vertexShaderModule,
+			.fragmentShaderModule = fragmentShaderModule,
+			.colorTargetStateFormat = _surfaceConfiguration.format,
+		};
+		_renderPipelines.geometry = RenderPipelineHelper::createOutputRenderPipeline(renderPipelineDescriptor);
+	}
 }
 
 
@@ -428,40 +462,55 @@ void Engine::draw() {
 	wgpu::CommandEncoderDescriptor commandEncoderDescriptor = wgpu::CommandEncoderDescriptor();
 	commandEncoderDescriptor.label = "My command encoder";
 	wgpu::CommandEncoder commandEncoder = _device.CreateCommandEncoder(&commandEncoderDescriptor);
+	{ //Shadow Pass
+		wgpu::RenderPassDescriptor renderPassDescriptor;
+		wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
+		renderPassEncoder.SetPipeline(_renderPipelines.shadow);
+		renderPassEncoder.SetBindGroup(0, _bindGroups.lights);
+		renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
+		renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
 
-	wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
-	renderPassColorAttachment.view = surfaceTextureView;
-	renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
-	renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
-	renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
+		for (auto& dc : _drawCalls) {
+			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+		}
+		//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
+		renderPassEncoder.End();
 
-	wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
-		.view = _depthTextureView,
-		.depthLoadOp = wgpu::LoadOp::Clear,
-		.depthStoreOp = wgpu::StoreOp::Store,
-		.depthClearValue = 1.0f,		
-	};
-
-	wgpu::RenderPassDescriptor renderPassDescriptor = {
-		.colorAttachmentCount = 1,
-		.colorAttachments = &renderPassColorAttachment,
-		.depthStencilAttachment = &renderPassDepthStencilAttachment,
-	};
-
-
-	wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
-	renderPassEncoder.SetPipeline(_renderPipeline);
-	renderPassEncoder.SetBindGroup(0, _bindGroups.fixed);
-	renderPassEncoder.SetBindGroup(1, _bindGroups.perFrame); 
-	renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
-	renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
-
-	for (auto& dc : _drawCalls) {
-		renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
 	}
-	//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
-	renderPassEncoder.End();
 
+	{ //Output Pass
+		wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
+		renderPassColorAttachment.view = surfaceTextureView;
+		renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
+		renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
+		renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
+
+		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+			.view = _depthTextureView,
+			.depthLoadOp = wgpu::LoadOp::Clear,
+			.depthStoreOp = wgpu::StoreOp::Store,
+			.depthClearValue = 1.0f,
+		};
+
+		wgpu::RenderPassDescriptor renderPassDescriptor = {
+			.colorAttachmentCount = 1,
+			.colorAttachments = &renderPassColorAttachment,
+			.depthStencilAttachment = &renderPassDepthStencilAttachment,
+		};
+
+
+		wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
+		renderPassEncoder.SetPipeline(_renderPipelines.geometry);
+		renderPassEncoder.SetBindGroup(0, _bindGroups.fixed);
+		renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
+		renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
+
+		for (auto& dc : _drawCalls) {
+			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+		}
+		//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
+		renderPassEncoder.End();
+	}
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
 		.label = "Command Buffer",
 	};
