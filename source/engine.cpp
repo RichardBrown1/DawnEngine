@@ -277,8 +277,8 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 //	}
 	constexpr float forwardAmount = 8.0f;
 	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
-	const glm::vec3 forwardPosition = glm::vec3(transform[3]) - forwardAmount * forward;
-	const auto eye = glm::vec3(transform[3][0], transform[3][1], transform[3][2]);
+	const auto eye = glm::vec3(transform[3]);
+	const glm::vec3 forwardPosition = eye - (forwardAmount * forward);
 	Camera camera;
 	camera.view = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
 
