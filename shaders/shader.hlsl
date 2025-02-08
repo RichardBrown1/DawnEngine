@@ -107,9 +107,10 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
     VSOutput output = (VSOutput) 0;    
     
     output.Position = (float3) mul(transforms[InstanceIndex], float4(input.Position, 1.0));
-    output.ClipPosition = mul(ubo.projection,
-                        mul(ubo.view,
-                        float4(output.Position, 1.0)));
+    output.ClipPosition = mul(
+                            mul(ubo.projection, ubo.view),
+                            float4(output.Position, 1.0)
+                          );
     
     output.Normal = mul((float3x3) mul(inverseTransposeMultiplier, transforms[InstanceIndex]), input.Normal);
 

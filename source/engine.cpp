@@ -14,6 +14,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include <fastgltf/tools.hpp>
 #include <fastgltf/types.hpp>
@@ -267,6 +268,16 @@ void::Engine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 	memcpy(&l.color, &asset.lights[lightIndex].color, sizeof(glm::f32vec3));
 	l.type = static_cast<uint32_t>(asset.lights[lightIndex].type);
 	memcpy(&l.intensity, &asset.lights[lightIndex].intensity, sizeof(glm::f32) * 4);
+
+//	glm::mat4x4 lightView, lightProjection;
+//
+//	constexpr float forwardAmount = 8.0f;
+//	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
+//	const glm::vec3 forwardPosition = glm::vec3(transform[3]) - forwardAmount * forward;
+//	const auto eye = glm::vec3(transform[3][0], transform[3][1], transform[3][2]);
+
+
+
 	_lights.push_back(l);
 }
 
@@ -275,12 +286,19 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 		//TODO what if there is 0 cameras or more than 1 cameras
 //		return;
 //	}
-	constexpr float forwardAmount = 8.0f;
-	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
-	const auto eye = glm::vec3(transform[3]);
-	const glm::vec3 forwardPosition = eye - (forwardAmount * forward);
+
+//TODO: Fix these caluclations
+//  constexpr float forwardAmount = 8.0f;
+//	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
+//	const auto eye = glm::vec3(transform[3]);
+//	const glm::vec3 forwardPosition = eye - (forwardAmount * forward);
 	Camera camera;
-	camera.view = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
+	//camera.view = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	std::cout << glm::to_string(camera.view) << std::endl;
+//	glm::f32mat4x4 delta = glm::inverse(transform)*camera.view;
+	const	glm::f32mat4x4 delta = glm::f32mat4x4(1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, 0.0f,  0.00f, -0.69f, 0.0f, 1.000000);
+	camera.view = transform * delta;
 
 	fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera );
 	camera.projection = glm::perspective(perspectiveCamera->yfov, _surfaceConfiguration.width / (float)_surfaceConfiguration.height, perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f));
