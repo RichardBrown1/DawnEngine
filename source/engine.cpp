@@ -253,6 +253,7 @@ void Engine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint
 }
 
 void::Engine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
+	std::cout << "Light " << std::endl;
 	Light l;
 	glm::f32quat quaterion;
 	glm::f32vec3 scale, skew;
@@ -269,14 +270,20 @@ void::Engine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 	l.type = static_cast<uint32_t>(asset.lights[lightIndex].type);
 	memcpy(&l.intensity, &asset.lights[lightIndex].intensity, sizeof(glm::f32) * 4);
 
-//	glm::mat4x4 lightView, lightProjection;
-//
-//	constexpr float forwardAmount = 8.0f;
-//	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
-//	const glm::vec3 forwardPosition = glm::vec3(transform[3]) - forwardAmount * forward;
-//	const auto eye = glm::vec3(transform[3][0], transform[3][1], transform[3][2]);
+	glm::mat4x4 lightView, lightProjection;
 
-
+	//constexpr float forwardAmount = 8.0f;
+	//const glm::vec3 forward = glm::abs(l.rotation);
+	//const auto eye = glm::vec3(transform[3]);
+	//const glm::vec3 forwardPosition = eye - (forwardAmount * forward);
+	//lightView = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
+//	std::cout << glm::to_string(transform) << std::endl;
+//	std::cout << glm::to_string(lightView) << std::endl;
+	lightView = transform;
+	lightProjection = glm::perspective(l.outerConeAngle, 1.0f, 0.1f, l.range);
+	std::cout << glm::to_string(lightProjection) << std::endl;
+	l.lightSpaceMatrix = lightView * lightProjection;
+	std::cout << glm::to_string(l.lightSpaceMatrix) << std::endl;
 
 	_lights.push_back(l);
 }
@@ -292,16 +299,19 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 //	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
 //	const auto eye = glm::vec3(transform[3]);
 //	const glm::vec3 forwardPosition = eye - (forwardAmount * forward);
+	std::cout << "Camera " << std::endl;
 	Camera camera;
 	//camera.view = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
 
-	std::cout << glm::to_string(camera.view) << std::endl;
+//	std::cout << glm::to_string(camera.view) << std::endl;
 //	glm::f32mat4x4 delta = glm::inverse(transform)*camera.view;
 	const	glm::f32mat4x4 delta = glm::f32mat4x4(1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, 0.0f,  0.00f, -0.69f, 0.0f, 1.000000);
 	camera.view = transform * delta;
 
 	fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera );
 	camera.projection = glm::perspective(perspectiveCamera->yfov, _surfaceConfiguration.width / (float)_surfaceConfiguration.height, perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f));
+	std::cout << glm::to_string(camera.view) << std::endl;
+	std::cout << glm::to_string(camera.projection) << std::endl;
 	_cameras.push_back(camera);
 
 	fastgltf::Camera::Orthographic* orthographicCamera = std::get_if<fastgltf::Camera::Orthographic>(&asset.cameras[cameraIndex].camera );
@@ -406,37 +416,37 @@ void Engine::initDepthTexture() {
 }
 
 void Engine::initRenderPipeline() {
-//	{
-//		std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_shadowShader.spv"));
-//		wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
-//		vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
-//		vertexShaderSource.code = vertexShaderCode.data();
-//		wgpu::ShaderModuleDescriptor vertexShaderModuleDescriptor = {
-//			.nextInChain = &vertexShaderSource,
-//			.label = "vertex shadow shader module"
-//		};
-//		wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
-//
-//		std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_shadowShader.spv"));
-//		wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
-//		fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
-//		fragmentShaderSource.code = fragmentShaderCode.data();
-//		wgpu::ShaderModuleDescriptor fragmentShaderModuleDescriptor = {
-//			.nextInChain = &fragmentShaderSource,
-//			.label = "fragment shadow shader module"
-//		};
-//		wgpu::ShaderModule fragmentShaderModule = _device.CreateShaderModule(&fragmentShaderModuleDescriptor);
-//
-//		RenderPipelineHelper::RenderPipelineHelperDescriptor renderPipelineDescriptor = {
-//			.device = _device,
-//			.buffers = _buffers,
-//			.bindGroups = _bindGroups,
-//			.vertexShaderModule = vertexShaderModule,
-//			.fragmentShaderModule = fragmentShaderModule,
-//			.colorTargetStateFormat = _surfaceConfiguration.format,
-//		};
-//		_renderPipelines.shadow = RenderPipelineHelper::createShadowRenderPipeline(renderPipelineDescriptor);
-//	}
+	{
+		std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_shadowShader.spv"));
+		wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
+		vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
+		vertexShaderSource.code = vertexShaderCode.data();
+		wgpu::ShaderModuleDescriptor vertexShaderModuleDescriptor = {
+			.nextInChain = &vertexShaderSource,
+			.label = "vertex shadow shader module"
+		};
+		wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
+
+		std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_shadowShader.spv"));
+		wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
+		fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
+		fragmentShaderSource.code = fragmentShaderCode.data();
+		wgpu::ShaderModuleDescriptor fragmentShaderModuleDescriptor = {
+			.nextInChain = &fragmentShaderSource,
+			.label = "fragment shadow shader module"
+		};
+		wgpu::ShaderModule fragmentShaderModule = _device.CreateShaderModule(&fragmentShaderModuleDescriptor);
+
+		RenderPipelineHelper::RenderPipelineHelperDescriptor renderPipelineDescriptor = {
+			.device = _device,
+			.buffers = _buffers,
+			.bindGroups = _bindGroups,
+			.vertexShaderModule = vertexShaderModule,
+			.fragmentShaderModule = fragmentShaderModule,
+			.colorTargetStateFormat = _surfaceConfiguration.format,
+		};
+		_renderPipelines.shadow = RenderPipelineHelper::createShadowRenderPipeline(renderPipelineDescriptor);
+	}
 
 	{
 		std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_shader.spv"));
@@ -480,21 +490,39 @@ void Engine::draw() {
 	wgpu::CommandEncoderDescriptor commandEncoderDescriptor = wgpu::CommandEncoderDescriptor();
 	commandEncoderDescriptor.label = "My command encoder";
 	wgpu::CommandEncoder commandEncoder = _device.CreateCommandEncoder(&commandEncoderDescriptor);
-//	{ //Shadow Pass
-//		wgpu::RenderPassDescriptor renderPassDescriptor;
-//		wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
-//		renderPassEncoder.SetPipeline(_renderPipelines.shadow);
-//		renderPassEncoder.SetBindGroup(0, _bindGroups.lights);
-//		renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
-//		renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
-//
-//		for (auto& dc : _drawCalls) {
-//			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
-//		}
-//		//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
-//		renderPassEncoder.End();
-//
-//	}
+	{ //Shadow Pass
+		wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
+		renderPassColorAttachment.view = surfaceTextureView;
+		renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
+		renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
+		renderPassColorAttachment.clearValue = wgpu::Color{ 0.0, 1.0, 0.0, 1.0 };
+
+		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+			.view = _depthTextureView,
+			.depthLoadOp = wgpu::LoadOp::Clear,
+			.depthStoreOp = wgpu::StoreOp::Store,
+			.depthClearValue = 1.0f,
+		};
+
+		wgpu::RenderPassDescriptor renderPassDescriptor = {
+			.label = "shadow render pass",
+			.colorAttachmentCount = 1,
+			.colorAttachments = &renderPassColorAttachment,
+			.depthStencilAttachment = &renderPassDepthStencilAttachment,
+		};
+		wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
+		renderPassEncoder.SetPipeline(_renderPipelines.shadow);
+		renderPassEncoder.SetBindGroup(0, _bindGroups.lights);
+		renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
+		renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
+
+		for (auto& dc : _drawCalls) {
+			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+		}
+		//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
+		renderPassEncoder.End();
+
+	}
 
 	{ //Output Pass
 		wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
@@ -511,6 +539,7 @@ void Engine::draw() {
 		};
 
 		wgpu::RenderPassDescriptor renderPassDescriptor = {
+			.label = "output render pass",
 			.colorAttachmentCount = 1,
 			.colorAttachments = &renderPassColorAttachment,
 			.depthStencilAttachment = &renderPassDepthStencilAttachment,
@@ -606,9 +635,11 @@ void Engine::run() {
 
 		this->draw();
 	}
+	this->destroy();
 }
 
 void Engine::destroy() {
+	//TODO
 	_surface.Unconfigure();
 	_device.Destroy();
 	//aSDL_DestroyWindow(_p_sdl_window);

@@ -120,7 +120,7 @@ namespace {
 		};
 		wgpu::BindGroupLayoutEntry lightBindGroupLayoutEntry = {
 			.binding = 1,
-			.visibility = wgpu::ShaderStage::Fragment,
+			.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
 			.buffer = {
 				.type = wgpu::BufferBindingType::ReadOnlyStorage,
 				.minBindingSize = sizeof(Light),

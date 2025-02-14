@@ -32,6 +32,7 @@ StructuredBuffer<Material> materials : register(t3, space0);
 
 struct Light
 {
+    float4x4 lightSpaceMatrix;
     float3 position;
     uint PAD0;
     float3 rotation;
