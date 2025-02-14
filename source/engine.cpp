@@ -279,10 +279,11 @@ void::Engine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 	//lightView = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
 //	std::cout << glm::to_string(transform) << std::endl;
 //	std::cout << glm::to_string(lightView) << std::endl;
-	lightView = transform;
+	const	glm::f32mat4x4 delta = glm::f32mat4x4(1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, 0.0f,  0.00f, -1.6f, -1.6f, 1.000000);
+	lightView = transform * delta;
 	lightProjection = glm::perspective(l.outerConeAngle, 1.0f, 0.1f, l.range);
 	std::cout << glm::to_string(lightProjection) << std::endl;
-	l.lightSpaceMatrix = lightView * lightProjection;
+	l.lightSpaceMatrix = lightProjection * lightView;
 	std::cout << glm::to_string(l.lightSpaceMatrix) << std::endl;
 
 	_lights.push_back(l);
@@ -524,40 +525,40 @@ void Engine::draw() {
 
 	}
 
-	{ //Output Pass
-		wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
-		renderPassColorAttachment.view = surfaceTextureView;
-		renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
-		renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
-		renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
-
-		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
-			.view = _depthTextureView,
-			.depthLoadOp = wgpu::LoadOp::Clear,
-			.depthStoreOp = wgpu::StoreOp::Store,
-			.depthClearValue = 1.0f,
-		};
-
-		wgpu::RenderPassDescriptor renderPassDescriptor = {
-			.label = "output render pass",
-			.colorAttachmentCount = 1,
-			.colorAttachments = &renderPassColorAttachment,
-			.depthStencilAttachment = &renderPassDepthStencilAttachment,
-		};
-
-
-		wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
-		renderPassEncoder.SetPipeline(_renderPipelines.geometry);
-		renderPassEncoder.SetBindGroup(0, _bindGroups.fixed);
-		renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
-		renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
-
-		for (auto& dc : _drawCalls) {
-			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
-		}
-		//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
-		renderPassEncoder.End();
-	}
+//	{ //Output Pass
+//		wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
+//		renderPassColorAttachment.view = surfaceTextureView;
+//		renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
+//		renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
+//		renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
+//
+//		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+//			.view = _depthTextureView,
+//			.depthLoadOp = wgpu::LoadOp::Clear,
+//			.depthStoreOp = wgpu::StoreOp::Store,
+//			.depthClearValue = 1.0f,
+//		};
+//
+//		wgpu::RenderPassDescriptor renderPassDescriptor = {
+//			.label = "output render pass",
+//			.colorAttachmentCount = 1,
+//			.colorAttachments = &renderPassColorAttachment,
+//			.depthStencilAttachment = &renderPassDepthStencilAttachment,
+//		};
+//
+//
+//		wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
+//		renderPassEncoder.SetPipeline(_renderPipelines.geometry);
+//		renderPassEncoder.SetBindGroup(0, _bindGroups.fixed);
+//		renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
+//		renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
+//
+//		for (auto& dc : _drawCalls) {
+//			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+//		}
+//		//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
+//		renderPassEncoder.End();
+//	}
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
 		.label = "Command Buffer",
 	};
