@@ -36,8 +36,8 @@ namespace Utilities {
 	}
 
 glm::f32mat4x4 toGlmFormat(fastgltf::math::fmat4x4& matrix) {
-		glm::f32mat4x4 output;
-		memcpy(&output, &matrix, sizeof(glm::f32mat4x4));
+		glm::f32mat4x4& output = reinterpret_cast<glm::f32mat4x4&>(matrix);
+	//	memcpy(&output, &matrix, sizeof(glm::f32mat4x4));
 		return output;
 	}
 
