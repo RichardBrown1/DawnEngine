@@ -169,11 +169,12 @@ void Engine::initGltf() {
 
 
 void Engine::initNodes(fastgltf::Asset& asset) {
-	const auto flipX = glm::f32mat4x4(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
+	//const auto flipX = glm::f32mat4x4(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
+	//const auto flipX = glm::f32mat4x4(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 	size_t sceneIndex = asset.defaultScene.value_or(0);
 	fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 		[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
-			glm::f32mat4x4 matrix = Utilities::toGlmFormat(m);//* flipX;
+			glm::f32mat4x4 matrix = Utilities::toGlmFormat(m);// * flipX;
 			
 			
 			if (node.meshIndex.has_value()) {
@@ -297,15 +298,6 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 		//TODO what if there is 0 cameras or more than 1 cameras
 //		return;
 //	}
-	std::cout << "Test " << std::endl;
-	auto test =	glm::f32mat2x2(1.0f, 2.0f, 3.0f, 4.0f);
-	std::cout << glm::to_string(test) << std::endl;
-	std::cout << " 3: " << test[0][1] << std::endl;
-	glm::f32* p_test = &test[0][0];
-	p_test += 1;
-	std::cout << " p: " << *p_test << std::endl;
-
-//TODO: Fix these caluclations
   constexpr float forwardAmount = 8.0f;
 	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
 	const auto eye = glm::vec3(transform[3]);
@@ -313,12 +305,7 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 	std::cout << "Camera " << std::endl;
 	Camera camera;
 	camera.view = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
-
-//	std::cout << glm::to_string(camera.view) << std::endl;
-//	glm::f32mat4x4 delta = glm::inverse(transform)*camera.view;
-//	const	glm::f32mat4x4 delta = glm::f32mat4x4(1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, 0.0f,  0.00f, -0.69f, 0.0f, 1.000000);
-//	camera.view = transform * delta;
-//	camera.view = transform;
+//	camera.view = transform; //why does this not work?
 
 	fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera );
 	camera.projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, _surfaceConfiguration.width / (float)_surfaceConfiguration.height, perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f));
