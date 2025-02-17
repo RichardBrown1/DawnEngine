@@ -276,15 +276,12 @@ void::Engine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 
 	glm::mat4x4 lightView, lightProjection;
 
-	//constexpr float forwardAmount = 8.0f;
-	//const glm::vec3 forward = glm::abs(l.rotation);
-	//const auto eye = glm::vec3(transform[3]);
-	//const glm::vec3 forwardPosition = eye - (forwardAmount * forward);
-	//lightView = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
-//	std::cout << glm::to_string(transform) << std::endl;
-//	std::cout << glm::to_string(lightView) << std::endl;
-//	const	glm::f32mat4x4 delta = glm::f32mat4x4(1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, 0.0f,  0.00f, -1.6f, -1.6f, 1.000000);
-	lightView = transform;// *delta;
+	constexpr float forwardAmount = 8.0f;
+	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
+	const auto eye = glm::vec3(transform[3]);
+	const glm::vec3 forwardPosition = eye + (forwardAmount * forward);
+	std::cout << "Light " << std::endl;
+	lightView = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
 	lightProjection = glm::perspectiveRH_ZO(l.outerConeAngle, 1.0f, 0.1f, l.range);
 	std::cout << glm::to_string(lightProjection) << std::endl;
 	l.lightSpaceMatrix = lightProjection * lightView;
@@ -490,41 +487,7 @@ void Engine::draw() {
 	wgpu::CommandEncoderDescriptor commandEncoderDescriptor = wgpu::CommandEncoderDescriptor();
 	commandEncoderDescriptor.label = "My command encoder";
 	wgpu::CommandEncoder commandEncoder = _device.CreateCommandEncoder(&commandEncoderDescriptor);
-//	{ //Shadow Pass
-//		wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
-//		renderPassColorAttachment.view = surfaceTextureView;
-//		renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
-//		renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
-//		renderPassColorAttachment.clearValue = wgpu::Color{ 0.0, 1.0, 0.0, 1.0 };
-//
-//		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
-//			.view = _depthTextureView,
-//			.depthLoadOp = wgpu::LoadOp::Clear,
-//			.depthStoreOp = wgpu::StoreOp::Store,
-//			.depthClearValue = 1.0f,
-//		};
-//
-//		wgpu::RenderPassDescriptor renderPassDescriptor = {
-//			.label = "shadow render pass",
-//			.colorAttachmentCount = 1,
-//			.colorAttachments = &renderPassColorAttachment,
-//			.depthStencilAttachment = &renderPassDepthStencilAttachment,
-//		};
-//		wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
-//		renderPassEncoder.SetPipeline(_renderPipelines.shadow);
-//		renderPassEncoder.SetBindGroup(0, _bindGroups.lights);
-//		renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
-//		renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
-//
-//		for (auto& dc : _drawCalls) {
-//			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
-//		}
-//		//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
-//		renderPassEncoder.End();
-//
-//	}
-
-	{ //Output Pass
+	{ //Shadow Pass
 		wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
 		renderPassColorAttachment.view = surfaceTextureView;
 		renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
@@ -539,16 +502,14 @@ void Engine::draw() {
 		};
 
 		wgpu::RenderPassDescriptor renderPassDescriptor = {
-			.label = "output render pass",
+			.label = "shadow render pass",
 			.colorAttachmentCount = 1,
 			.colorAttachments = &renderPassColorAttachment,
 			.depthStencilAttachment = &renderPassDepthStencilAttachment,
 		};
-
-
 		wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
-		renderPassEncoder.SetPipeline(_renderPipelines.geometry);
-		renderPassEncoder.SetBindGroup(0, _bindGroups.fixed);
+		renderPassEncoder.SetPipeline(_renderPipelines.shadow);
+		renderPassEncoder.SetBindGroup(0, _bindGroups.lights);
 		renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
 		renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
 
@@ -557,7 +518,43 @@ void Engine::draw() {
 		}
 		//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
 		renderPassEncoder.End();
+
 	}
+
+	//{ //Output Pass
+	//	wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
+	//	renderPassColorAttachment.view = surfaceTextureView;
+	//	renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
+	//	renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
+	//	renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
+
+	//	wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+	//		.view = _depthTextureView,
+	//		.depthLoadOp = wgpu::LoadOp::Clear,
+	//		.depthStoreOp = wgpu::StoreOp::Store,
+	//		.depthClearValue = 1.0f,
+	//	};
+
+	//	wgpu::RenderPassDescriptor renderPassDescriptor = {
+	//		.label = "output render pass",
+	//		.colorAttachmentCount = 1,
+	//		.colorAttachments = &renderPassColorAttachment,
+	//		.depthStencilAttachment = &renderPassDepthStencilAttachment,
+	//	};
+
+
+	//	wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
+	//	renderPassEncoder.SetPipeline(_renderPipelines.geometry);
+	//	renderPassEncoder.SetBindGroup(0, _bindGroups.fixed);
+	//	renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
+	//	renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
+
+	//	for (auto& dc : _drawCalls) {
+	//		renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+	//	}
+	//	//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
+	//	renderPassEncoder.End();
+	//}
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
 		.label = "Command Buffer",
 	};
