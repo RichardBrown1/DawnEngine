@@ -11,6 +11,15 @@ struct Buffers {
 	wgpu::Buffer light;
 };
 
+struct TextureViews {
+	std::vector<wgpu::TextureView> shadowMaps;
+	wgpu::TextureView cameraDepth;
+};
+
+struct Samplers {
+	wgpu::Sampler depth;
+};
+
 struct BindGroups {
 	wgpu::BindGroup fixed;
 	wgpu::BindGroup lights;

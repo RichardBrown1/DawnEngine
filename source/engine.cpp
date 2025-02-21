@@ -402,14 +402,14 @@ void Engine::initDepthTexture() {
 	};
 	wgpu::Texture depthTexture = _device.CreateTexture(&depthTextureDescriptor);
 
-	_depthTextureView = depthTexture.CreateView();
+	_textureViews.cameraDepth = depthTexture.CreateView();
 	
 	wgpu::SamplerDescriptor samplerDescriptor = {
 		.label = "depth sampler",
 		.compare = wgpu::CompareFunction::Less,
 	};
 
-	_depthSampler =	_device.CreateSampler(&samplerDescriptor);	
+	_samplers.depth =	_device.CreateSampler(&samplerDescriptor);	
 }
 
 void Engine::initRenderPipeline() {
@@ -437,6 +437,8 @@ void Engine::initRenderPipeline() {
 		RenderPipelineHelper::RenderPipelineHelperDescriptor renderPipelineDescriptor = {
 			.device = _device,
 			.buffers = _buffers,
+			.textureViews = _textureViews,
+			.samplers = _samplers,
 			.bindGroups = _bindGroups,
 			.vertexShaderModule = vertexShaderModule,
 			.fragmentShaderModule = fragmentShaderModule,
@@ -469,9 +471,11 @@ void Engine::initRenderPipeline() {
 		RenderPipelineHelper::RenderPipelineHelperDescriptor renderPipelineDescriptor = {
 			.device = _device,
 			.buffers = _buffers,
+			.textureViews = _textureViews,
+			.samplers = _samplers,
 			.bindGroups = _bindGroups,
 			.vertexShaderModule = vertexShaderModule,
-			.fragmentShaderModule = fragmentShaderModule,
+			.fragmentShaderModule = fragmentShaderModule,	
 			.colorTargetStateFormat = _surfaceConfiguration.format,
 		};
 		_renderPipelines.geometry = RenderPipelineHelper::createOutputRenderPipeline(renderPipelineDescriptor);
@@ -495,7 +499,7 @@ void Engine::draw() {
 		renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
 
 		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
-			.view = _depthTextureView,
+			.view = _textureViews.shadowMaps[0],
 			.depthLoadOp = wgpu::LoadOp::Clear,
 			.depthStoreOp = wgpu::StoreOp::Store,
 			.depthClearValue = 1.0f,
@@ -521,40 +525,40 @@ void Engine::draw() {
 
 	}
 
-	//{ //Output Pass
-	//	wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
-	//	renderPassColorAttachment.view = surfaceTextureView;
-	//	renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
-	//	renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
-	//	renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
+	{ //Output Pass
+		wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
+		renderPassColorAttachment.view = surfaceTextureView;
+		renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
+		renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
+		renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
 
-	//	wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
-	//		.view = _depthTextureView,
-	//		.depthLoadOp = wgpu::LoadOp::Clear,
-	//		.depthStoreOp = wgpu::StoreOp::Store,
-	//		.depthClearValue = 1.0f,
-	//	};
+		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+			.view = _textureViews.cameraDepth,
+			.depthLoadOp = wgpu::LoadOp::Clear,
+			.depthStoreOp = wgpu::StoreOp::Store,
+			.depthClearValue = 1.0f,
+		};
 
-	//	wgpu::RenderPassDescriptor renderPassDescriptor = {
-	//		.label = "output render pass",
-	//		.colorAttachmentCount = 1,
-	//		.colorAttachments = &renderPassColorAttachment,
-	//		.depthStencilAttachment = &renderPassDepthStencilAttachment,
-	//	};
+		wgpu::RenderPassDescriptor renderPassDescriptor = {
+			.label = "output render pass",
+			.colorAttachmentCount = 1,
+			.colorAttachments = &renderPassColorAttachment,
+			.depthStencilAttachment = &renderPassDepthStencilAttachment,
+		};
 
 
-	//	wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
-	//	renderPassEncoder.SetPipeline(_renderPipelines.geometry);
-	//	renderPassEncoder.SetBindGroup(0, _bindGroups.fixed);
-	//	renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
-	//	renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
+		wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
+		renderPassEncoder.SetPipeline(_renderPipelines.geometry);
+		renderPassEncoder.SetBindGroup(0, _bindGroups.fixed);
+		renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
+		renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
 
-	//	for (auto& dc : _drawCalls) {
-	//		renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
-	//	}
-	//	//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
-	//	renderPassEncoder.End();
-	//}
+		for (auto& dc : _drawCalls) {
+			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+		}
+		//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
+		renderPassEncoder.End();
+	}
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
 		.label = "Command Buffer",
 	};

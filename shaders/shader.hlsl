@@ -46,6 +46,10 @@ struct Light
 };
 StructuredBuffer<Light> lights : register(t4, space0);
 
+Texture2D shadowMap : register(t5, space0);
+
+sampler2D depthSampler : register(t6, space0);
+
 struct VSInput
 {
     [[vk::location(0)]] float3 Position : POSTION0;
@@ -150,6 +154,12 @@ float3 spotLighting(VSOutput input, Light light)
     return light.color * (attenuation * intensity);
 }
 
+float calculateShadow(float4 lightSpacePosition)
+{
+    float3 lightProjectionCoordinates = lightSpacePosition.xyz / lightSpacePosition.w;
+    float closestDepth = shadowMap.Sample();
+}
+
 
 float4 FS_main(VSOutput input) : SV_Target
 {
@@ -179,6 +189,8 @@ float4 FS_main(VSOutput input) : SV_Target
     }
 
     result *= input.Color.xyz;
+
+    float shadow = calculateShadow(mul(lights[0].lightSpaceMatrix, float4(input.Position, 1.0)));
 
     return float4(result, 1.0);
 }

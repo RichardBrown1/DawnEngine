@@ -32,9 +32,9 @@ private:
 	std::vector<Light> _lights;
 	std::vector<Camera> _cameras;
 	Buffers _buffers;
+	TextureViews _textureViews;
+	Samplers _samplers;
 	BindGroups _bindGroups;
-	wgpu::TextureView _depthTextureView;
-	wgpu::Sampler _depthSampler;
 
 	void initGltf();
 	void initNodes(fastgltf::Asset& asset);

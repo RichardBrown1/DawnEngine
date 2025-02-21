@@ -46,13 +46,30 @@ namespace {
 				.minBindingSize = sizeof(Light),
 			}
 		};
+		wgpu::BindGroupLayoutEntry shadowMapBindGroupLayoutEntry = {
+			.binding = 5,
+			.visibility = wgpu::ShaderStage::Fragment,
+			.texture = {
+				.sampleType = wgpu::TextureSampleType::Depth,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
+			}
+		};
+		wgpu::BindGroupLayoutEntry depthSamplerBindGroupLayoutEntry = {
+			.binding = 6,
+			.visibility = wgpu::ShaderStage::Fragment,
+			.sampler = {
+				.type = wgpu::SamplerBindingType::Comparison
+			}
+		};
 
-		std::array<wgpu::BindGroupLayoutEntry, 5> bindGroupLayoutEntries = {
+		std::array<wgpu::BindGroupLayoutEntry, 7> bindGroupLayoutEntries = {
 			cameraBindGroupLayoutEntry,
 			transformsBindGroupLayoutEntry,
 			instancePropertiesBindGroupLayoutEntry,
 			materialBindGroupLayoutEntry,
 			lightBindGroupLayoutEntry,
+			shadowMapBindGroupLayoutEntry,
+			depthSamplerBindGroupLayoutEntry,
 		};
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
@@ -88,14 +105,24 @@ namespace {
 			.buffer = descriptor.buffers.light,
 			.size = descriptor.buffers.light.GetSize(),
 		};
+		wgpu::BindGroupEntry shadowMapBindGroupEntry = {
+			.binding = 5,
+			.textureView = descriptor.textureViews.shadowMaps[0],
+		};
+		wgpu::BindGroupEntry depthSamplerBindGroupEntry = {
+			.binding = 6,
+			.sampler = descriptor.samplers.depth,
+		};
 
 
-		std::array<wgpu::BindGroupEntry, 5> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 7> bindGroupEntries = {
 			cameraBindGroupEntry,
 			transformsBindGroupEntry,
 			instancePropertiesBindGroupEntry,
 			materialBindGroupEntry,
 			lightBindGroupEntry,
+			shadowMapBindGroupEntry,
+			depthSamplerBindGroupEntry,
 		};
 
 		wgpu::BindGroupDescriptor bindGroupDescriptor = {
