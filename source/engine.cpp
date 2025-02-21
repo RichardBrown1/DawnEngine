@@ -392,18 +392,30 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 }
 
 void Engine::initDepthTexture() {
+	{
+		constexpr uint32_t DEPTH_TEXTURE_RESOLUTION = 1024;
+		wgpu::TextureDescriptor depthTextureDescriptor = {
+			.label = "shadowmap depth texture",
+			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
+			.dimension = wgpu::TextureDimension::e2D,
+			.size = wgpu::Extent3D(DEPTH_TEXTURE_RESOLUTION, DEPTH_TEXTURE_RESOLUTION),
+			.format = DawnEngine::DEPTH_FORMAT,
+		};
+		wgpu::Texture depthTexture = _device.CreateTexture(&depthTextureDescriptor);
+		_textureViews.shadowMaps.push_back(depthTexture.CreateView());
+	}
+	{
+		wgpu::TextureDescriptor depthTextureDescriptor = {
+			.label = "camera depth texture",
+			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
+			.dimension = wgpu::TextureDimension::e2D,
+			.size = wgpu::Extent3D(_surfaceConfiguration.width, _surfaceConfiguration.height),
+			.format = DawnEngine::DEPTH_FORMAT,
+		};
+		wgpu::Texture depthTexture = _device.CreateTexture(&depthTextureDescriptor);
+		_textureViews.cameraDepth = depthTexture.CreateView();
+	}
 
-	wgpu::TextureDescriptor depthTextureDescriptor = {
-		.label = "depth texture",
-		.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
-		.dimension = wgpu::TextureDimension::e2D,
-		.size = wgpu::Extent3D(_surfaceConfiguration.width, _surfaceConfiguration.height),
-		.format = DawnEngine::DEPTH_FORMAT,
-	};
-	wgpu::Texture depthTexture = _device.CreateTexture(&depthTextureDescriptor);
-
-	_textureViews.cameraDepth = depthTexture.CreateView();
-	
 	wgpu::SamplerDescriptor samplerDescriptor = {
 		.label = "depth sampler",
 		.compare = wgpu::CompareFunction::Less,
@@ -492,11 +504,11 @@ void Engine::draw() {
 	commandEncoderDescriptor.label = "My command encoder";
 	wgpu::CommandEncoder commandEncoder = _device.CreateCommandEncoder(&commandEncoderDescriptor);
 	{ //Shadow Pass
-		wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
-		renderPassColorAttachment.view = surfaceTextureView;
-		renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
-		renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
-		renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
+	//	wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
+	//	renderPassColorAttachment.view = _textureViews.shadowMaps[0];
+	//	renderPassColorAttachment.loadOp = wgpu::LoadOp::Undefined;
+	//	renderPassColorAttachment.storeOp = wgpu::StoreOp::Discard;
+	//	renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
 
 		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
 			.view = _textureViews.shadowMaps[0],
@@ -507,8 +519,8 @@ void Engine::draw() {
 
 		wgpu::RenderPassDescriptor renderPassDescriptor = {
 			.label = "shadow render pass",
-			.colorAttachmentCount = 1,
-			.colorAttachments = &renderPassColorAttachment,
+			//.colorAttachmentCount = 1,
+		//	.colorAttachments = &renderPassColorAttachment,
 			.depthStencilAttachment = &renderPassDepthStencilAttachment,
 		};
 		wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);

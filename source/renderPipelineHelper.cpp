@@ -40,7 +40,7 @@ namespace {
 		};
 		wgpu::BindGroupLayoutEntry lightBindGroupLayoutEntry = {
 			.binding = 4,
-			.visibility = wgpu::ShaderStage::Fragment,
+			.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
 			.buffer = {
 				.type = wgpu::BufferBindingType::ReadOnlyStorage,
 				.minBindingSize = sizeof(Light),
@@ -334,18 +334,18 @@ namespace RenderPipelineHelper {
 				.dstFactor = wgpu::BlendFactor::One,
 			}
 		};
-		wgpu::ColorTargetState colorTargetState = {
-			.format = descriptor.colorTargetStateFormat,
-			.blend = &blendState,
-			.writeMask = wgpu::ColorWriteMask::All,
-		};
+//		wgpu::ColorTargetState colorTargetState = {
+//			.format = descriptor.colorTargetStateFormat,
+//			.blend = &blendState,
+//			.writeMask = wgpu::ColorWriteMask::All,
+//		};
 		wgpu::FragmentState fragmentState = {
 			.module = descriptor.fragmentShaderModule,
 			.entryPoint = "FS_main",
 			.constantCount = 0,
 			.constants = nullptr,
-			.targetCount = 1,
-			.targets = &colorTargetState,
+		//	.targetCount = 1,
+		//	.targets = &colorTargetState,
 		};
 
 		wgpu::DepthStencilState depthStencilState = {
