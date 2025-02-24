@@ -58,7 +58,7 @@ struct VSInput
 
 struct VSOutput
 {
-    [[vk::location(0)]] float4 ClipPosition : SV_Position;
+    [[vk::location(0)]] float4 CameraPosition : SV_Position;
     [[vk::location(1)]] float3 Position : POSITION0;
     [[vk::location(2)]] float4 LightPosition : POSITION1;
     [[vk::location(3)]] float3 ShadowMapPosition : POSITION2;
@@ -114,7 +114,7 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
     VSOutput output = (VSOutput) 0;    
     
     output.Position = (float3) mul(transforms[InstanceIndex], float4(input.Position, 1.0));
-    output.ClipPosition = mul(
+    output.CameraPosition = mul(
                             mul(ubo.projection, ubo.view),
                             float4(output.Position, 1.0)
                           );
@@ -160,35 +160,24 @@ float3 spotLighting(VSOutput input, Light light)
 
 float calculateShadow(VSOutput input, Light light)
 {
-    const float DEPTH_TEXTURE_RESOLUTION = 1024.0;
-    const float AMBIENT_FACTOR = 0.2;
-    float shadow;
-    //const float3 lightProjectionCoordinates = input.LightPosition.xyz / input.LightPosition.w;
-    //
-    //const float closestDepth = shadowMap.SampleCmpLevelZero(depthSampler, input.ShadowMapPosition.xy, 0.5);
-    //const float currentDepth = lightProjectionCoordinates.z;
-    //const float3 normal = normalize(input.Normal);
-    //const float3 lightDir = normalize(input.LightPosition - input.Position);
-    //shadow += currentDepth;
-    float2 textureSize;
-    float visibility = 0.0;
-    float oneOverShadowDepthTextureSize = 1.0 / DEPTH_TEXTURE_RESOLUTION;
-    for (uint y = -1; y <= 1; y++)
-    {
-        for (uint x = -1; x <= 1; x++)
-        {
-            float2 offset = float2(uint2(x, y)) * oneOverShadowDepthTextureSize;
-            visibility += shadowMap.SampleCmp(
-                depthSampler, 
-                input.ShadowMapPosition.xy + offset, 
-                input.ShadowMapPosition.z - 0.007
-            );
-        }
-    }
-    visibility /= 9.0;
-    float lambertFactor = max(dot(normalize(light.position - input.Position), normalize(input.Normal)), 0.0);
-    float lightingFactor = min(AMBIENT_FACTOR + visibility * lambertFactor, 1.0);
-    return shadow;
+    float3 projCoords = input.LightPosition.xyz / input.LightPosition.w;
+    
+    float2 shadowUV = projCoords.xy * 0.5 + 0.5;
+    shadowUV.y = 1.0 - shadowUV.y; // Flip Y if needed
+    
+    float currentDepth = projCoords.z;
+    
+    float bias = 0.001;
+    currentDepth -= bias;
+    
+    // Sample shadow map with percentage-closer filtering
+    float shadow = shadowMap.SampleCmpLevelZero(
+        depthSampler,
+        shadowUV,
+        currentDepth
+    );
+
+    return max(shadow, 0.1);
 }
 
 
@@ -222,7 +211,7 @@ float4 FS_main(VSOutput input) : SV_Target
     result *= input.Color.xyz;
 
     result *= calculateShadow(input, lights[0]);
-    
-
+   
     return float4(result, 1.0);
+
 }

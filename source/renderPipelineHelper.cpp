@@ -136,7 +136,7 @@ namespace {
 		return bindGroupLayout;
 	}
 
-	wgpu::BindGroupLayout initLightBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
+	wgpu::BindGroupLayout initLightBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor& descriptor) {
 		wgpu::BindGroupLayoutEntry transformsBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Vertex,
@@ -195,9 +195,9 @@ namespace {
 		return bindGroupLayout;
 	}
 
-	
-	wgpu::PipelineLayout initOutputPipelineLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
-		std::array<wgpu::BindGroupLayout, 1> bindGroupLayouts = { initFixedBindGroupLayout(descriptor)};
+
+	wgpu::PipelineLayout initOutputPipelineLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor& descriptor) {
+		std::array<wgpu::BindGroupLayout, 1> bindGroupLayouts = { initFixedBindGroupLayout(descriptor) };
 		wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
 			.label = "Geometry Pipeline Layout",
 			.bindGroupLayoutCount = 1,
@@ -206,8 +206,8 @@ namespace {
 		return descriptor.device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	}
 
-	wgpu::PipelineLayout initShadowPipelineLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
-		std::array<wgpu::BindGroupLayout, 1> bindGroupLayouts = { initLightBindGroupLayout(descriptor)};
+	wgpu::PipelineLayout initShadowPipelineLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor& descriptor) {
+		std::array<wgpu::BindGroupLayout, 1> bindGroupLayouts = { initLightBindGroupLayout(descriptor) };
 		wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
 			.label = "Shadow Pipeline Layout",
 			.bindGroupLayoutCount = 1,
@@ -334,18 +334,18 @@ namespace RenderPipelineHelper {
 				.dstFactor = wgpu::BlendFactor::One,
 			}
 		};
-//		wgpu::ColorTargetState colorTargetState = {
-//			.format = descriptor.colorTargetStateFormat,
-//			.blend = &blendState,
-//			.writeMask = wgpu::ColorWriteMask::All,
-//		};
+		//		wgpu::ColorTargetState colorTargetState = {
+		//			.format = descriptor.colorTargetStateFormat,
+		//			.blend = &blendState,
+		//			.writeMask = wgpu::ColorWriteMask::All,
+		//		};
 		wgpu::FragmentState fragmentState = {
 			.module = descriptor.fragmentShaderModule,
 			.entryPoint = "FS_main",
 			.constantCount = 0,
 			.constants = nullptr,
-		//	.targetCount = 1,
-		//	.targets = &colorTargetState,
+			//	.targetCount = 1,
+			//	.targets = &colorTargetState,
 		};
 
 		wgpu::DepthStencilState depthStencilState = {
