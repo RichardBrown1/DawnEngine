@@ -163,7 +163,7 @@ float calculateShadow(VSOutput input, Light light)
     float3 projCoords = input.LightPosition.xyz / input.LightPosition.w;
     
     float2 shadowUV = projCoords.xy * 0.5 + 0.5;
-    shadowUV.y = 1.0 - shadowUV.y; // Flip Y if needed
+    shadowUV.y = 1.0 - shadowUV.y; // Flip Y
     
     float currentDepth = projCoords.z;
     
