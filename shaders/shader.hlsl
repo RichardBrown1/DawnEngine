@@ -160,7 +160,8 @@ float3 spotLighting(VSOutput input, Light light)
 
 float calculateShadow(VSOutput input, Light light)
 {
-    float3 projCoords = input.LightPosition.xyz / input.LightPosition.w;
+    const float SHADOW_MAP_SIZE = 1024.0f;
+    const float3 projCoords = input.LightPosition.xyz / input.LightPosition.w;
     if (projCoords.z > 1.0)
     {
         return 0.0;
@@ -168,21 +169,39 @@ float calculateShadow(VSOutput input, Light light)
         
     float2 shadowUV = projCoords.xy * 0.5 + 0.5;
     shadowUV.y = 1.0 - shadowUV.y; // Flip Y
-        
-    float currentDepth = projCoords.z;
 
-    //float bias = 0.001;
-    float3 fragToLight = normalize(light.position - input.Position);
-    float bias = max(0.001 * (1.0 - dot(input.Normal, fragToLight)), 0.0001);
-    currentDepth -= bias;
+    const float3 normalDirection = normalize(input.Normal);
+        
+    //float bias = 0.0001;
+    const float3 fragToLight = normalize(light.position - input.Position);
+    const float bias = max(0.0001 * (1.0 - dot(input.Normal, fragToLight)), 0.00001);
+    const float currentDepth = projCoords.z - bias;//(normalDirection.z * bias);
     
     // Sample shadow map with percentage-closer filtering
-    float shadow = shadowMap.SampleCmpLevelZero(
-        depthSampler,
-        shadowUV,
-        currentDepth
-    );
+    const float oneOverShadowMapSize = 1.0 / SHADOW_MAP_SIZE;
+    float shadow;
+    const float2 offset = normalDirection.xz * oneOverShadowMapSize;
+           shadow += shadowMap.SampleCmpLevelZero(
+               depthSampler,
+               shadowUV + offset,
+               currentDepth
+           );
 
+    //for (int y = -1; y <= 1; y++)
+    //{
+    //    for (int x = -1; x <= 1; x++)
+    //    {
+    //        const float2 offset = (float2(x, y) - (normalDirection.xz * 2.0f)) * oneOverShadowMapSize;
+    //        shadow += shadowMap.SampleCmpLevelZero(
+    //            depthSampler,
+    //            shadowUV + offset,
+    //            currentDepth
+    //        );
+
+    //    }
+    //}
+    //shadow /= 9.0;
+        
     return max(shadow, 0.1);
 }
 
