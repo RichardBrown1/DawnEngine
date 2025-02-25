@@ -161,13 +161,19 @@ float3 spotLighting(VSOutput input, Light light)
 float calculateShadow(VSOutput input, Light light)
 {
     float3 projCoords = input.LightPosition.xyz / input.LightPosition.w;
-    
+    if (projCoords.z > 1.0)
+    {
+        return 0.0;
+    }
+        
     float2 shadowUV = projCoords.xy * 0.5 + 0.5;
     shadowUV.y = 1.0 - shadowUV.y; // Flip Y
-    
+        
     float currentDepth = projCoords.z;
-    
-    float bias = 0.001;
+
+    //float bias = 0.001;
+    float3 fragToLight = normalize(light.position - input.Position);
+    float bias = max(0.001 * (1.0 - dot(input.Normal, fragToLight)), 0.0001);
     currentDepth -= bias;
     
     // Sample shadow map with percentage-closer filtering
