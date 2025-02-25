@@ -175,7 +175,7 @@ float calculateShadow(VSOutput input, Light light)
         
     //float bias = 0.0001;
     const float3 fragToLight = normalize(light.position - input.Position);
-    const float bias = max(0.00001 * (1.0 - dot(input.Normal, fragToLight)), 0.000001);
+    const float bias = max(0.00001 * (1.0 - dot(input.Normal, fragToLight)), 0.000007);
     const float currentDepth = projCoords.z - bias;//(normalDirection.z * bias);
     
     // Sample shadow map with percentage-closer filtering
@@ -212,7 +212,7 @@ float calculateShadow(VSOutput input, Light light)
 //   }
 //   shadow /= 18.0;
         
-    return max(shadow, 0.1);
+    return max(shadow, 0.25);
 }
 
 
