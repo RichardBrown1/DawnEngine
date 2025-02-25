@@ -360,7 +360,7 @@ namespace RenderPipelineHelper {
 			.vertex = vertexState,
 			.primitive = wgpu::PrimitiveState {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
-				.cullMode = wgpu::CullMode::None,
+				.cullMode = wgpu::CullMode::Back,
 			},
 			.depthStencil = &depthStencilState,
 			.multisample = wgpu::MultisampleState {
