@@ -170,37 +170,47 @@ float calculateShadow(VSOutput input, Light light)
     float2 shadowUV = projCoords.xy * 0.5 + 0.5;
     shadowUV.y = 1.0 - shadowUV.y; // Flip Y
 
-    const float3 normalDirection = normalize(input.Normal);
+    const float3 normalDirection = normalize(input.Normal) * (1, 1, -1);
+;
         
     //float bias = 0.0001;
     const float3 fragToLight = normalize(light.position - input.Position);
-    const float bias = max(0.0001 * (1.0 - dot(input.Normal, fragToLight)), 0.00001);
+    const float bias = max(0.00001 * (1.0 - dot(input.Normal, fragToLight)), 0.000001);
     const float currentDepth = projCoords.z - bias;//(normalDirection.z * bias);
     
     // Sample shadow map with percentage-closer filtering
     const float oneOverShadowMapSize = 1.0 / SHADOW_MAP_SIZE;
     float shadow;
-    const float2 offset = normalDirection.xz * oneOverShadowMapSize;
-           shadow += shadowMap.SampleCmpLevelZero(
-               depthSampler,
-               shadowUV + offset,
-               currentDepth
-           );
+  //  const float2 offset = normalDirection.xz * oneOverShadowMapSize;
+  //         shadow += shadowMap.SampleCmpLevelZero(
+  //             depthSampler,
+  //             shadowUV + offset,
+  //             currentDepth
+  //         );
+    const float2 offset = normalDirection.xz * oneOverShadowMapSize * 2.0;
+    float4 shadowValues = shadowMap.GatherCmp(
+              depthSampler,
+              shadowUV + offset,
+              currentDepth
+          );
+    shadow = (shadowValues.x + shadowValues.y + shadowValues.z + shadowValues.w) / 4.0;
 
-    //for (int y = -1; y <= 1; y++)
-    //{
-    //    for (int x = -1; x <= 1; x++)
-    //    {
-    //        const float2 offset = (float2(x, y) - (normalDirection.xz * 2.0f)) * oneOverShadowMapSize;
-    //        shadow += shadowMap.SampleCmpLevelZero(
-    //            depthSampler,
-    //            shadowUV + offset,
-    //            currentDepth
-    //        );
 
-    //    }
-    //}
-    //shadow /= 9.0;
+//  for (int y = -1; y <= 1; y++)
+//   {
+//       for (int x = -1; x <= 1; x++)
+//       {
+//            const float2 offset = (float2(x, y) + (normalDirection.xz) * 2.0) * oneOverShadowMapSize;
+//           const float shadowValue = shadowMap.SampleCmpLevelZero(
+//               depthSampler,
+//               shadowUV + offset,
+//               currentDepth
+//           );
+//           shadow += x == 0 && y == 0 ? shadowValue * 9 : shadowValue;
+//
+//       }
+//   }
+//   shadow /= 18.0;
         
     return max(shadow, 0.1);
 }
