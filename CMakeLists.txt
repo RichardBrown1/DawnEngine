@@ -79,35 +79,25 @@ add_dependencies(DawnEngine CopyModels)
 #Shaders
 set(SHADERS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 set(SHADERS_DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
-set(PS_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/shaders/compile.ps1")
+set(DXC_PATH "C:/VulkanSDK/1.3.268.0/Bin/dxc.exe")
 
-add_custom_target(CopyShaders
-    COMMAND powershell -ExecutionPolicy Bypass -File ${PS_SCRIPT_PATH}
-    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${SHADERS_SOURCE_DIR} ${SHADERS_DEST_DIR}
-)
-add_dependencies(DawnEngine CopyShaders)
+file(GLOB_RECURSE HLSL_SHADER_FILES "shaders/*.hlsl")
+file(MAKE_DIRECTORY ${SHADERS_DEST_DIR})
+add_custom_target(Shaders)
 
-#
-#add_custom_command(TARGET DawnEngine POST_BUILD
-#    COMMAND ${CMAKE_COMMAND} -E copy_directory ${SHADERS_SOURCE_DIR} ${SHADERS_DEST_DIR}
-#)
+foreach(FILE ${HLSL_SHADER_FILES})
+  get_filename_component(FILE_WE ${FILE} NAME_WE)
+  add_custom_command(
+     TARGET Shaders
+     COMMAND ${DXC_PATH} -T vs_6_7 -E VS_main -spirv -Fo ${SHADERS_DEST_DIR}/v_${FILE_WE}.spv ${FILE}
+     COMMAND ${DXC_PATH} -T ps_6_7 -E FS_main -spirv -Fo ${SHADERS_DEST_DIR}/f_${FILE_WE}.spv ${FILE}
+     MAIN_DEPENDENCY ${FILE}
+     COMMENT "HLSL Vertex ${FILE}"
+     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  VERBATIM)
+endforeach(FILE)
+add_dependencies(DawnEngine Shaders)
 
-# CMakeLists.txt
-
-# Define the path to the PowerShell script
-#
-## Add a custom command to run the PowerShell script
-#add_custom_command(
-#    OUTPUT ${CMAKE_BINARY_DIR}/script_completed.txt
-#    COMMAND pwsh -ExecutionPolicy Bypass -File ${PS_SCRIPT_PATH}
-#    COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/script_completed.txt
-#    DEPENDS ${PS_SCRIPT_PATH}
-#)
-
-# Add a custom target that depends on the custom command
-#add_custom_target(run_script ALL DEPENDS ${CMAKE_BINARY_DIR}/script_completed.txt)
-
-# Post Build
 
 #Dawn
 add_custom_command(TARGET DawnEngine POST_BUILD
