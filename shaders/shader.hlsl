@@ -160,11 +160,14 @@ float3 spotLighting(VSOutput input, Light light)
 
 float calculateShadow(VSOutput input, Light light)
 {
-    const float SHADOW_MAP_SIZE = 1024.0f;
+    float shadowMapHeight;
+    float shadowMapWidth;
+    shadowMap.GetDimensions(shadowMapWidth, shadowMapHeight);
+    
     const float3 projCoords = input.LightPosition.xyz / input.LightPosition.w;
     if (projCoords.z > 1.0)
     {
-        return 0.0;
+        return 1.0;
     }
         
     float2 shadowUV = projCoords.xy * 0.5 + 0.5;
@@ -175,25 +178,26 @@ float calculateShadow(VSOutput input, Light light)
         
     //float bias = 0.0001;
     const float3 fragToLight = normalize(light.position - input.Position);
-    const float bias = max(0.00001 * (1.0 - dot(input.Normal, fragToLight)), 0.000007);
-    const float currentDepth = projCoords.z - bias;//(normalDirection.z * bias);
+   // const float bias = max(0.00001 * (1.0 - dot(input.Normal, fragToLight)), 0.000007);
+    const float bias = 0.0000;
+    const float currentDepth = projCoords.z - bias; //(normalDirection.z * bias);
     
     // Sample shadow map with percentage-closer filtering
-    const float oneOverShadowMapSize = 1.0 / SHADOW_MAP_SIZE;
+    const float oneOverShadowMapSize = 1.0 / shadowMapWidth;
     float shadow;
-  //  const float2 offset = normalDirection.xz * oneOverShadowMapSize;
-  //         shadow += shadowMap.SampleCmpLevelZero(
-  //             depthSampler,
-  //             shadowUV + offset,
-  //             currentDepth
-  //         );
-    const float2 offset = normalDirection.xz * oneOverShadowMapSize * 2.0;
-    float4 shadowValues = shadowMap.GatherCmp(
+    const float2 offset = normalDirection.xz * (oneOverShadowMapSize);
+          shadow += shadowMap.SampleCmpLevelZero(
               depthSampler,
               shadowUV + offset,
               currentDepth
           );
-    shadow = (shadowValues.x + shadowValues.y + shadowValues.z + shadowValues.w) / 4.0;
+ //   const float2 offset = normalDirection.xz * oneOverShadowMapSize * 2.0;
+ //   float4 shadowValues = shadowMap.GatherCmp(
+ //             depthSampler,
+ //             shadowUV + offset,
+ //             currentDepth
+ //         );
+ //   shadow = (shadowValues.x + shadowValues.y + shadowValues.z + shadowValues.w) / 4.0;
 
 
 //  for (int y = -1; y <= 1; y++)
