@@ -8,3 +8,4 @@ Shaders are in HLSL -> SPIRV
 ## Requires
 - DAWN - compile from googles source and copy over.
 - FASTGLTF - folder install
+- DXC - to compile to HLSL to SPIRV
