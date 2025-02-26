@@ -393,7 +393,7 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 
 void Engine::initDepthTexture() {
 	{
-		constexpr uint32_t DEPTH_TEXTURE_RESOLUTION = 1024;
+		constexpr uint32_t DEPTH_TEXTURE_RESOLUTION = 8192;
 		wgpu::TextureDescriptor depthTextureDescriptor = {
 			.label = "shadowmap depth texture",
 			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
