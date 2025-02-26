@@ -1,5 +1,5 @@
 # DawnEngine
-My Render engine using Google's DAWN Webgpu
+My Rudimentary Render engine in C++ using Google's DAWN Webgpu
 Shaders are in HLSL -> SPIRV
 
 
