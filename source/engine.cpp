@@ -652,9 +652,7 @@ void Engine::run() {
 }
 
 void Engine::destroy() {
-	//TODO
+	//device and gpu object destruction is done by dawn destructor
 	_surface.Unconfigure();
-	_device.Destroy();
-	//aSDL_DestroyWindow(_p_sdl_window);
-	//SDL_Quit();
+	SDL_Quit();
 }

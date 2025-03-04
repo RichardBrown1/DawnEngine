@@ -7,7 +7,6 @@ int main()
 	try {
 		Engine wgpuEngine = Engine();
 		wgpuEngine.run();
-		wgpuEngine.destroy();
 	}
 	catch (std::exception& err) {
 		std::cout << "std::Exception: " << err.what() << std::endl;
