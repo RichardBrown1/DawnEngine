@@ -22,6 +22,7 @@
 #include "../include/constants.hpp"
 #include "../include/utilities.hpp"
 #include "../include/renderPipelineHelper.hpp"
+#include "../include/gpuMemoryManager.hpp"
 
 static Engine* loadedEngine = nullptr;
 
@@ -143,7 +144,7 @@ Engine::Engine() {
 		_surfaceConfiguration.format = wgpu::TextureFormat::BGRA8Unorm;
 		_surface.Configure(&_surfaceConfiguration);
 		_queue = _device.GetQueue();
-
+		
 		initGltf();
 		initDepthTexture();
 		initRenderPipeline();

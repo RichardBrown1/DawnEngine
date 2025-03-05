@@ -3,17 +3,21 @@
 
 #include "../include/renderPipelineHelper.hpp"
 #include "../include/constants.hpp"
+#include "../include/gpuMemoryManager.hpp"
 
 namespace {
 	wgpu::BindGroupLayout initFixedBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
-		wgpu::BindGroupLayoutEntry cameraBindGroupLayoutEntry = {
-			.binding = 0,
-			.visibility = (wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment),
-			.buffer = {
-				.type = wgpu::BufferBindingType::Uniform,
-				.minBindingSize = sizeof(Camera),
-			}
-		};
+//		wgpu::BindGroupLayoutEntry cameraBindGroupLayoutEntry = {
+//			.binding = 0,
+//			.visibility = (wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment),
+//			.buffer = {
+//				.type = wgpu::BufferBindingType::Uniform,
+//				.minBindingSize = sizeof(Camera),
+//			}
+//		};
+
+		auto GpuObjectManager = DawnEngine::GpuObjectManager();
+		auto cameraBindGroupLayoutEntry = GpuObjectManager.getBindGroupLayoutEntry(DawnEngine::GPU_OBJECT_ID::CAMERA);
 		wgpu::BindGroupLayoutEntry transformsBindGroupLayoutEntry = {
 			.binding = 1,
 			.visibility = wgpu::ShaderStage::Vertex,

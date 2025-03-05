@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <iostream>
 #include <webgpu/webgpu_cpp.h>
 #include "../include/structs.hpp"
 

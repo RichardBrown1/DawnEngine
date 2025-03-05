@@ -52,7 +52,9 @@ FetchContent_MakeAvailable(glm)
 #FetchContent_MakeAvailable(fastgltf)
 
 # Build
-add_executable (DawnEngine "source/main.cpp"  "source/engine.cpp" "source/sdl3webgpu.cpp" "include/sdl3webgpu.hpp" "source/utilities.cpp"  "include/renderPipelineHelper.hpp" "source/renderPipelineHelper.cpp")
+file(GLOB_RECURSE SRC_FILES "source/*.cpp")
+add_executable (DawnEngine ${SRC_FILES})
+#add_executable (DawnEngine "source/main.cpp"  "source/engine.cpp" "source/sdl3webgpu.cpp" "include/sdl3webgpu.hpp" "source/utilities.cpp"  "include/renderPipelineHelper.hpp" "source/renderPipelineHelper.cpp")
 
 target_link_libraries(DawnEngine dawn::webgpu_dawn SDL3::SDL3 glm::glm fastgltf::fastgltf)
 
