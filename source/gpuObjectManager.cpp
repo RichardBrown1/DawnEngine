@@ -1,18 +1,20 @@
-#include "../include/gpuMemoryManager.hpp"
+#include "../include/gpuObjectManager.hpp"
 
 namespace DawnEngine {
 	static GpuObjectManager* instance;
-
-	GpuObjectManager::GpuObjectManager()
-	{
-		assert(instance == nullptr); //limit to one
-		instance = this;
-	}
 
 	wgpu::BindGroupLayoutEntry GpuObjectManager::getBindGroupLayoutEntry(GPU_OBJECT_ID id) {
 		wgpu::BindGroupLayoutEntry bindGroupLayoutEntry = gpuObjectsRegistry.at(id);
 		bindGroupLayoutEntry.binding = (uint32_t)id;
 		return bindGroupLayoutEntry;
+	};
+
+	std::vector<wgpu::BindGroupLayoutEntry> GpuObjectManager::getBindGroupLayoutEntries(std::span<GPU_OBJECT_ID> span) {
+		std::vector<wgpu::BindGroupLayoutEntry> bindGroupLayoutEntries;
+		for (GPU_OBJECT_ID id : span) {
+			bindGroupLayoutEntries.push_back(getBindGroupLayoutEntry(id));
+		}
+		return bindGroupLayoutEntries;
 	};
 
   std::map < GPU_OBJECT_ID, wgpu::BindGroupLayoutEntry > GpuObjectManager::gpuObjectsRegistry = {

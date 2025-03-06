@@ -22,7 +22,6 @@
 #include "../include/constants.hpp"
 #include "../include/utilities.hpp"
 #include "../include/renderPipelineHelper.hpp"
-#include "../include/gpuMemoryManager.hpp"
 
 static Engine* loadedEngine = nullptr;
 

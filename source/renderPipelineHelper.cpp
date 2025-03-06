@@ -3,78 +3,22 @@
 
 #include "../include/renderPipelineHelper.hpp"
 #include "../include/constants.hpp"
-#include "../include/gpuMemoryManager.hpp"
+#include "../include/gpuObjectManager.hpp"
 
 namespace {
 	wgpu::BindGroupLayout initFixedBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
-//		wgpu::BindGroupLayoutEntry cameraBindGroupLayoutEntry = {
-//			.binding = 0,
-//			.visibility = (wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment),
-//			.buffer = {
-//				.type = wgpu::BufferBindingType::Uniform,
-//				.minBindingSize = sizeof(Camera),
-//			}
-//		};
-
-		auto GpuObjectManager = DawnEngine::GpuObjectManager();
-		auto cameraBindGroupLayoutEntry = GpuObjectManager.getBindGroupLayoutEntry(DawnEngine::GPU_OBJECT_ID::CAMERA);
-		wgpu::BindGroupLayoutEntry transformsBindGroupLayoutEntry = {
-			.binding = 1,
-			.visibility = wgpu::ShaderStage::Vertex,
-			.buffer = {
-				.type = wgpu::BufferBindingType::ReadOnlyStorage,
-				.minBindingSize = sizeof(glm::f32mat4x4),
-			}
+		std::vector<DawnEngine::GPU_OBJECT_ID> gpuObjectIds = {
+			DawnEngine::GPU_OBJECT_ID::CAMERA,
+			DawnEngine::GPU_OBJECT_ID::TRANSFORMS,
+			DawnEngine::GPU_OBJECT_ID::INSTANCE_PROPERTIES,
+			DawnEngine::GPU_OBJECT_ID::MATERIALS,
+			DawnEngine::GPU_OBJECT_ID::LIGHTS,
+			DawnEngine::GPU_OBJECT_ID::SHADOW_MAPS,
+			DawnEngine::GPU_OBJECT_ID::DEPTH_SAMPLERS,
 		};
-		wgpu::BindGroupLayoutEntry instancePropertiesBindGroupLayoutEntry = {
-			.binding = 2,
-			.visibility = wgpu::ShaderStage::Vertex,
-			.buffer = {
-				.type = wgpu::BufferBindingType::ReadOnlyStorage,
-				.minBindingSize = sizeof(InstanceProperty),
-			}
-		};
-		wgpu::BindGroupLayoutEntry materialBindGroupLayoutEntry = {
-			.binding = 3,
-			.visibility = wgpu::ShaderStage::Vertex,
-			.buffer = {
-				.type = wgpu::BufferBindingType::ReadOnlyStorage,
-				.minBindingSize = sizeof(Material),
-			}
-		};
-		wgpu::BindGroupLayoutEntry lightBindGroupLayoutEntry = {
-			.binding = 4,
-			.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
-			.buffer = {
-				.type = wgpu::BufferBindingType::ReadOnlyStorage,
-				.minBindingSize = sizeof(Light),
-			}
-		};
-		wgpu::BindGroupLayoutEntry shadowMapBindGroupLayoutEntry = {
-			.binding = 5,
-			.visibility = wgpu::ShaderStage::Fragment,
-			.texture = {
-				.sampleType = wgpu::TextureSampleType::Depth,
-				.viewDimension = wgpu::TextureViewDimension::e2D,
-			}
-		};
-		wgpu::BindGroupLayoutEntry depthSamplerBindGroupLayoutEntry = {
-			.binding = 6,
-			.visibility = wgpu::ShaderStage::Fragment,
-			.sampler = {
-				.type = wgpu::SamplerBindingType::Comparison
-			}
-		};
-
-		std::array<wgpu::BindGroupLayoutEntry, 7> bindGroupLayoutEntries = {
-			cameraBindGroupLayoutEntry,
-			transformsBindGroupLayoutEntry,
-			instancePropertiesBindGroupLayoutEntry,
-			materialBindGroupLayoutEntry,
-			lightBindGroupLayoutEntry,
-			shadowMapBindGroupLayoutEntry,
-			depthSamplerBindGroupLayoutEntry,
-		};
+		
+		auto p_GpuObjectManager = DawnEngine::GpuObjectManager::instance().get();
+		auto bindGroupLayoutEntries = p_GpuObjectManager->getBindGroupLayoutEntries(std::span{ gpuObjectIds });
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
 			.label = "geometry bind group",
