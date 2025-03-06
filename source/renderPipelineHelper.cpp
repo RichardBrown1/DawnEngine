@@ -6,7 +6,7 @@
 #include "../include/gpuObjectManager.hpp"
 
 namespace {
-	wgpu::BindGroupLayout initFixedBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor &descriptor) {
+	wgpu::BindGroupLayout initFixedBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor& descriptor) {
 		std::vector<DawnEngine::GPU_OBJECT_ID> gpuObjectIds = {
 			DawnEngine::GPU_OBJECT_ID::CAMERA,
 			DawnEngine::GPU_OBJECT_ID::TRANSFORMS,
@@ -16,61 +16,46 @@ namespace {
 			DawnEngine::GPU_OBJECT_ID::SHADOW_MAPS,
 			DawnEngine::GPU_OBJECT_ID::DEPTH_SAMPLERS,
 		};
-		
+
 		auto p_GpuObjectManager = DawnEngine::GpuObjectManager::instance().get();
-		auto bindGroupLayoutEntries = p_GpuObjectManager->getBindGroupLayoutEntries(std::span{ gpuObjectIds });
+		wgpu::BindGroupLayout bindGroupLayout = p_GpuObjectManager->getBindGroupLayout(
+			descriptor.device, "output bind group", std::span{ gpuObjectIds }
+		);
 
-		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-			.label = "geometry bind group",
-			.entryCount = bindGroupLayoutEntries.size(),
-			.entries = bindGroupLayoutEntries.data(),
-		};
-		wgpu::BindGroupLayout bindGroupLayout = descriptor.device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
-
-
-		wgpu::BindGroupEntry cameraBindGroupEntry = {
-			.binding = 0,
-			.buffer = descriptor.buffers.camera,
-			.size = descriptor.buffers.camera.GetSize(),
-		};
-		wgpu::BindGroupEntry transformsBindGroupEntry = {
-			.binding = 1,
-			.buffer = descriptor.buffers.transform,
-			.size = descriptor.buffers.transform.GetSize(),
-		};
-		wgpu::BindGroupEntry instancePropertiesBindGroupEntry = {
-			.binding = 2,
-			.buffer = descriptor.buffers.instanceProperties,
-			.size = descriptor.buffers.instanceProperties.GetSize(),
-		};
-		wgpu::BindGroupEntry materialBindGroupEntry = {
-			.binding = 3,
-			.buffer = descriptor.buffers.material,
-			.size = descriptor.buffers.material.GetSize(),
-		};
-		wgpu::BindGroupEntry lightBindGroupEntry = {
-			.binding = 4,
-			.buffer = descriptor.buffers.light,
-			.size = descriptor.buffers.light.GetSize(),
-		};
-		wgpu::BindGroupEntry shadowMapBindGroupEntry = {
-			.binding = 5,
-			.textureView = descriptor.textureViews.shadowMaps[0],
-		};
-		wgpu::BindGroupEntry depthSamplerBindGroupEntry = {
-			.binding = 6,
-			.sampler = descriptor.samplers.depth,
-		};
-
-
-		std::array<wgpu::BindGroupEntry, 7> bindGroupEntries = {
-			cameraBindGroupEntry,
-			transformsBindGroupEntry,
-			instancePropertiesBindGroupEntry,
-			materialBindGroupEntry,
-			lightBindGroupEntry,
-			shadowMapBindGroupEntry,
-			depthSamplerBindGroupEntry,
+		std::vector<wgpu::BindGroupEntry> bindGroupEntries = {
+			{
+				.binding = DawnEngine::GPU_OBJECT_ID::CAMERA,
+				.buffer = descriptor.buffers.camera,
+				.size = descriptor.buffers.camera.GetSize(),
+			},
+			{
+				.binding = DawnEngine::GPU_OBJECT_ID::TRANSFORMS,
+				.buffer = descriptor.buffers.transform,
+				.size = descriptor.buffers.transform.GetSize(),
+			},
+			{
+				.binding = DawnEngine::GPU_OBJECT_ID::INSTANCE_PROPERTIES,
+				.buffer = descriptor.buffers.instanceProperties,
+				.size = descriptor.buffers.instanceProperties.GetSize(),
+			},
+			{
+				.binding = DawnEngine::GPU_OBJECT_ID::MATERIALS,
+				.buffer = descriptor.buffers.material,
+				.size = descriptor.buffers.material.GetSize(),
+			},
+			{
+				.binding = DawnEngine::GPU_OBJECT_ID::LIGHTS,
+				.buffer = descriptor.buffers.light,
+				.size = descriptor.buffers.light.GetSize(),
+			},
+			{
+				.binding = DawnEngine::GPU_OBJECT_ID::SHADOW_MAPS,
+				.textureView = descriptor.textureViews.shadowMaps[0],
+			},
+			{
+				.binding = DawnEngine::GPU_OBJECT_ID::DEPTH_SAMPLERS,
+				.sampler = descriptor.samplers.depth,
+			},
 		};
 
 		wgpu::BindGroupDescriptor bindGroupDescriptor = {

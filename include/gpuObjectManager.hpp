@@ -8,7 +8,8 @@
 
 namespace DawnEngine {
 
-	enum class GPU_OBJECT_ID : uint32_t {
+	//https://stackoverflow.com/questions/8357240/how-to-automatically-convert-strongly-typed-enum-into-int
+	enum class GPU_OBJECT_ID : size_t {
 		CAMERA,
 		TRANSFORMS,
 		INSTANCE_PROPERTIES,
@@ -28,12 +29,13 @@ namespace DawnEngine {
 			return sp_GpuObjectManager;
 		}
 
-		wgpu::BindGroupLayoutEntry getBindGroupLayoutEntry(GPU_OBJECT_ID id);
-		std::vector<wgpu::BindGroupLayoutEntry> getBindGroupLayoutEntries(std::span<GPU_OBJECT_ID> span);
+		wgpu::BindGroupLayout getBindGroupLayout(wgpu::Device &device, wgpu::StringView label, std::span<GPU_OBJECT_ID> gpuObjectIds);
 
 	private:
 		GpuObjectManager() {};
 		static std::map <GPU_OBJECT_ID, wgpu::BindGroupLayoutEntry> gpuObjectsRegistry;
+		wgpu::BindGroupLayoutEntry getBindGroupLayoutEntry(GPU_OBJECT_ID id);
+		std::vector<wgpu::BindGroupLayoutEntry> getBindGroupLayoutEntries(std::span<GPU_OBJECT_ID> span);
 		//std::map <GPU_OBJECT_ID, wgpu::BindGroupLayoutEntry> gpuObjectsRegistry;
 
 	};
