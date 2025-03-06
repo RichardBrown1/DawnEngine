@@ -20,7 +20,7 @@ namespace {
 
 		auto p_GpuObjectManager = DawnEngine::GpuObjectManager::instance().get();
 		wgpu::BindGroupLayout bindGroupLayout = p_GpuObjectManager->getBindGroupLayout(
-			descriptor.device, "output bind group", std::span{ gpuObjectIds }
+			descriptor.device, "output bind group layout", std::span{ gpuObjectIds }
 		);
 
 		std::vector<wgpu::BindGroupEntry> bindGroupEntries = {
@@ -60,7 +60,7 @@ namespace {
 		};
 
 		wgpu::BindGroupDescriptor bindGroupDescriptor = {
-			.label = "geometry bind group",
+			.label = "output bind group",
 			.layout = bindGroupLayout,
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data() ,
