@@ -71,55 +71,31 @@ namespace {
 	}
 
 	wgpu::BindGroupLayout initLightBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor& descriptor) {
-		wgpu::BindGroupLayoutEntry transformsBindGroupLayoutEntry = {
-			.binding = 0,
-			.visibility = wgpu::ShaderStage::Vertex,
-			.buffer = {
-				.type = wgpu::BufferBindingType::ReadOnlyStorage,
-				.minBindingSize = sizeof(glm::f32mat4x4),
-			}
-		};
-		wgpu::BindGroupLayoutEntry lightBindGroupLayoutEntry = {
-			.binding = 1,
-			.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
-			.buffer = {
-				.type = wgpu::BufferBindingType::ReadOnlyStorage,
-				.minBindingSize = sizeof(Light),
-			}
+		std::vector<DawnEngine::GPU_OBJECT_ID> gpuObjectIds = {
+			DawnEngine::GPU_OBJECT_ID::TRANSFORMS,
+			DawnEngine::GPU_OBJECT_ID::LIGHTS,
 		};
 
-		std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
-			transformsBindGroupLayoutEntry,
-			lightBindGroupLayoutEntry,
-		};
+		auto p_GpuObjectManager = DawnEngine::GpuObjectManager::instance().get();
+		wgpu::BindGroupLayout bindGroupLayout = p_GpuObjectManager->getBindGroupLayout(
+			descriptor.device, "lights bind group layout", std::span{ gpuObjectIds }
+		);
 
-		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-			.label = "lights bind group layout",
-			.entryCount = bindGroupLayoutEntries.size(),
-			.entries = bindGroupLayoutEntries.data(),
-		};
-		wgpu::BindGroupLayout bindGroupLayout = descriptor.device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
-
-
-		wgpu::BindGroupEntry transformsBindGroupEntry = {
-			.binding = 0,
-			.buffer = descriptor.buffers.transform,
-			.size = descriptor.buffers.transform.GetSize(),
-		};
-		wgpu::BindGroupEntry lightBindGroupEntry = {
-			.binding = 1,
-			.buffer = descriptor.buffers.light,
-			.size = descriptor.buffers.light.GetSize(),
-		};
-
-
-		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
-			transformsBindGroupEntry,
-			lightBindGroupEntry,
+		std::vector<wgpu::BindGroupEntry> bindGroupEntries = {
+			{
+				.binding = +DawnEngine::GPU_OBJECT_ID::TRANSFORMS,
+				.buffer = descriptor.buffers.transform,
+				.size = descriptor.buffers.transform.GetSize(),
+			},
+			{
+				.binding = +DawnEngine::GPU_OBJECT_ID::LIGHTS,
+				.buffer = descriptor.buffers.light,
+				.size = descriptor.buffers.light.GetSize(),
+			},
 		};
 
 		wgpu::BindGroupDescriptor bindGroupDescriptor = {
-			.label = "lights bind group",
+			.label = "output bind group",
 			.layout = bindGroupLayout,
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data() ,
@@ -128,7 +104,6 @@ namespace {
 
 		return bindGroupLayout;
 	}
-
 
 	wgpu::PipelineLayout initOutputPipelineLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor& descriptor) {
 		std::array<wgpu::BindGroupLayout, 1> bindGroupLayouts = { initFixedBindGroupLayout(descriptor) };
