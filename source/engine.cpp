@@ -42,8 +42,11 @@ Engine::Engine() {
 		throw std::runtime_error("SDL_CreateWindow Error: " + std::string(SDL_GetError()));
 	}
 
-	wgpu::InstanceDescriptor instanceDescriptor{};
-	instanceDescriptor.features.timedWaitAnyEnable = true;
+	constexpr wgpu::InstanceDescriptor instanceDescriptor = {
+		.features = {
+			.timedWaitAnyEnable = true,
+		},
+	};
 	_instance = wgpu::CreateInstance(&instanceDescriptor);
 	if (_instance == nullptr) {
 		throw std::runtime_error("Instance creation failed!\n");
@@ -55,98 +58,98 @@ Engine::Engine() {
 	}
 
 	// Synchronously request the adapter.
-	wgpu::RequestAdapterOptions requestAdapterOptions = {};
-	//requestAdapterOptions.backendType = wgpu::BackendType::Vulkan;
-
+	const wgpu::RequestAdapterOptions requestAdapterOptions = {};
 	wgpu::Adapter adapter;
-	wgpu::RequestAdapterCallbackInfo callbackInfo = {};
-	callbackInfo.nextInChain = nullptr;
-	callbackInfo.mode = wgpu::CallbackMode::WaitAnyOnly;
-	callbackInfo.callback =
-		[](WGPURequestAdapterStatus status, WGPUAdapter adapter,
-			WGPUStringView message, void* userdata) {
-				if (status != WGPURequestAdapterStatus_Success) {
-					std::cerr << "Failed to get an adapter:" << message.data;
-					return;
-				}
+	const wgpu::RequestAdapterCallbackInfo callbackInfo = {
+		.nextInChain = nullptr,
+		.mode = wgpu::CallbackMode::WaitAnyOnly,
+		.callback =
+			[](WGPURequestAdapterStatus status, WGPUAdapter adapter,
+				WGPUStringView message, void* userdata) {
+					if (status != WGPURequestAdapterStatus_Success) {
+						std::cerr << "Failed to get an adapter:" << message.data;
+						return;
+					}
 				*static_cast<wgpu::Adapter*>(userdata) = wgpu::Adapter::Acquire(adapter);
-		};
-		callbackInfo.userdata = &adapter;
-		_instance.WaitAny(_instance.RequestAdapter(&requestAdapterOptions, callbackInfo), UINT64_MAX);
-		if (adapter == nullptr) {
-			throw std::runtime_error("RequestAdapter failed!\n");
-		}
+		},
+		.userdata = &adapter,
+	};
 
-		wgpu::DawnAdapterPropertiesPowerPreference power_props{};
+	_instance.WaitAny(_instance.RequestAdapter(&requestAdapterOptions, callbackInfo), UINT64_MAX);
+	if (adapter == nullptr) {
+		throw std::runtime_error("RequestAdapter failed!\n");
+	}
 
-		wgpu::AdapterInfo info{};
-		info.nextInChain = &power_props;
+	wgpu::DawnAdapterPropertiesPowerPreference power_props{};
 
-		adapter.GetInfo(&info);
-		std::cout << "VendorID: " << std::hex << info.vendorID << std::dec << "\n";
-		std::cout << "Vendor: " << info.vendor << "\n";
-		std::cout << "Architecture: " << info.architecture << "\n";
-		std::cout << "DeviceID: " << std::hex << info.deviceID << std::dec << "\n";
-		std::cout << "Name: " << info.device << "\n";
-		std::cout << "Driver description: " << info.description << "\n";
+	wgpu::AdapterInfo info{};
+	info.nextInChain = &power_props;
 
-		//limits
-		wgpu::SupportedLimits supportedLimits;
-		adapter.GetLimits(&supportedLimits);
-		std::cout << "Vertex Attribute Limit: " << supportedLimits.limits.maxVertexAttributes << std::endl;
-		std::cout << "Vertex Buffer Limit: " << supportedLimits.limits.maxVertexBuffers << std::endl;
-		std::cout << "BindGroup Limit: " << supportedLimits.limits.maxBindGroups << std::endl;
-		std::cout << "Max Bindings/BindGroup Limit: " << supportedLimits.limits.maxBindingsPerBindGroup << std::endl;
+	adapter.GetInfo(&info);
+	std::cout << "VendorID: " << std::hex << info.vendorID << std::dec << "\n";
+	std::cout << "Vendor: " << info.vendor << "\n";
+	std::cout << "Architecture: " << info.architecture << "\n";
+	std::cout << "DeviceID: " << std::hex << info.deviceID << std::dec << "\n";
+	std::cout << "Name: " << info.device << "\n";
+	std::cout << "Driver description: " << info.description << "\n";
 
-		std::array<wgpu::FeatureName, 1> requiredFeatures = { 
-			wgpu::FeatureName::IndirectFirstInstance
-		};
-		//wgpu::FeatureName requiredFeatures = wgpu::FeatureName::IndirectFirstInstance;
-		wgpu::DeviceDescriptor deviceDescriptor = {};
-		deviceDescriptor.label = "device";
-		deviceDescriptor.requiredFeatures = requiredFeatures.data();
-		deviceDescriptor.requiredFeatureCount = requiredFeatures.size();
-		deviceDescriptor.SetUncapturedErrorCallback([](const wgpu::Device&, wgpu::ErrorType type, const char* message) {
-			std::cout << "Uncaptured device error type: " << type << std::endl;
-			std::cout << std::format("Uncaptured Error Message: {} \r\n", message);
-			exit(1);
-			});
-		deviceDescriptor.SetDeviceLostCallback(
-			wgpu::CallbackMode::AllowSpontaneous,
-			[](const wgpu::Device&, wgpu::DeviceLostReason reason, const char* message) {
-				std::cout << "DeviceLostReason: " << reason << std::endl;
-				std::cout << std::format(" Message: {}", message) << std::endl;
-			});
+	//limits
+	wgpu::SupportedLimits supportedLimits;
+	adapter.GetLimits(&supportedLimits);
+	std::cout << "Vertex Attribute Limit: " << supportedLimits.limits.maxVertexAttributes << std::endl;
+	std::cout << "Vertex Buffer Limit: " << supportedLimits.limits.maxVertexBuffers << std::endl;
+	std::cout << "BindGroup Limit: " << supportedLimits.limits.maxBindGroups << std::endl;
+	std::cout << "Max Bindings/BindGroup Limit: " << supportedLimits.limits.maxBindingsPerBindGroup << std::endl;
 
-		_device = adapter.CreateDevice(&deviceDescriptor);
+	std::array<wgpu::FeatureName, 1> requiredFeatures = { 
+		wgpu::FeatureName::IndirectFirstInstance
+	};
+	//wgpu::FeatureName requiredFeatures = wgpu::FeatureName::IndirectFirstInstance;
+	wgpu::DeviceDescriptor deviceDescriptor = {};
+	deviceDescriptor.label = "device";
+	deviceDescriptor.requiredFeatures = requiredFeatures.data();
+	deviceDescriptor.requiredFeatureCount = requiredFeatures.size();
+	deviceDescriptor.SetUncapturedErrorCallback([](const wgpu::Device&, wgpu::ErrorType type, const char* message) {
+		std::cout << "Uncaptured device error type: " << type << std::endl;
+		std::cout << std::format("Uncaptured Error Message: {} \r\n", message);
+		exit(1);
+		});
+	deviceDescriptor.SetDeviceLostCallback(
+		wgpu::CallbackMode::AllowSpontaneous,
+		[](const wgpu::Device&, wgpu::DeviceLostReason reason, const char* message) {
+			std::cout << "DeviceLostReason: " << reason << std::endl;
+			std::cout << std::format(" Message: {}", message) << std::endl;
+		});
 
-		int userData;
-		_device.SetLoggingCallback(
-			[](WGPULoggingType type, struct WGPUStringView message, void*) {
-				std::string_view view = { message.data, message.length };
-				std::cout << "Type: " << type << std::endl;
-				std::cout << "Log Message: " << view << std::endl;
-			}, &userData);
+	_device = adapter.CreateDevice(&deviceDescriptor);
 
-		_surfaceConfiguration.width = WIDTH;
-		_surfaceConfiguration.height = HEIGHT;
-		_surfaceConfiguration.device = _device;
-		_surfaceConfiguration.alphaMode = wgpu::CompositeAlphaMode::Auto;
-		_surfaceConfiguration.presentMode = wgpu::PresentMode::Immediate;
-		_surfaceConfiguration.usage = wgpu::TextureUsage::RenderAttachment;
+	int userData;
+	_device.SetLoggingCallback(
+		[](WGPULoggingType type, struct WGPUStringView message, void*) {
+			std::string_view view = { message.data, message.length };
+			std::cout << "Type: " << type << std::endl;
+			std::cout << "Log Message: " << view << std::endl;
+		}, &userData);
 
-		wgpu::SurfaceCapabilities surfaceCapabilites;
-		wgpu::ConvertibleStatus getCapabilitiesStatus = _surface.GetCapabilities(adapter, &surfaceCapabilites);
-		if (getCapabilitiesStatus == wgpu::Status::Error) {
-			throw std::runtime_error("failed to get surface capabilities");
-		}
-		_surfaceConfiguration.format = wgpu::TextureFormat::BGRA8Unorm;
-		_surface.Configure(&_surfaceConfiguration);
-		_queue = _device.GetQueue();
-		
-		initGltf();
-		initDepthTexture();
-		initRenderPipeline();
+	_surfaceConfiguration.width = WIDTH;
+	_surfaceConfiguration.height = HEIGHT;
+	_surfaceConfiguration.device = _device;
+	_surfaceConfiguration.alphaMode = wgpu::CompositeAlphaMode::Auto;
+	_surfaceConfiguration.presentMode = wgpu::PresentMode::Immediate;
+	_surfaceConfiguration.usage = wgpu::TextureUsage::RenderAttachment;
+
+	wgpu::SurfaceCapabilities surfaceCapabilites;
+	wgpu::ConvertibleStatus getCapabilitiesStatus = _surface.GetCapabilities(adapter, &surfaceCapabilites);
+	if (getCapabilitiesStatus == wgpu::Status::Error) {
+		throw std::runtime_error("failed to get surface capabilities");
+	}
+	_surfaceConfiguration.format = wgpu::TextureFormat::BGRA8Unorm;
+	_surface.Configure(&_surfaceConfiguration);
+	_queue = _device.GetQueue();
+	
+	initGltf();
+	initDepthTexture();
+	initRenderPipeline();
 }
 
 
@@ -169,7 +172,7 @@ void Engine::initGltf() {
 
 
 void Engine::initNodes(fastgltf::Asset& asset) {
-	size_t sceneIndex = asset.defaultScene.value_or(0);
+	const size_t sceneIndex = asset.defaultScene.value_or(0);
 	fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 		[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
 			glm::f32mat4x4 matrix = Utilities::toGlmFormat(m);// * flipX;
@@ -188,8 +191,6 @@ void Engine::initNodes(fastgltf::Asset& asset) {
 			}
 			std::cout << "warning: unknown node type: " << node.name << std::endl;
 		});
-	auto translations = std::vector<glm::f32mat4x4>(0);
-
 }
 
 void Engine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
@@ -237,13 +238,13 @@ void Engine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint
 		);
 		
 		//instanceProperty
-		InstanceProperty instanceProperty = {
+		const InstanceProperty instanceProperty = {
 			.materialIndex = static_cast<uint32_t>(primitive.materialIndex.value_or(asset.materials.size())),
 		};
 		_instanceProperties.push_back(instanceProperty);
 
 		//drawCall
-		DrawInfo drawCall = {
+		const DrawInfo drawCall = {
 			.indexCount = static_cast<uint32_t>(accessor.count),
 			.instanceCount = 1,
 			.firstIndex = static_cast<uint32_t>(indicesOffset),
@@ -270,14 +271,12 @@ void::Engine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 	l.type = static_cast<uint32_t>(asset.lights[lightIndex].type);
 	memcpy(&l.intensity, &asset.lights[lightIndex].intensity, sizeof(glm::f32) * 4);
 
-	glm::mat4x4 lightView, lightProjection;
-
 	constexpr float forwardAmount = 8.0f;
 	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
 	const auto eye = glm::vec3(transform[3]);
 	const glm::vec3 forwardPosition = eye + (forwardAmount * forward);
-	lightView = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
-	lightProjection = glm::perspectiveRH_ZO(l.outerConeAngle, 1.0f, 0.1f, l.range);
+	const glm::mat4x4 lightView = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
+	const glm::mat4x4 lightProjection = glm::perspectiveRH_ZO(l.outerConeAngle, 1.0f, 0.1f, l.range);
 	l.lightSpaceMatrix = lightProjection * lightView;
 
 	_lights.push_back(l);
@@ -459,27 +458,21 @@ void Engine::draw() {
 	//Get next surface texture view
 	wgpu::TextureView surfaceTextureView = getNextSurfaceTextureView();
 
-	wgpu::CommandEncoderDescriptor commandEncoderDescriptor = wgpu::CommandEncoderDescriptor();
-	commandEncoderDescriptor.label = "My command encoder";
+	wgpu::CommandEncoderDescriptor commandEncoderDescriptor = {
+		.label = "My command encoder"
+	};
 	wgpu::CommandEncoder commandEncoder = _device.CreateCommandEncoder(&commandEncoderDescriptor);
-	{ //Shadow Pass
-	//	wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
-	//	renderPassColorAttachment.view = _textureViews.shadowMaps[0];
-	//	renderPassColorAttachment.loadOp = wgpu::LoadOp::Undefined;
-	//	renderPassColorAttachment.storeOp = wgpu::StoreOp::Discard;
-	//	renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
 
-		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+	{ //Shadow Pass
+		const wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
 			.view = _textureViews.shadowMaps[0],
 			.depthLoadOp = wgpu::LoadOp::Clear,
 			.depthStoreOp = wgpu::StoreOp::Store,
 			.depthClearValue = 1.0f,
 		};
 
-		wgpu::RenderPassDescriptor renderPassDescriptor = {
+		const wgpu::RenderPassDescriptor renderPassDescriptor = {
 			.label = "shadow render pass",
-			//.colorAttachmentCount = 1,
-		//	.colorAttachments = &renderPassColorAttachment,
 			.depthStencilAttachment = &renderPassDepthStencilAttachment,
 		};
 		wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
@@ -491,26 +484,26 @@ void Engine::draw() {
 		for (auto& dc : _drawCalls) {
 			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
 		}
-		//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
 		renderPassEncoder.End();
 
 	}
 
 	{ //Output Pass
-		wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
-		renderPassColorAttachment.view = surfaceTextureView;
-		renderPassColorAttachment.loadOp = wgpu::LoadOp::Clear;
-		renderPassColorAttachment.storeOp = wgpu::StoreOp::Store;
-		renderPassColorAttachment.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 };
+		const wgpu::RenderPassColorAttachment renderPassColorAttachment = {
+			.view = surfaceTextureView,
+			.loadOp = wgpu::LoadOp::Clear,
+			.storeOp = wgpu::StoreOp::Store,
+			.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 },
+		};
 
-		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+		const wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
 			.view = _textureViews.cameraDepth,
 			.depthLoadOp = wgpu::LoadOp::Clear,
 			.depthStoreOp = wgpu::StoreOp::Store,
 			.depthClearValue = 1.0f,
 		};
 
-		wgpu::RenderPassDescriptor renderPassDescriptor = {
+		const wgpu::RenderPassDescriptor renderPassDescriptor = {
 			.label = "output render pass",
 			.colorAttachmentCount = 1,
 			.colorAttachments = &renderPassColorAttachment,
@@ -524,7 +517,7 @@ void Engine::draw() {
 		renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
 		renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
 
-		for (auto& dc : _drawCalls) {
+		for (const auto& dc : _drawCalls) {
 			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
 		}
 		//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
@@ -562,13 +555,14 @@ wgpu::TextureView Engine::getNextSurfaceTextureView() {
 
 	wgpu::Texture texture = wgpu::Texture(surfaceTexture.texture);
 
-	wgpu::TextureViewDescriptor textureViewDescriptor = wgpu::TextureViewDescriptor();
-	textureViewDescriptor.label = "surface TextureView";
-	textureViewDescriptor.format = texture.GetFormat();
-	textureViewDescriptor.dimension = wgpu::TextureViewDimension::e2D;
-	textureViewDescriptor.mipLevelCount = 1;
-	textureViewDescriptor.arrayLayerCount = 1;
-	textureViewDescriptor.aspect = wgpu::TextureAspect::All;
+	wgpu::TextureViewDescriptor textureViewDescriptor = {
+		.label = "surface TextureView",
+		.format = texture.GetFormat(),
+		.dimension = wgpu::TextureViewDimension::e2D,
+		.mipLevelCount = 1,
+		.arrayLayerCount = 1,
+		.aspect = wgpu::TextureAspect::All,
+	};
 
 	wgpu::TextureView textureView = texture.CreateView(&textureViewDescriptor);
 
