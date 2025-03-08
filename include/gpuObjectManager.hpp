@@ -39,9 +39,10 @@ namespace DawnEngine {
 
 	private:
 		GpuObjectManager() {};
-		static std::map <GPU_OBJECT_ID, wgpu::BindGroupLayoutEntry> gpuObjectsRegistry;
 		wgpu::BindGroupLayoutEntry getBindGroupLayoutEntry(GPU_OBJECT_ID id);
 		std::vector<wgpu::BindGroupLayoutEntry> getBindGroupLayoutEntries(std::span<GPU_OBJECT_ID> span);
-		//std::map <GPU_OBJECT_ID, wgpu::BindGroupLayoutEntry> gpuObjectsRegistry;
+
+		static const std::map <GPU_OBJECT_ID, wgpu::BindGroupLayoutEntry> gpuObjectsRegistry;
+		//static std::map <GPU_OBJECT_ID, std::variant<wgpu::Buffer, wgpu::Texture, wgpu::Sampler>> gpuMemoryRegistry;
 	};
 };

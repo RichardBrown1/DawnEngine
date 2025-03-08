@@ -29,7 +29,7 @@ namespace DawnEngine {
 		return device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	}
 
-  std::map < GPU_OBJECT_ID, wgpu::BindGroupLayoutEntry > GpuObjectManager::gpuObjectsRegistry = {
+  const std::map < GPU_OBJECT_ID, wgpu::BindGroupLayoutEntry > GpuObjectManager::gpuObjectsRegistry = {
 		{
 			GPU_OBJECT_ID::CAMERA,
 			{
