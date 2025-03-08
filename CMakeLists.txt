@@ -13,10 +13,8 @@ list(APPEND CMAKE_PREFIX_PATH "third-party/dawn")
 find_package(Dawn REQUIRED)
 set(ENV(DAWN_DEBUG_BREAK_ON_ERROR) 1)
 
+# FastGLTF
 add_subdirectory("third-party/fastgltf" SYSTEM)
-
-#list(APPEND CMAKE_PREFIX_PATH "third-party/fastgltf")
-#find_package(fastgltf REQUIRED)
 
 #FetchContent Dependencies
 include(FetchContent)
