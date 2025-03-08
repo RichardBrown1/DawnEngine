@@ -1,8 +1,3 @@
-//from FASTGLTF LightType
-#define LIGHTTYPE_DIRECTIONAL 0
-#define LIGHTTYPE_SPOT 1
-#define LIGHTTYPE_POINT 2
-
 StructuredBuffer<float4x4> transforms : register(t1, space0);
 
 struct Light
