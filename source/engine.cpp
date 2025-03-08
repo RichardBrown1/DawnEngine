@@ -387,7 +387,7 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 void Engine::initDepthTexture() {
 	{
 		constexpr uint32_t DEPTH_TEXTURE_RESOLUTION = 8192;
-		wgpu::TextureDescriptor depthTextureDescriptor = {
+		constexpr wgpu::TextureDescriptor depthTextureDescriptor = {
 			.label = "shadowmap depth texture",
 			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
 			.dimension = wgpu::TextureDimension::e2D,
@@ -398,7 +398,7 @@ void Engine::initDepthTexture() {
 		_textureViews.shadowMaps.push_back(depthTexture.CreateView());
 	}
 	{
-		wgpu::TextureDescriptor depthTextureDescriptor = {
+		const wgpu::TextureDescriptor depthTextureDescriptor = {
 			.label = "camera depth texture",
 			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
 			.dimension = wgpu::TextureDimension::e2D,
@@ -409,7 +409,7 @@ void Engine::initDepthTexture() {
 		_textureViews.cameraDepth = depthTexture.CreateView();
 	}
 
-	wgpu::SamplerDescriptor samplerDescriptor = {
+	constexpr wgpu::SamplerDescriptor samplerDescriptor = {
 		.label = "depth sampler",
 		.compare = wgpu::CompareFunction::Less,
 	};
