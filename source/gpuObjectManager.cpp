@@ -21,7 +21,7 @@ namespace DawnEngine {
 		wgpu::Device &device, wgpu::StringView label, std::span<GPU_OBJECT_ID> gpuObjectIds) {
 		auto bindGroupLayoutEntries = getBindGroupLayoutEntries(std::span{ gpuObjectIds });
 
-		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
+		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
 			.label = label,
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
