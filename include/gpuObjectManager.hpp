@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <span>
 #include <variant>
 #include <webgpu/webgpu_cpp.h>
@@ -42,7 +42,7 @@ namespace DawnEngine {
 		wgpu::BindGroupLayoutEntry getBindGroupLayoutEntry(GPU_OBJECT_ID id);
 	  std::vector<wgpu::BindGroupLayoutEntry> getBindGroupLayoutEntries(std::span<GPU_OBJECT_ID> span);
 
-		static const std::map <GPU_OBJECT_ID, wgpu::BindGroupLayoutEntry> gpuObjectsRegistry;
-		//static std::map <GPU_OBJECT_ID, std::variant<wgpu::Buffer, wgpu::Texture, wgpu::Sampler>> gpuMemoryRegistry;
+		static const std::unordered_map <GPU_OBJECT_ID, wgpu::BindGroupLayoutEntry> gpuObjectsRegistry;
+		//static std::unordered_map <GPU_OBJECT_ID, std::variant<wgpu::Buffer, wgpu::Texture, wgpu::Sampler>> gpuMemoryRegistry;
 	};
 };
