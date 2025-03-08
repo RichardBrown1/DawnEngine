@@ -40,5 +40,19 @@ glm::f32mat4x4 toGlmFormat(fastgltf::math::fmat4x4& matrix) {
 	//	memcpy(&output, &matrix, sizeof(glm::f32mat4x4));
 		return output;
 	}
+};
 
+namespace DawnEngine {
+	wgpu::ShaderModule DawnEngine::createShaderModule(wgpu::Device& device, const wgpu::StringView& label, const std::string& filename)
+	{
+		std::vector<uint32_t> shaderCode = Utilities::readShader(std::string(filename));
+		wgpu::ShaderSourceSPIRV shaderSource = wgpu::ShaderSourceSPIRV();
+		shaderSource.codeSize = static_cast<uint32_t>(shaderCode.size());
+		shaderSource.code = shaderCode.data();
+		wgpu::ShaderModuleDescriptor shaderModuleDescriptor = {
+			.nextInChain = &shaderSource,
+			.label = label,
+		};
+		return device.CreateShaderModule(&shaderModuleDescriptor);
+	}
 };

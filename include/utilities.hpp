@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <webgpu/webgpu_cpp.h>
 #include <fastgltf/core.hpp>
 #include <glm/glm.hpp>
 
@@ -10,4 +11,8 @@ namespace Utilities {
 	void checkFastGltfError(const fastgltf::Error& error, const std::string& additionalMessage = "");
 
 	glm::f32mat4x4 toGlmFormat(fastgltf::math::fmat4x4& matrix);
+};
+
+namespace DawnEngine {
+ wgpu::ShaderModule	createShaderModule(wgpu::Device& device, const wgpu::StringView& label, const std::string& filename);
 };

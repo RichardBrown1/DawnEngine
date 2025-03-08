@@ -426,25 +426,8 @@ void Engine::initDepthTexture() {
 
 void Engine::initRenderPipeline() {
 	{
-		std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_shadowShader.spv"));
-		wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
-		vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
-		vertexShaderSource.code = vertexShaderCode.data();
-		wgpu::ShaderModuleDescriptor vertexShaderModuleDescriptor = {
-			.nextInChain = &vertexShaderSource,
-			.label = "vertex shadow shader module"
-		};
-		wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
-
-		std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_shadowShader.spv"));
-		wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
-		fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
-		fragmentShaderSource.code = fragmentShaderCode.data();
-		wgpu::ShaderModuleDescriptor fragmentShaderModuleDescriptor = {
-			.nextInChain = &fragmentShaderSource,
-			.label = "fragment shadow shader module"
-		};
-		wgpu::ShaderModule fragmentShaderModule = _device.CreateShaderModule(&fragmentShaderModuleDescriptor);
+		wgpu::ShaderModule vertexShaderModule =	DawnEngine::createShaderModule(_device, "vertex shadow shader module", std::string("shaders/v_shadowShader.spv"));
+		wgpu::ShaderModule fragmentShaderModule = DawnEngine::createShaderModule(_device, "fragment shadow shader module", std::string("shaders/f_shadowShader.spv"));
 
 		RenderPipelineHelper::RenderPipelineHelperDescriptor renderPipelineDescriptor = {
 			.device = _device,
@@ -460,25 +443,8 @@ void Engine::initRenderPipeline() {
 	}
 
 	{
-		std::vector<uint32_t> vertexShaderCode = Utilities::readShader(std::string("shaders/v_shader.spv"));
-		wgpu::ShaderSourceSPIRV vertexShaderSource = wgpu::ShaderSourceSPIRV();
-		vertexShaderSource.codeSize = static_cast<uint32_t>(vertexShaderCode.size());
-		vertexShaderSource.code = vertexShaderCode.data();
-		wgpu::ShaderModuleDescriptor vertexShaderModuleDescriptor = {
-			.nextInChain = &vertexShaderSource,
-			.label = "vertex output shader module"
-		};
-		wgpu::ShaderModule vertexShaderModule = _device.CreateShaderModule(&vertexShaderModuleDescriptor);
-
-		std::vector<uint32_t> fragmentShaderCode = Utilities::readShader(std::string("shaders/f_shader.spv"));
-		wgpu::ShaderSourceSPIRV fragmentShaderSource = wgpu::ShaderSourceSPIRV();
-		fragmentShaderSource.codeSize = static_cast<uint32_t>(fragmentShaderCode.size());
-		fragmentShaderSource.code = fragmentShaderCode.data();
-		wgpu::ShaderModuleDescriptor fragmentShaderModuleDescriptor = {
-			.nextInChain = &fragmentShaderSource,
-			.label = "fragment output shader module"
-		};
-		wgpu::ShaderModule fragmentShaderModule = _device.CreateShaderModule(&fragmentShaderModuleDescriptor);
+		wgpu::ShaderModule vertexShaderModule =	DawnEngine::createShaderModule(_device, "vertex output shader module", std::string("shaders/v_shader.spv"));
+		wgpu::ShaderModule fragmentShaderModule = DawnEngine::createShaderModule(_device, "fragment output shader module", std::string("shaders/f_shader.spv"));
 
 		RenderPipelineHelper::RenderPipelineHelperDescriptor renderPipelineDescriptor = {
 			.device = _device,
