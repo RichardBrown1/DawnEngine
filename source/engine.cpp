@@ -169,13 +169,10 @@ void Engine::initGltf() {
 
 
 void Engine::initNodes(fastgltf::Asset& asset) {
-	//const auto flipX = glm::f32mat4x4(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
-	//const auto flipX = glm::f32mat4x4(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 	size_t sceneIndex = asset.defaultScene.value_or(0);
 	fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 		[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
 			glm::f32mat4x4 matrix = Utilities::toGlmFormat(m);// * flipX;
-			
 			
 			if (node.meshIndex.has_value()) {
 				addMeshData(asset, matrix, static_cast<uint32_t>(node.meshIndex.value()));
@@ -257,7 +254,6 @@ void Engine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint
 }
 
 void::Engine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
-	std::cout << "Light " << std::endl;
 	Light l;
 	glm::f32quat quaterion;
 	glm::f32vec3 scale, skew;
@@ -280,12 +276,9 @@ void::Engine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
 	const auto eye = glm::vec3(transform[3]);
 	const glm::vec3 forwardPosition = eye + (forwardAmount * forward);
-	std::cout << "Light " << std::endl;
 	lightView = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
 	lightProjection = glm::perspectiveRH_ZO(l.outerConeAngle, 1.0f, 0.1f, l.range);
-	std::cout << glm::to_string(lightProjection) << std::endl;
 	l.lightSpaceMatrix = lightProjection * lightView;
-	std::cout << glm::to_string(l.lightSpaceMatrix) << std::endl;
 
 	_lights.push_back(l);
 }
@@ -306,9 +299,9 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 
 	fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera );
 	camera.projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, _surfaceConfiguration.width / (float)_surfaceConfiguration.height, perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f));
-	std::cout << glm::to_string(camera.view) << std::endl;
-	std::cout << glm::to_string(transform) << std::endl;
-	std::cout << glm::to_string(camera.projection) << std::endl;
+	//std::cout << glm::to_string(camera.view) << std::endl;
+	//std::cout << glm::to_string(transform) << std::endl;
+	//std::cout << glm::to_string(camera.projection) << std::endl;
 	_cameras.push_back(camera);
 
 	fastgltf::Camera::Orthographic* orthographicCamera = std::get_if<fastgltf::Camera::Orthographic>(&asset.cameras[cameraIndex].camera );
@@ -318,7 +311,7 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 }
 
 void Engine::initSceneBuffers() {
-	wgpu::BufferDescriptor cameraBufferDescriptor = {
+	constexpr wgpu::BufferDescriptor cameraBufferDescriptor = {
 		.label = "camera buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
 		.size = sizeof(Camera),
@@ -326,7 +319,7 @@ void Engine::initSceneBuffers() {
 	_buffers.camera = _device.CreateBuffer(&cameraBufferDescriptor);
 	_queue.WriteBuffer(_buffers.camera, 0, _cameras.data(), cameraBufferDescriptor.size);
 
-	wgpu::BufferDescriptor lightBufferDescriptor = {
+	const wgpu::BufferDescriptor lightBufferDescriptor = {
 		.label = "light buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
 		.size = sizeof(Light) * _lights.size(),
@@ -334,7 +327,7 @@ void Engine::initSceneBuffers() {
 	_buffers.light = _device.CreateBuffer(&lightBufferDescriptor);
 	_queue.WriteBuffer(_buffers.light, 0, _lights.data(), lightBufferDescriptor.size);
 
-	wgpu::BufferDescriptor vboBufferDescriptor = {
+	const wgpu::BufferDescriptor vboBufferDescriptor = {
 			.label = "vbo buffer",
 			.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex,
 			.size = sizeof(VBO) * _vbos.size(),
@@ -342,7 +335,7 @@ void Engine::initSceneBuffers() {
 	_buffers.vbo = _device.CreateBuffer(&vboBufferDescriptor);
 	_queue.WriteBuffer(_buffers.vbo, 0, _vbos.data(), vboBufferDescriptor.size);
 	
-	wgpu::BufferDescriptor indexBufferDescriptor = {
+	const wgpu::BufferDescriptor indexBufferDescriptor = {
 				.label = "index buffer",
 				.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Index,
 				.size = sizeof(uint16_t) * _indices.size(),
@@ -350,7 +343,7 @@ void Engine::initSceneBuffers() {
 	_buffers.index = _device.CreateBuffer(&indexBufferDescriptor);
 	_queue.WriteBuffer(_buffers.index, 0, _indices.data(), indexBufferDescriptor.size);
 
-	wgpu::BufferDescriptor instancePropertiesBufferDescriptor{
+	const wgpu::BufferDescriptor instancePropertiesBufferDescriptor{
 				.label = "instance property buffer",
 				.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
 				.size = sizeof(InstanceProperty) * _instanceProperties.size(),
@@ -358,7 +351,7 @@ void Engine::initSceneBuffers() {
 	_buffers.instanceProperties = _device.CreateBuffer(&instancePropertiesBufferDescriptor);
 	_queue.WriteBuffer(_buffers.instanceProperties, 0, _instanceProperties.data(), instancePropertiesBufferDescriptor.size);
 
-	wgpu::BufferDescriptor transformBufferDescriptor = {
+	const wgpu::BufferDescriptor transformBufferDescriptor = {
 		.label = "transform buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
 		.size = sizeof(glm::f32mat4x4) * _transforms.size(),
