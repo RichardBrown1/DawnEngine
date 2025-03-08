@@ -49,11 +49,11 @@ namespace {
 namespace DawnEngine {
 	wgpu::ShaderModule DawnEngine::createShaderModule(wgpu::Device& device, const wgpu::StringView& label, const std::string& filename)
 	{
-		std::vector<uint32_t> shaderCode = readShader(std::string(filename));
+		const std::vector<uint32_t> shaderCode = readShader(std::string(filename));
 		wgpu::ShaderSourceSPIRV shaderSource = wgpu::ShaderSourceSPIRV();
 		shaderSource.codeSize = static_cast<uint32_t>(shaderCode.size());
 		shaderSource.code = shaderCode.data();
-		wgpu::ShaderModuleDescriptor shaderModuleDescriptor = {
+		const wgpu::ShaderModuleDescriptor shaderModuleDescriptor = {
 			.nextInChain = &shaderSource,
 			.label = label,
 		};
