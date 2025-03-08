@@ -59,7 +59,7 @@ namespace {
 			},
 		};
 
-		wgpu::BindGroupDescriptor bindGroupDescriptor = {
+		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 			.label = "output bind group",
 			.layout = bindGroupLayout,
 			.entryCount = bindGroupEntries.size(),
@@ -94,7 +94,7 @@ namespace {
 			},
 		};
 
-		wgpu::BindGroupDescriptor bindGroupDescriptor = {
+		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 			.label = "output bind group",
 			.layout = bindGroupLayout,
 			.entryCount = bindGroupEntries.size(),
@@ -131,30 +131,30 @@ namespace RenderPipelineHelper {
 
 	wgpu::RenderPipeline RenderPipelineHelper::createOutputRenderPipeline(RenderPipelineHelperDescriptor& descriptor)
 	{
-		wgpu::VertexAttribute positionAttribute = {
+		constexpr wgpu::VertexAttribute positionAttribute = {
 			.format = wgpu::VertexFormat::Float32x3,
 			.offset = 0,
 			.shaderLocation = 0,
 		};
-		wgpu::VertexAttribute normalAttribute = {
+		constexpr wgpu::VertexAttribute normalAttribute = {
 			.format = wgpu::VertexFormat::Float32x3,
 			.offset = offsetof(VBO, normal),
 			.shaderLocation = 1,
 		};
-		auto vertexAttributes = std::vector<wgpu::VertexAttribute>{ positionAttribute, normalAttribute };
-		wgpu::VertexBufferLayout vertexBufferLayout = {
+		const auto vertexAttributes = std::vector<wgpu::VertexAttribute>{ positionAttribute, normalAttribute };
+		const	wgpu::VertexBufferLayout vertexBufferLayout = {
 			.arrayStride = sizeof(VBO),
 			.attributeCount = vertexAttributes.size(),
 			.attributes = vertexAttributes.data(),
 		};
-		wgpu::VertexState vertexState = {
+		const wgpu::VertexState vertexState = {
 			.module = descriptor.vertexShaderModule,
 			.entryPoint = "VS_main",
 			.bufferCount = 1,
 			.buffers = &vertexBufferLayout,
 		};
 
-		wgpu::BlendState blendState = {
+		constexpr wgpu::BlendState blendState = {
 			.color = wgpu::BlendComponent{
 				.operation = wgpu::BlendOperation::Add,
 				.srcFactor = wgpu::BlendFactor::SrcAlpha,
@@ -166,12 +166,12 @@ namespace RenderPipelineHelper {
 				.dstFactor = wgpu::BlendFactor::One,
 			}
 		};
-		wgpu::ColorTargetState colorTargetState = {
+		const wgpu::ColorTargetState colorTargetState = {
 			.format = descriptor.colorTargetStateFormat,
 			.blend = &blendState,
 			.writeMask = wgpu::ColorWriteMask::All,
 		};
-		wgpu::FragmentState fragmentState = {
+		const wgpu::FragmentState fragmentState = {
 			.module = descriptor.fragmentShaderModule,
 			.entryPoint = "FS_main",
 			.constantCount = 0,
@@ -180,7 +180,7 @@ namespace RenderPipelineHelper {
 			.targets = &colorTargetState,
 		};
 
-		wgpu::DepthStencilState depthStencilState = {
+		constexpr wgpu::DepthStencilState depthStencilState = {
 			.format = DawnEngine::DEPTH_FORMAT,
 			.depthWriteEnabled = true,
 			.depthCompare = wgpu::CompareFunction::Less,
@@ -208,30 +208,30 @@ namespace RenderPipelineHelper {
 
 	wgpu::RenderPipeline RenderPipelineHelper::createShadowRenderPipeline(RenderPipelineHelperDescriptor& descriptor)
 	{
-		wgpu::VertexAttribute positionAttribute = {
+		constexpr wgpu::VertexAttribute positionAttribute = {
 			.format = wgpu::VertexFormat::Float32x3,
 			.offset = 0,
 			.shaderLocation = 0,
 		};
-		wgpu::VertexAttribute normalAttribute = {
+		constexpr wgpu::VertexAttribute normalAttribute = {
 			.format = wgpu::VertexFormat::Float32x3,
 			.offset = offsetof(VBO, normal),
 			.shaderLocation = 1,
 		};
-		auto vertexAttributes = std::vector<wgpu::VertexAttribute>{ positionAttribute, normalAttribute };
-		wgpu::VertexBufferLayout vertexBufferLayout = {
+		const auto vertexAttributes = std::vector<wgpu::VertexAttribute>{ positionAttribute, normalAttribute };
+		const wgpu::VertexBufferLayout vertexBufferLayout = {
 			.arrayStride = sizeof(VBO),
 			.attributeCount = vertexAttributes.size(),
 			.attributes = vertexAttributes.data(),
 		};
-		wgpu::VertexState vertexState = {
+		const wgpu::VertexState vertexState = {
 			.module = descriptor.vertexShaderModule,
 			.entryPoint = "VS_main",
 			.bufferCount = 1,
 			.buffers = &vertexBufferLayout,
 		};
 
-		wgpu::BlendState blendState = {
+		constexpr wgpu::BlendState blendState = {
 			.color = wgpu::BlendComponent{
 				.operation = wgpu::BlendOperation::Add,
 				.srcFactor = wgpu::BlendFactor::SrcAlpha,
@@ -243,21 +243,14 @@ namespace RenderPipelineHelper {
 				.dstFactor = wgpu::BlendFactor::One,
 			}
 		};
-		//		wgpu::ColorTargetState colorTargetState = {
-		//			.format = descriptor.colorTargetStateFormat,
-		//			.blend = &blendState,
-		//			.writeMask = wgpu::ColorWriteMask::All,
-		//		};
-		wgpu::FragmentState fragmentState = {
+		const wgpu::FragmentState fragmentState = {
 			.module = descriptor.fragmentShaderModule,
 			.entryPoint = "FS_main",
 			.constantCount = 0,
 			.constants = nullptr,
-			//	.targetCount = 1,
-			//	.targets = &colorTargetState,
 		};
 
-		wgpu::DepthStencilState depthStencilState = {
+		constexpr wgpu::DepthStencilState depthStencilState = {
 			.format = DawnEngine::DEPTH_FORMAT,
 			.depthWriteEnabled = true,
 			.depthCompare = wgpu::CompareFunction::Less,
