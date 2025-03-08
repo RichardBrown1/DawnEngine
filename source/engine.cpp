@@ -370,12 +370,12 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 		i++;
 	}
 
-	Material defaultMaterial = {
+	constexpr Material defaultMaterial = {
 		.baseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
 	};
 	materials[asset.materials.size()] = defaultMaterial;
 
-	wgpu::BufferDescriptor materialBufferDescriptor = {
+	const wgpu::BufferDescriptor materialBufferDescriptor = {
 		.label = "material buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
 		.size = sizeof(Material) * materials.size(),
