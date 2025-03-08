@@ -6,10 +6,7 @@
 #include <glm/glm.hpp>
 
 namespace Utilities {
-
 	void checkFastGltfError(const fastgltf::Error& error, const std::string& additionalMessage = "");
-
-	glm::f32mat4x4 toGlmFormat(fastgltf::math::fmat4x4& matrix);
 };
 
 namespace DawnEngine {

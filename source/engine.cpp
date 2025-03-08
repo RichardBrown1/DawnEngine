@@ -175,7 +175,7 @@ void Engine::initNodes(fastgltf::Asset& asset) {
 	const size_t sceneIndex = asset.defaultScene.value_or(0);
 	fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 		[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
-			glm::f32mat4x4 matrix = Utilities::toGlmFormat(m);// * flipX;
+			glm::f32mat4x4 matrix = reinterpret_cast<glm::f32mat4x4&>(m);// * flipX;
 			
 			if (node.meshIndex.has_value()) {
 				addMeshData(asset, matrix, static_cast<uint32_t>(node.meshIndex.value()));
