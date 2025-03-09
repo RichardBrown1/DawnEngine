@@ -138,12 +138,12 @@ namespace RenderPipelineHelper {
 		};
 		constexpr wgpu::VertexAttribute normalAttribute = {
 			.format = wgpu::VertexFormat::Float32x3,
-			.offset = offsetof(VBO, normal),
+			.offset = offsetof(DawnEngine::VBO, normal),
 			.shaderLocation = 1,
 		};
 		const auto vertexAttributes = std::vector<wgpu::VertexAttribute>{ positionAttribute, normalAttribute };
 		const	wgpu::VertexBufferLayout vertexBufferLayout = {
-			.arrayStride = sizeof(VBO),
+			.arrayStride = sizeof(DawnEngine::VBO),
 			.attributeCount = vertexAttributes.size(),
 			.attributes = vertexAttributes.data(),
 		};
@@ -215,12 +215,12 @@ namespace RenderPipelineHelper {
 		};
 		constexpr wgpu::VertexAttribute normalAttribute = {
 			.format = wgpu::VertexFormat::Float32x3,
-			.offset = offsetof(VBO, normal),
+			.offset = offsetof(DawnEngine::VBO, normal),
 			.shaderLocation = 1,
 		};
 		const auto vertexAttributes = std::vector<wgpu::VertexAttribute>{ positionAttribute, normalAttribute };
 		const wgpu::VertexBufferLayout vertexBufferLayout = {
-			.arrayStride = sizeof(VBO),
+			.arrayStride = sizeof(DawnEngine::VBO),
 			.attributeCount = vertexAttributes.size(),
 			.attributes = vertexAttributes.data(),
 		};

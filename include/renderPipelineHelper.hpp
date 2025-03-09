@@ -10,10 +10,10 @@ namespace RenderPipelineHelper {
 
 	struct RenderPipelineHelperDescriptor {
 		wgpu::Device& device;
-		Buffers& buffers;
-		TextureViews& textureViews;
-		Samplers& samplers;
-		BindGroups& bindGroups;
+		DawnEngine::Buffers& buffers;
+		DawnEngine::TextureViews& textureViews;
+		DawnEngine::Samplers& samplers;
+		DawnEngine::BindGroups& bindGroups;
 		wgpu::ShaderModule& vertexShaderModule;
 		wgpu::ShaderModule& fragmentShaderModule;
 		wgpu::TextureFormat& colorTargetStateFormat;

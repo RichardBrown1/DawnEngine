@@ -238,13 +238,13 @@ void Engine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint
 		);
 		
 		//instanceProperty
-		const InstanceProperty instanceProperty = {
+		const DawnEngine::InstanceProperty instanceProperty = {
 			.materialIndex = static_cast<uint32_t>(primitive.materialIndex.value_or(asset.materials.size())),
 		};
 		_instanceProperties.push_back(instanceProperty);
 
 		//drawCall
-		const DrawInfo drawCall = {
+		const DawnEngine::DrawInfo drawCall = {
 			.indexCount = static_cast<uint32_t>(accessor.count),
 			.instanceCount = 1,
 			.firstIndex = static_cast<uint32_t>(indicesOffset),
@@ -255,7 +255,7 @@ void Engine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint
 }
 
 void::Engine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
-	Light l;
+	DawnEngine::Light l;
 	glm::f32quat quaterion;
 	glm::f32vec3 scale, skew;
 	glm::f32vec4 perspective;
@@ -292,7 +292,7 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 	const auto eye = glm::vec3(transform[3]);
 	const glm::vec3 forwardPosition = eye + (forwardAmount * forward);
 	std::cout << "Camera " << std::endl;
-	Camera camera;
+	DawnEngine::Camera camera;
 	camera.view = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
 //	camera.view = transform; //why does this not work?
 
@@ -313,7 +313,7 @@ void Engine::initSceneBuffers() {
 	constexpr wgpu::BufferDescriptor cameraBufferDescriptor = {
 		.label = "camera buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
-		.size = sizeof(Camera),
+		.size = sizeof(DawnEngine::Camera),
 	};
 	_buffers.camera = _device.CreateBuffer(&cameraBufferDescriptor);
 	_queue.WriteBuffer(_buffers.camera, 0, _cameras.data(), cameraBufferDescriptor.size);
@@ -321,7 +321,7 @@ void Engine::initSceneBuffers() {
 	const wgpu::BufferDescriptor lightBufferDescriptor = {
 		.label = "light buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
-		.size = sizeof(Light) * _lights.size(),
+		.size = sizeof(DawnEngine::Light) * _lights.size(),
 	};
 	_buffers.light = _device.CreateBuffer(&lightBufferDescriptor);
 	_queue.WriteBuffer(_buffers.light, 0, _lights.data(), lightBufferDescriptor.size);
@@ -329,7 +329,7 @@ void Engine::initSceneBuffers() {
 	const wgpu::BufferDescriptor vboBufferDescriptor = {
 			.label = "vbo buffer",
 			.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex,
-			.size = sizeof(VBO) * _vbos.size(),
+			.size = sizeof(DawnEngine::VBO) * _vbos.size(),
 	};
 	_buffers.vbo = _device.CreateBuffer(&vboBufferDescriptor);
 	_queue.WriteBuffer(_buffers.vbo, 0, _vbos.data(), vboBufferDescriptor.size);
@@ -345,7 +345,7 @@ void Engine::initSceneBuffers() {
 	const wgpu::BufferDescriptor instancePropertiesBufferDescriptor{
 				.label = "instance property buffer",
 				.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
-				.size = sizeof(InstanceProperty) * _instanceProperties.size(),
+				.size = sizeof(DawnEngine::InstanceProperty) * _instanceProperties.size(),
 	};
 	_buffers.instanceProperties = _device.CreateBuffer(&instancePropertiesBufferDescriptor);
 	_queue.WriteBuffer(_buffers.instanceProperties, 0, _instanceProperties.data(), instancePropertiesBufferDescriptor.size);
@@ -362,14 +362,14 @@ void Engine::initSceneBuffers() {
 
 //Default Material will be at end of material buffer
 void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
-	auto materials = std::vector<Material>(asset.materials.size() + 1);
+	auto materials = std::vector<DawnEngine::Material>(asset.materials.size() + 1);
 	
 	for (int i = 0; auto & material : asset.materials) {
 		memcpy(&materials[i].baseColor, &material.pbrData.baseColorFactor, sizeof(glm::f32vec4));
 		i++;
 	}
 
-	constexpr Material defaultMaterial = {
+	constexpr DawnEngine::Material defaultMaterial = {
 		.baseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
 	};
 	materials[asset.materials.size()] = defaultMaterial;
@@ -377,7 +377,7 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 	const wgpu::BufferDescriptor materialBufferDescriptor = {
 		.label = "material buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
-		.size = sizeof(Material) * materials.size(),
+		.size = sizeof(DawnEngine::Material) * materials.size(),
 	};
 	_buffers.material = _device.CreateBuffer(&materialBufferDescriptor);
 	_queue.WriteBuffer(_buffers.material, 0, materials.data(), materialBufferDescriptor.size);

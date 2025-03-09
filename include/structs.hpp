@@ -1,74 +1,78 @@
 #pragma once
 #include <glm/glm.hpp>
 
-struct Buffers {
-	wgpu::Buffer camera;
-	wgpu::Buffer vbo;
-	wgpu::Buffer index;
-	wgpu::Buffer instanceProperties;
-	wgpu::Buffer transform;
-	wgpu::Buffer material;
-	wgpu::Buffer light;
-};
+namespace DawnEngine {
 
-struct TextureViews {
-	std::vector<wgpu::TextureView> shadowMaps;
-	wgpu::TextureView cameraDepth;
-};
+	struct Buffers {
+		wgpu::Buffer camera;
+		wgpu::Buffer vbo;
+		wgpu::Buffer index;
+		wgpu::Buffer instanceProperties;
+		wgpu::Buffer transform;
+		wgpu::Buffer material;
+		wgpu::Buffer light;
+	};
 
-struct Samplers {
-	wgpu::Sampler depth;
-};
+	struct TextureViews {
+		std::vector<wgpu::TextureView> shadowMaps;
+		wgpu::TextureView cameraDepth;
+	};
 
-struct BindGroups {
-	wgpu::BindGroup fixed;
-	wgpu::BindGroup lights;
-};
+	struct Samplers {
+		wgpu::Sampler depth;
+	};
 
-struct RenderPipelines {
-	wgpu::RenderPipeline shadow;
-	wgpu::RenderPipeline geometry;
-};
+	struct BindGroups {
+		wgpu::BindGroup fixed;
+		wgpu::BindGroup lights;
+	};
 
-struct Camera {
-	alignas(sizeof(glm::mat4x4)) glm::mat4x4 projection;
-	alignas(sizeof(glm::mat4x4)) glm::mat4x4 view;
-};
+	struct RenderPipelines {
+		wgpu::RenderPipeline shadow;
+		wgpu::RenderPipeline geometry;
+	};
 
-struct VBO {
-	glm::f32vec3 vertex;
-	glm::f32vec3 normal;
-};
+	struct Camera {
+		alignas(sizeof(glm::mat4x4)) glm::mat4x4 projection;
+		alignas(sizeof(glm::mat4x4)) glm::mat4x4 view;
+	};
 
-struct DrawInfo {
-	uint32_t indexCount;
-	uint32_t instanceCount;
-	uint32_t firstIndex;
-	uint32_t baseVertex;
-	uint32_t firstInstance; //requires indirect-first-instance feature
-};
+	struct VBO {
+		glm::f32vec3 vertex;
+		glm::f32vec3 normal;
+	};
 
-struct Light { //glm version of fastgltf::Light
-	glm::f32mat4x4 lightSpaceMatrix;
-	glm::f32vec3 position;
-	uint32_t PAD0;
-	glm::f32vec3 rotation;
-	uint32_t PAD1;
-	glm::f32vec3 color;
-	glm::u32 type; //this is u32 instead of u8 for webgpu shader compatibility
-	glm::f32 intensity;
-	glm::f32 range;
-	glm::f32 innerConeAngle;
-	glm::f32 outerConeAngle;
-};
+	struct DrawInfo {
+		uint32_t indexCount;
+		uint32_t instanceCount;
+		uint32_t firstIndex;
+		uint32_t baseVertex;
+		uint32_t firstInstance; //requires indirect-first-instance feature
+	};
 
-struct InstanceProperty {
-	uint32_t materialIndex;
-	uint32_t PAD0;
-	uint32_t PAD1;
-	uint32_t PAD2;
-};
+	struct Light { //glm version of fastgltf::Light
+		glm::f32mat4x4 lightSpaceMatrix;
+		glm::f32vec3 position;
+		uint32_t PAD0;
+		glm::f32vec3 rotation;
+		uint32_t PAD1;
+		glm::f32vec3 color;
+		glm::u32 type; //this is u32 instead of u8 for webgpu shader compatibility
+		glm::f32 intensity;
+		glm::f32 range;
+		glm::f32 innerConeAngle;
+		glm::f32 outerConeAngle;
+	};
 
-struct Material {
-	glm::vec4 baseColor;
+	struct InstanceProperty {
+		uint32_t materialIndex;
+		uint32_t PAD0;
+		uint32_t PAD1;
+		uint32_t PAD2;
+	};
+
+	struct Material {
+		glm::vec4 baseColor;
+	};
+
 };
