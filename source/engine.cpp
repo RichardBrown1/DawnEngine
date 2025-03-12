@@ -156,7 +156,7 @@ Engine::Engine() {
 void Engine::initGltf() {
 	_gltfParser = fastgltf::Parser::Parser(fastgltf::Extensions::KHR_lights_punctual);
 
-	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cornellbox.gltf");
+	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cornellBox/cornellbox.gltf");
 	//auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cube.gltf");
 	Utilities::checkFastGltfError(gltfFile.error(), "cube databuffer fromPath");
 
