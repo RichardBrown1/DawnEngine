@@ -128,21 +128,41 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
     return output;
 }
 
+float3 directionalLighting(VSOutput input, Light light)
+{
+    // Get constant light direction from rotation
+    float3 lightDir = ComputeLightDirection(light.rotation);
+    float3 toLight = -lightDir; // Reverse direction for lighting calculation
+    
+    // Simple NdotL with no attenuation
+    float NdotL = max(dot(input.Normal, toLight), 0.0);
+    
+    return light.color * NdotL;
+}
+
 float3 pointLighting(VSOutput input, Light light)
 {
-    float3 lightToFrag = normalize(input.Position - light.position);
-    float3 lightForward = ComputeLightDirection(light.rotation);
-
-    float distance = length(light.position - input.Position);
-    float attenuation = max(min(1.0 - pow(distance / light.range, 4), 1), 0) / (distance * distance);
-
-    return light.color * attenuation;
+    // Calculate light vector and distance
+    float3 toLight = light.position - input.Position;
+    float distance = length(toLight);
+    float3 lightDir = normalize(toLight);
+    
+    // Diffuse lighting calculation
+    float NdotL = max(dot(input.Normal, lightDir), 0.0);
+    
+    // Attenuation using same falloff as reference
+    float attenuation = max(min(1.0 - pow(distance / light.range, 4.0), 1.0), 0.0);
+    attenuation /= (distance * distance + 1e-6); // Prevent division by zero
+    
+    return light.color * (attenuation * NdotL);
 }
 
 float3 spotLighting(VSOutput input, Light light)
 {
     float3 lightToFrag = normalize(input.Position - light.position);
     float3 lightForward = ComputeLightDirection(light.rotation);
+
+    float NdotL = max(dot(input.Normal, -lightToFrag), 0.0);
 
     float cosTheta = dot(lightToFrag, lightForward);
 
@@ -155,7 +175,7 @@ float3 spotLighting(VSOutput input, Light light)
     float distance = length(light.position - input.Position);
     float attenuation = max(min(1.0 - pow(distance / light.range, 4), 1), 0) / (distance * distance);
 
-    return light.color * (attenuation * intensity);
+    return light.color * (attenuation * intensity * NdotL);
 }
 
 float calculateShadow(VSOutput input, Light light)
@@ -207,6 +227,7 @@ float4 FS_main(VSOutput input) : SV_Target
         switch (lights[i].type) //TODO: All of these lights should be pre-sorted into their own arrays.
         {
             case LIGHTTYPE_DIRECTIONAL:
+                result += directionalLighting(input, lights[i]);
                 break;
             case LIGHTTYPE_SPOT:
                 result += spotLighting(input, lights[i]);

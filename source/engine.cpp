@@ -156,12 +156,12 @@ Engine::Engine() {
 void Engine::initGltf() {
 	_gltfParser = fastgltf::Parser::Parser(fastgltf::Extensions::KHR_lights_punctual);
 
-	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cornellBox/cornellbox.gltf");
+	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/barcelonaHouse/pavillon_barcelone_v1.2.gltf");
 	//auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cube.gltf");
 	Utilities::checkFastGltfError(gltfFile.error(), "cube databuffer fromPath");
 
-	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models", fastgltf::Options::LoadExternalBuffers);
-	Utilities::checkFastGltfError(wholeGltf.error(), "cube loadGltf");
+	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models/barcelonaHouse", fastgltf::Options::LoadExternalBuffers);
+	Utilities::checkFastGltfError(wholeGltf.error(), "barcelonaHouse loadGltf");
 
 	auto& asset = wholeGltf.get();
 
@@ -301,7 +301,9 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 	//std::cout << glm::to_string(camera.view) << std::endl;
 	//std::cout << glm::to_string(transform) << std::endl;
 	//std::cout << glm::to_string(camera.projection) << std::endl;
-	_cameras.push_back(camera);
+	if (cameraIndex == 1) {
+		_cameras.push_back(camera);
+	}
 
 	fastgltf::Camera::Orthographic* orthographicCamera = std::get_if<fastgltf::Camera::Orthographic>(&asset.cameras[cameraIndex].camera );
 	if (orthographicCamera != nullptr) {
