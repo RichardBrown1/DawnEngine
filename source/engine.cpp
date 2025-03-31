@@ -291,7 +291,7 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
 	const auto eye = glm::vec3(transform[3]);
 	const glm::vec3 forwardPosition = eye + (forwardAmount * forward);
-	std::cout << "Camera " << std::endl;
+	//std::cout << "Camera " << std::endl;
 	DawnEngine::Camera camera;
 	camera.view = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
 //	camera.view = transform; //why does this not work?
