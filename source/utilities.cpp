@@ -1,6 +1,8 @@
 #include "../include/utilities.hpp"
 #include <iostream>
 #include <fstream>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 namespace Utilities {
 
@@ -52,5 +54,16 @@ namespace DawnEngine {
 			.label = label,
 		};
 		return device.CreateShaderModule(&shaderModuleDescriptor);
+	}
+
+	DawnEngine::Camera getDefaultCamera(wgpu::SurfaceConfiguration surfaceConfiguration)
+	{
+		constexpr auto eye = glm::vec3(0.0, 0.0, -10.0f);
+		constexpr auto origin = glm::vec3(0.0, 0.0, 0.0);
+		constexpr auto up = glm::vec3(0.0, 1.0, 0.0);
+		return DawnEngine::Camera{
+			.projection = glm::perspectiveRH_ZO(45.0f, surfaceConfiguration.width / (float)surfaceConfiguration.height, 0.1f, 1024.0f),
+			.view = glm::lookAt(eye, origin, up),
+		};
 	}
 };

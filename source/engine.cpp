@@ -155,10 +155,10 @@ Engine::Engine() {
 
 void Engine::initGltf() {
 	_gltfParser = fastgltf::Parser::Parser( fastgltf::Extensions::KHR_lights_punctual | fastgltf::Extensions::KHR_texture_basisu);
-	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/barcelonaHouse/pavillon_barcelone_v1.2_ktx.gltf");
+	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/damagedHelmet/DamagedHelmetKtx.gltf");
 	Utilities::checkFastGltfError(gltfFile.error(), "cube databuffer fromPath");
 
-	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models/barcelonaHouse", fastgltf::Options::LoadExternalBuffers);
+	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models/damagedHelmet", fastgltf::Options::LoadExternalBuffers);
 	Utilities::checkFastGltfError(wholeGltf.error(), "barcelonaHouse loadGltf");
 
 	auto& asset = wholeGltf.get();
@@ -286,9 +286,12 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 		//TODO what if there is 0 cameras or more than 1 cameras
 //		return;
 //	}
+	constexpr auto up = glm::vec3(0.0, 1.0, 0.0);
   constexpr float forwardAmount = 8.0f;
+
 	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
 	const auto eye = glm::vec3(transform[3]);
+
 	const glm::vec3 forwardPosition = eye + (forwardAmount * forward);
 	//std::cout << "Camera " << std::endl;
 	DawnEngine::Camera camera;
@@ -300,9 +303,7 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 	//std::cout << glm::to_string(camera.view) << std::endl;
 	//std::cout << glm::to_string(transform) << std::endl;
 	//std::cout << glm::to_string(camera.projection) << std::endl;
-	if (cameraIndex == 1) {
-		_cameras.push_back(camera);
-	}
+	_cameras.push_back(camera);
 
 	fastgltf::Camera::Orthographic* orthographicCamera = std::get_if<fastgltf::Camera::Orthographic>(&asset.cameras[cameraIndex].camera );
 	if (orthographicCamera != nullptr) {
@@ -323,6 +324,9 @@ void Engine::initTextures(fastgltf::Asset &asset) {
 }
 
 void Engine::initSceneBuffers() {
+	if (_cameras.size() == 0) {
+			_cameras.push_back(DawnEngine::getDefaultCamera(_surfaceConfiguration));
+	}
 	constexpr wgpu::BufferDescriptor cameraBufferDescriptor = {
 		.label = "camera buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
