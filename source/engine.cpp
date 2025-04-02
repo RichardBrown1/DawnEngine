@@ -154,10 +154,8 @@ Engine::Engine() {
 
 
 void Engine::initGltf() {
-	_gltfParser = fastgltf::Parser::Parser(fastgltf::Extensions::KHR_lights_punctual);
-
-	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/barcelonaHouse/pavillon_barcelone_v1.2.gltf");
-	//auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cube.gltf");
+	_gltfParser = fastgltf::Parser::Parser( fastgltf::Extensions::KHR_lights_punctual | fastgltf::Extensions::KHR_texture_basisu);
+	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/barcelonaHouse/pavillon_barcelone_v1.2_ktx.gltf");
 	Utilities::checkFastGltfError(gltfFile.error(), "cube databuffer fromPath");
 
 	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models/barcelonaHouse", fastgltf::Options::LoadExternalBuffers);
@@ -167,6 +165,7 @@ void Engine::initGltf() {
 
 	initNodes(asset);
 	initSceneBuffers();
+	initTextures(asset);
 	initMaterialBuffer(asset);
 }
 
@@ -309,6 +308,18 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 	if (orthographicCamera != nullptr) {
 		throw std::runtime_error("orthographic camera not supported");
 	}
+}
+
+void Engine::initTextures(fastgltf::Asset &asset) {
+	for (auto& t : asset.textures) {
+		if (!t.basisuImageIndex.has_value()) {
+			throw std::runtime_error("only ktx textures are supported");
+		}
+		auto image = asset.images[t.basisuImageIndex.value()];
+		
+		
+	}
+	
 }
 
 void Engine::initSceneBuffers() {
