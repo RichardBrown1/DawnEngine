@@ -172,7 +172,7 @@ float3 spotLighting(VSOutput input, Light light)
     float intensity = clamp((cosTheta - cosOuter) / epsilon, 0.0, 1.0);
 
     float distance = length(light.position - input.Position);
-    float attenuation = max(min(1.0 - pow(distance / light.range, 4), 1), 0) / (distance * distance);
+    float attenuation = max(min(1.0 - pow(distance / light.range, 4.0), 1.0), 0.0) / (distance * distance);
 
     return light.color * (attenuation * intensity * NdotL);
 }
