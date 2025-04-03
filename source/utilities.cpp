@@ -58,9 +58,9 @@ namespace DawnEngine {
 
 	DawnEngine::Camera getDefaultCamera(wgpu::SurfaceConfiguration surfaceConfiguration)
 	{
-		constexpr auto eye = glm::vec3(0.0, 0.0, -10.0f);
-		constexpr auto origin = glm::vec3(0.0, 0.0, 0.0);
-		constexpr auto up = glm::vec3(0.0, 1.0, 0.0);
+		constexpr glm::f32vec3 eye = { 0.0f, 0.0f, -10.0f };
+		constexpr glm::f32vec3 origin = glm::f32vec3(0.0f, 0.0f, 0.0f);
+		constexpr glm::f32vec3 up = glm::f32vec3(0.0, 1.0f, 0.0f);
 		return DawnEngine::Camera{
 			.projection = glm::perspectiveRH_ZO(45.0f, surfaceConfiguration.width / (float)surfaceConfiguration.height, 0.1f, 1024.0f),
 			.view = glm::lookAt(eye, origin, up),

@@ -155,10 +155,12 @@ Engine::Engine() {
 
 void Engine::initGltf() {
 	_gltfParser = fastgltf::Parser::Parser( fastgltf::Extensions::KHR_lights_punctual | fastgltf::Extensions::KHR_texture_basisu);
-	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/damagedHelmet/DamagedHelmetKtx.gltf");
+	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cornellBox/cornellbox.gltf");
+	//auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/damagedHelmet/DamagedHelmetKtx.gltf");
 	Utilities::checkFastGltfError(gltfFile.error(), "cube databuffer fromPath");
 
-	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models/damagedHelmet", fastgltf::Options::LoadExternalBuffers);
+	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models/cornellBox", fastgltf::Options::LoadExternalBuffers);
+	//auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models/damagedHelmet", fastgltf::Options::LoadExternalBuffers);
 	Utilities::checkFastGltfError(wholeGltf.error(), "barcelonaHouse loadGltf");
 
 	auto& asset = wholeGltf.get();
@@ -174,7 +176,7 @@ void Engine::initNodes(fastgltf::Asset& asset) {
 	const size_t sceneIndex = asset.defaultScene.value_or(0);
 	fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 		[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
-			glm::f32mat4x4 matrix = reinterpret_cast<glm::f32mat4x4&>(m);// * flipX;
+			glm::f32mat4x4 matrix = reinterpret_cast<glm::f32mat4x4&>(m);
 			
 			if (node.meshIndex.has_value()) {
 				addMeshData(asset, matrix, static_cast<uint32_t>(node.meshIndex.value()));
@@ -265,16 +267,12 @@ void::Engine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 
 	quaterion = glm::normalize(quaterion);
 	l.rotation = glm::eulerAngles(quaterion);
-
+	
 	memcpy(&l.color, &asset.lights[lightIndex].color, sizeof(glm::f32vec3));
 	l.type = static_cast<uint32_t>(asset.lights[lightIndex].type);
 	memcpy(&l.intensity, &asset.lights[lightIndex].intensity, sizeof(glm::f32) * 4);
 
-	constexpr float forwardAmount = 8.0f;
-	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
-	const auto eye = glm::vec3(transform[3]);
-	const glm::vec3 forwardPosition = eye + (forwardAmount * forward);
-	const glm::mat4x4 lightView = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
+	const glm::mat4x4 lightView = glm::inverse(transform);
 	const glm::mat4x4 lightProjection = glm::perspectiveRH_ZO(l.outerConeAngle, 1.0f, 0.1f, l.range);
 	l.lightSpaceMatrix = lightProjection * lightView;
 
@@ -286,22 +284,14 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 		//TODO what if there is 0 cameras or more than 1 cameras
 //		return;
 //	}
-	constexpr auto up = glm::vec3(0.0, 1.0, 0.0);
-  constexpr float forwardAmount = 8.0f;
-
-	const glm::vec3 forward = glm::normalize(glm::vec3(transform[2]));
-	const auto eye = glm::vec3(transform[3]);
-
-	const glm::vec3 forwardPosition = eye + (forwardAmount * forward);
-	//std::cout << "Camera " << std::endl;
+	std::cout << "Camera " << std::endl;
 	DawnEngine::Camera camera;
-	camera.view = glm::lookAt(eye, forwardPosition, glm::vec3(0.0f, 1.0f, 0.0f));
-//	camera.view = transform; //why does this not work?
+	camera.view = glm::inverse(transform);
 
 	fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera );
 	camera.projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, _surfaceConfiguration.width / (float)_surfaceConfiguration.height, perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f));
 	//std::cout << glm::to_string(camera.view) << std::endl;
-	//std::cout << glm::to_string(transform) << std::endl;
+	std::cout << glm::to_string(transform) << std::endl;
 	//std::cout << glm::to_string(camera.projection) << std::endl;
 	_cameras.push_back(camera);
 
@@ -325,7 +315,7 @@ void Engine::initTextures(fastgltf::Asset &asset) {
 
 void Engine::initSceneBuffers() {
 	if (_cameras.size() == 0) {
-			_cameras.push_back(DawnEngine::getDefaultCamera(_surfaceConfiguration));
+		_cameras.push_back(DawnEngine::getDefaultCamera(_surfaceConfiguration));
 	}
 	constexpr wgpu::BufferDescriptor cameraBufferDescriptor = {
 		.label = "camera buffer",
@@ -335,6 +325,9 @@ void Engine::initSceneBuffers() {
 	_buffers.camera = _device.CreateBuffer(&cameraBufferDescriptor);
 	_queue.WriteBuffer(_buffers.camera, 0, _cameras.data(), cameraBufferDescriptor.size);
 
+	if (_lights.size() == 0) {
+		constexpr glm::f32vec4 quaterion = { -0.7f, 0.0f, 0.0f, 0.7f };
+	}
 	const wgpu::BufferDescriptor lightBufferDescriptor = {
 		.label = "light buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
