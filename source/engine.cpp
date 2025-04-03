@@ -35,7 +35,7 @@ Engine::Engine() {
 
 	// Initialise SDL
 	SDL_Init(SDL_INIT_VIDEO);
-	SDL_Window* p_sdl_window = SDL_CreateWindow("Learn WebGPU", static_cast<int>(WIDTH), static_cast<int>(HEIGHT), 0);
+	SDL_Window* p_sdl_window = SDL_CreateWindow("DAWN WebGPU Engine", static_cast<int>(WIDTH), static_cast<int>(HEIGHT), 0);
 
 	if (!p_sdl_window) {
 		SDL_Quit();
