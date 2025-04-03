@@ -120,8 +120,7 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
                           );
     output.LightPosition = mul(lights[0].lightSpaceMatrix, float4(output.Position, 1.0));
     output.ShadowMapPosition = float3(output.LightPosition.xy * float2(0.5, -0.5) + float2(0.5, 0.5), output.LightPosition.z);
-    
-    output.Normal = mul((float3x3) mul(inverseTransposeMultiplier, transforms[InstanceIndex]), input.Normal);
+    output.Normal = normalize((float3) mul(mul(inverseTransposeMultiplier, transforms[InstanceIndex]), float4(input.Normal, 0.0)));
 
     InstanceProperties ip = instanceProperties[InstanceIndex];
     output.Color = materials[ip.materialIndex].baseColor;
