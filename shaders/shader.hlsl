@@ -52,18 +52,18 @@ SamplerComparisonState depthSampler : register(t6, space0);
 
 struct VSInput
 {
-    [[vk::location(0)]] float3 Position : POSTION0;
-    [[vk::location(1)]] float3 Normal : NORMAL0;
+    [[vk::location(0)]] float3 position : POSTION0;
+    [[vk::location(1)]] float3 normal : NORMAL0;
 };
 
 struct VSOutput
 {
-    [[vk::location(0)]] float4 CameraPosition : SV_Position;
-    [[vk::location(1)]] float3 Position : POSITION0;
-    [[vk::location(2)]] float4 LightPosition : POSITION1;
-    [[vk::location(3)]] float3 ShadowMapPosition : POSITION2;
-    [[vk::location(4)]] float3 Normal : NORMAL0;
-    [[vk::location(5)]] float4 Color : COLOR0;
+    [[vk::location(0)]] float4 cameraPosition : SV_Position;
+    [[vk::location(1)]] float3 position : POSITION0;
+    [[vk::location(2)]] float4 lightPosition : POSITION1;
+    [[vk::location(3)]] float3 shadowMapPosition : POSITION2;
+    [[vk::location(4)]] float3 normal : NORMAL0;
+    [[vk::location(5)]] float4 color : COLOR0;
 };
 
 // Helper function to compute light direction from XYZ Euler angles (radians) in a left-handed system
@@ -113,17 +113,17 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
     
     VSOutput output = (VSOutput) 0;    
     
-    output.Position = (float3) mul(transforms[InstanceIndex], float4(input.Position, 1.0));
-    output.CameraPosition = mul(
+    output.position = (float3) mul(transforms[InstanceIndex], float4(input.position, 1.0));
+    output.cameraPosition = mul(
                             mul(ubo.projection, ubo.view),
-                            float4(output.Position, 1.0)
+                            float4(output.position, 1.0)
                           );
-    output.LightPosition = mul(lights[0].lightSpaceMatrix, float4(output.Position, 1.0));
-    output.ShadowMapPosition = float3(output.LightPosition.xy * float2(0.5, -0.5) + float2(0.5, 0.5), output.LightPosition.z);
-    output.Normal = normalize((float3) mul(mul(inverseTransposeMultiplier, transforms[InstanceIndex]), float4(input.Normal, 0.0)));
+    output.lightPosition = mul(lights[0].lightSpaceMatrix, float4(output.position, 1.0));
+    output.shadowMapPosition = float3(output.lightPosition.xy * float2(0.5, -0.5) + float2(0.5, 0.5), output.lightPosition.z);
+    output.normal = normalize((float3) mul(mul(inverseTransposeMultiplier, transforms[InstanceIndex]), float4(input.normal, 0.0)));
 
     const InstanceProperties ip = instanceProperties[InstanceIndex];
-    output.Color = materials[ip.materialIndex].baseColor;
+    output.color = materials[ip.materialIndex].baseColor;
     return output;
 }
 
@@ -135,13 +135,13 @@ float getNDotL(float3 normal, float3 lightDir)
 float3 directionalLighting(VSOutput input, Light light)
 {
     const float3 lightDir = ComputeLightDirection(light.rotation);
-    const float NdotL = getNDotL(input.Normal, lightDir);
+    const float NdotL = getNDotL(input.normal, lightDir);
     return light.color * NdotL;
 }
 
 float3 pointLighting(VSOutput input, Light light)
 {
-    const float3 toLight = light.position - input.Position;
+    const float3 toLight = light.position - input.position;
     const float3 lightDir = normalize(toLight);
     
     //using gltf spec sheet as reference
@@ -149,12 +149,12 @@ float3 pointLighting(VSOutput input, Light light)
     const float attenuation = max(min(1.0 - pow(distance / light.range, 4.0), 1.0), 0.0);
     //attenuation /= (distance * distance + 1e-6); // Prevent division by zero
     
-    return light.color * getNDotL(input.Normal, lightDir) * attenuation;
+    return light.color * getNDotL(input.normal, lightDir) * attenuation;
 }
 
 float3 spotLighting(VSOutput input, Light light)
 {
-    const float3 lightToFrag = normalize(input.Position - light.position);
+    const float3 lightToFrag = normalize(input.position - light.position);
     const float3 lightForward = ComputeLightDirection(light.rotation);
 
     const float cosTheta = dot(lightToFrag, lightForward);
@@ -173,7 +173,7 @@ float calculateShadow(VSOutput input, Light light)
     float shadowMapWidth;
     shadowMap.GetDimensions(shadowMapWidth, shadowMapHeight);
     
-    const float3 projCoords = input.LightPosition.xyz / input.LightPosition.w;
+    const float3 projCoords = input.lightPosition.xyz / input.lightPosition.w;
     if (projCoords.z > 1.0)
     {
         return 1.0;
@@ -182,8 +182,8 @@ float calculateShadow(VSOutput input, Light light)
     float2 shadowUV = projCoords.xy * 0.5 + 0.5;
     shadowUV.y = 1.0 - shadowUV.y; // Flip Y
 
-    const float3 normalDirection = normalize(input.Normal) * (1, 1, -1);
-    const float3 fragToLight = normalize(light.position - input.Position);
+    const float3 normalDirection = normalize(input.normal) * (1, 1, -1);
+    const float3 fragToLight = normalize(light.position - input.position);
    // const float bias = 0.0000;
     const float currentDepth = projCoords.z; //- bias;
     
@@ -205,7 +205,7 @@ float4 FS_main(VSOutput input) : SV_Target
     const float3 lightColor = float3(1.0, 1.0, 1.0);
     const float ambientStrength = float(0.1);
     const float3 ambientLight = lightColor * ambientStrength;
-    const float3 result = ambientLight;
+    float3 result = ambientLight;
     
     uint lightSize;
     uint lightStride;
@@ -227,7 +227,7 @@ float4 FS_main(VSOutput input) : SV_Target
         }
     }
 
-    result *= input.Color.xyz;
+    result *= input.color.xyz;
 
     result *= calculateShadow(input, lights[0]); //TODO: Multiple light support
    
