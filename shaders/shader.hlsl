@@ -146,7 +146,7 @@ float3 pointLighting(VSOutput input, Light light)
     
     //using gltf spec sheet as reference
     const float distance = length(toLight);
-    float attenuation = max(min(1.0 - pow(distance / light.range, 4.0), 1.0), 0.0);
+    float attenuation = max(min(1.0 - pow(distance / light.range, 4.0), 2.0), 0.0);
     attenuation /= (distance * distance + 1e-6); // Prevent division by zero
     
     return light.color * getNDotL(input.normal, lightDir) * attenuation;
