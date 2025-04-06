@@ -301,17 +301,6 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 	}
 }
 
-void Engine::initTextures(fastgltf::Asset &asset) {
-	for (auto& t : asset.textures) {
-		if (!t.basisuImageIndex.has_value()) {
-			throw std::runtime_error("only ktx textures are supported");
-		}
-		auto image = asset.images[t.basisuImageIndex.value()];
-		
-		
-	}
-	
-}
 
 void Engine::initSceneBuffers() {
 	if (_cameras.size() == 0) {
@@ -370,19 +359,31 @@ void Engine::initSceneBuffers() {
 	
 	}
 
+void Engine::initTextures(fastgltf::Asset &asset) {
+	for (auto& t : asset.textures) {
+		if (!t.basisuImageIndex.has_value()) {
+			throw std::runtime_error("only ktx textures are supported");
+		}
+		auto image = asset.images[t.basisuImageIndex.value()];
+	}
+}
+
 //Default Material will be at end of material buffer
 void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
-	auto materials = std::vector<DawnEngine::Material>(asset.materials.size() + 1);
+	auto materials = std::vector<DawnEngine::Material>(asset.materials.size());
 	
 	for (int i = 0; auto &material : asset.materials) {
-		memcpy(&materials[i].baseColor, &material.pbrData.baseColorFactor, sizeof(glm::f32vec4));
+		memcpy(&materials[i].pbrMetallicRoughness, &material.pbrData, sizeof(uint32_t) * 6);
+		DawnEngine::convertType(material.pbrData.baseColorTexture, materials[i].pbrMetallicRoughness.baseColorTextureInfo);
+		DawnEngine::convertType(material.pbrData.metallicRoughnessTexture, materials[i].pbrMetallicRoughness.metallicRoughnessTextureInfo);
+
 		i++;
 	}
 
-	constexpr DawnEngine::Material defaultMaterial = {
-		.baseColor = {1.0f, 1.0f, 1.0f, 1.0f},
-	};
-	materials[asset.materials.size()] = defaultMaterial;
+//	constexpr DawnEngine::Material defaultMaterial = {
+//		.baseColor = {1.0f, 1.0f, 1.0f, 1.0f},
+//	};
+	//materials[asset.materials.size()] = defaultMaterial;
 
 	const wgpu::BufferDescriptor materialBufferDescriptor = {
 		.label = "material buffer",

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include "../include/constants.hpp"
 
 namespace Utilities {
 
@@ -66,4 +67,18 @@ namespace DawnEngine {
 			.view = glm::lookAt(eye, origin, up),
 		};
 	}
+
+	void convertType(std::optional<fastgltf::TextureInfo> &fastgltfTextureInfo, DawnEngine::TextureInfo& dawnEngineTextureInfo)
+	{
+		if (fastgltfTextureInfo.has_value()) {
+			fastgltf::TextureInfo &ti = fastgltfTextureInfo.value();
+			dawnEngineTextureInfo = {
+				.index = static_cast<uint32_t>(ti.textureIndex),
+				.texCoord = static_cast<uint32_t>(ti.texCoordIndex),
+			};
+		}	else {
+			dawnEngineTextureInfo = DawnEngine::NO_TEXTURE;
+		}
+	}
+
 };

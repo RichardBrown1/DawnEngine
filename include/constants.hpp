@@ -10,4 +10,9 @@ namespace DawnEngine {
 			.intensity = 128.0f,
 	};
 
+	constexpr DawnEngine::TextureInfo NO_TEXTURE = {
+		.index = UINT32_MAX,
+		.texCoord = 0,
+	};
+
 }

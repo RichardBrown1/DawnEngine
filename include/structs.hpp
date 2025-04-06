@@ -64,15 +64,29 @@ namespace DawnEngine {
 		glm::f32 outerConeAngle;
 	};
 
-	struct InstanceProperty {
+	struct InstanceProperty { //TODO: is this padding necessary?
 		uint32_t materialIndex;
 		uint32_t PAD0;
 		uint32_t PAD1;
 		uint32_t PAD2;
 	};
 
-	struct Material {
-		glm::vec4 baseColor;
+	struct TextureInfo {
+		uint32_t index;
+		uint32_t texCoord;
 	};
+
+	struct PBRMetallicRoughness {
+		glm::vec4 baseColorFactor;
+		float metallicFactor;
+		float roughnessFactor;
+		TextureInfo baseColorTextureInfo;
+		TextureInfo metallicRoughnessTextureInfo;
+	};
+
+	struct Material {
+		PBRMetallicRoughness pbrMetallicRoughness;
+	};
+
 
 };

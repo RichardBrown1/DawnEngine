@@ -13,4 +13,7 @@ namespace Utilities {
 namespace DawnEngine {
 	wgpu::ShaderModule	createShaderModule(wgpu::Device& device, const wgpu::StringView& label, const std::string& filename);
 	DawnEngine::Camera getDefaultCamera(wgpu::SurfaceConfiguration surfaceConfiguration);
+	
+	void convertType(std::optional<fastgltf::TextureInfo>& fastGltfTextureInfo, DawnEngine::TextureInfo& DawnEngineTextureInfo);
+
 };
