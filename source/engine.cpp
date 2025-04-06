@@ -374,13 +374,13 @@ void Engine::initSceneBuffers() {
 void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 	auto materials = std::vector<DawnEngine::Material>(asset.materials.size() + 1);
 	
-	for (int i = 0; auto & material : asset.materials) {
+	for (int i = 0; auto &material : asset.materials) {
 		memcpy(&materials[i].baseColor, &material.pbrData.baseColorFactor, sizeof(glm::f32vec4));
 		i++;
 	}
 
 	constexpr DawnEngine::Material defaultMaterial = {
-		.baseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+		.baseColor = {1.0f, 1.0f, 1.0f, 1.0f},
 	};
 	materials[asset.materials.size()] = defaultMaterial;
 
