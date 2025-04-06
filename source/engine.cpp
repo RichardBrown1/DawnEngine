@@ -155,12 +155,12 @@ Engine::Engine() {
 
 void Engine::initGltf() {
 	_gltfParser = fastgltf::Parser::Parser( fastgltf::Extensions::KHR_lights_punctual | fastgltf::Extensions::KHR_texture_basisu);
-	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cornellBox/cornellbox.gltf");
-	//auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/damagedHelmet/DamagedHelmetKtx.gltf");
+//	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cornellBox/cornellbox.gltf");
+	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/damagedHelmet/DamagedHelmetKtx.gltf");
 	Utilities::checkFastGltfError(gltfFile.error(), "cube databuffer fromPath");
 
-	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models/cornellBox", fastgltf::Options::LoadExternalBuffers);
-	//auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models/damagedHelmet", fastgltf::Options::LoadExternalBuffers);
+//	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models/cornellBox", fastgltf::Options::LoadExternalBuffers);
+	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models/damagedHelmet", fastgltf::Options::LoadExternalBuffers);
 	Utilities::checkFastGltfError(wholeGltf.error(), "barcelonaHouse loadGltf");
 
 	auto& asset = wholeGltf.get();
@@ -326,7 +326,7 @@ void Engine::initSceneBuffers() {
 	_queue.WriteBuffer(_buffers.camera, 0, _cameras.data(), cameraBufferDescriptor.size);
 
 	if (_lights.size() == 0) {
-		constexpr glm::f32vec4 quaterion = { -0.7f, 0.0f, 0.0f, 0.7f };
+		_lights.push_back(DawnEngine::DEFAULT_LIGHT);
 	}
 	const wgpu::BufferDescriptor lightBufferDescriptor = {
 		.label = "light buffer",
