@@ -359,8 +359,18 @@ void Engine::initSceneBuffers() {
 	
 	}
 
+void Engine::initImages(fastgltf::Asset& asset) {
+	for (const auto& i : asset.images) {
+		fastgltf::DataSource ds = i.data;
+		fastgltf::sources::URI *uri = std::get_if<fastgltf::sources::URI>(&ds);
+		if (uri->mimeType != fastgltf::MimeType::KTX2) {
+			throw std::runtime_error("only ktx2 images are supported");
+		}
+		
+	}
+}
 void Engine::initTextures(fastgltf::Asset &asset) {
-	for (auto& t : asset.textures) {
+	for (const auto& t : asset.textures) {
 		if (!t.basisuImageIndex.has_value()) {
 			throw std::runtime_error("only ktx textures are supported");
 		}
