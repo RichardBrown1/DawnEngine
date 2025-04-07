@@ -13,8 +13,6 @@ list(APPEND CMAKE_PREFIX_PATH "third-party/dawn")
 find_package(Dawn REQUIRED)
 set(ENV(DAWN_DEBUG_BREAK_ON_ERROR) 1)
 
-# FastGLTF
-add_subdirectory("third-party/fastgltf" SYSTEM)
 
 #FetchContent Dependencies
 include(FetchContent)
@@ -39,15 +37,6 @@ FetchContent_Declare(
     GIT_TAG 1.0.1
 )
 FetchContent_MakeAvailable(glm)
-
-## fastgltf
-#option(FASTGLTF_ENABLE_CPP_MODULES 1)
-#FetchContent_Declare(
-#    fastgltf
-#    GIT_REPOSITORY https://github.com/spnda/fastgltf
-#    GIT_TAG v0.8.0
-#)
-#FetchContent_MakeAvailable(fastgltf)
 
 # fastgltf
 #option(FASTGLTF_ENABLE_CPP_MODULES 1)
