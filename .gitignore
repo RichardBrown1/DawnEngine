@@ -363,5 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 #added Gitignores
+CMakeUserPresets.json
+/build
 /models/barcelonaHouse
 /models/damagedHelmet

@@ -362,11 +362,7 @@ void Engine::initSceneBuffers() {
 void Engine::initImages(fastgltf::Asset& asset) {
 	for (const auto& i : asset.images) {
 		fastgltf::DataSource ds = i.data;
-		fastgltf::sources::URI *uri = std::get_if<fastgltf::sources::URI>(&ds);
-		if (uri->mimeType != fastgltf::MimeType::KTX2) {
-			throw std::runtime_error("only ktx2 images are supported");
-		}
-		
+		DawnEngine::getTexture(ds);
 	}
 }
 void Engine::initTextures(fastgltf::Asset &asset) {

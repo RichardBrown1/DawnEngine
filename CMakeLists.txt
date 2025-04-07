@@ -13,6 +13,8 @@ list(APPEND CMAKE_PREFIX_PATH "third-party/dawn")
 find_package(Dawn REQUIRED)
 set(ENV(DAWN_DEBUG_BREAK_ON_ERROR) 1)
 
+#vcpkg Dependendencies
+find_package(Ktx CONFIG REQUIRED)
 
 #FetchContent Dependencies
 include(FetchContent)
@@ -54,7 +56,10 @@ file(GLOB_RECURSE SRC_FILES "source/*.cpp")
 add_executable (DawnEngine ${SRC_FILES})
 #add_executable (DawnEngine "source/main.cpp"  "source/engine.cpp" "source/sdl3webgpu.cpp" "include/sdl3webgpu.hpp" "source/utilities.cpp"  "include/renderPipelineHelper.hpp" "source/renderPipelineHelper.cpp")
 
-target_link_libraries(DawnEngine dawn::webgpu_dawn SDL3::SDL3 glm::glm fastgltf::fastgltf)
+target_link_libraries(DawnEngine 
+    PUBLIC dawn::webgpu_dawn SDL3::SDL3 glm::glm fastgltf::fastgltf
+    PRIVATE KTX::ktx
+)
 
 #Disable compile warnings on libraries
 file(GLOB_RECURSE THIRD_PARTY "third_party/*.c" "third_party/*.cpp" "third_party/*.h" "third_party/*.hpp")

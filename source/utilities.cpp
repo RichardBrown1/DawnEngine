@@ -3,6 +3,7 @@
 #include <fstream>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <ktx.h>
 #include "../include/constants.hpp"
 
 namespace Utilities {
@@ -79,6 +80,27 @@ namespace DawnEngine {
 		}	else {
 			dawnEngineTextureInfo = DawnEngine::NO_TEXTURE;
 		}
+	}
+
+	wgpu::Texture getTexture(fastgltf::DataSource dataSource)
+	{
+		if (!std::holds_alternative<fastgltf::sources::URI>(dataSource)) {
+			throw std::runtime_error("Cannot get fastgltf::DataSource Texture, unsupported type");
+		}
+		fastgltf::sources::URI *p_uri = std::get_if<fastgltf::sources::URI>(&dataSource);
+		if (p_uri->mimeType != fastgltf::MimeType::KTX2) {
+			throw std::runtime_error("Only KTX2 Textures are supported");
+		}
+		
+		ktxTexture* p_ktxTexture;
+		KTX_error_code result;
+
+		result = ktxTexture_CreateFromNamedFile(p_uri->uri.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktxTexture);
+		if (result != ktx_error_code_e::KTX_SUCCESS) {
+			throw std::runtime_error(ktxErrorString(result));
+		}
+
+		return wgpu::Texture();
 	}
 
 };
