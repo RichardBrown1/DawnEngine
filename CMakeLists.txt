@@ -49,6 +49,17 @@ FetchContent_MakeAvailable(glm)
 #)
 #FetchContent_MakeAvailable(fastgltf)
 
+# fastgltf
+#option(FASTGLTF_ENABLE_CPP_MODULES 1)
+FetchContent_Declare(
+    fastgltf
+    GIT_REPOSITORY https://github.com/spnda/fastgltf
+    GIT_TAG v0.8.0
+)
+FetchContent_MakeAvailable(fastgltf)
+get_target_property(fastgltfDirectories fastgltf::fastgltf INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(fastgltf SYSTEM INTERFACE ${fastgltfDirectories})
+
 # Build
 file(GLOB_RECURSE SRC_FILES "source/*.cpp")
 add_executable (DawnEngine ${SRC_FILES})
@@ -56,6 +67,7 @@ add_executable (DawnEngine ${SRC_FILES})
 
 target_link_libraries(DawnEngine dawn::webgpu_dawn SDL3::SDL3 glm::glm fastgltf::fastgltf)
 
+#Disable compile warnings on libraries
 file(GLOB_RECURSE THIRD_PARTY "third_party/*.c" "third_party/*.cpp" "third_party/*.h" "third_party/*.hpp")
 
 if (MSVC)
