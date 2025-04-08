@@ -15,22 +15,10 @@ set(ENV(DAWN_DEBUG_BREAK_ON_ERROR) 1)
 
 #vcpkg Dependendencies
 find_package(Ktx CONFIG REQUIRED)
+find_package(SDL3 CONFIG REQUIRED)
 
 #FetchContent Dependencies
 include(FetchContent)
-
-## SDL3
-set(SDL_SHARED TRUE CACHE BOOL "Build a SDL shared library (if available)")
-set(SDL_STATIC TRUE CACHE BOOL "Build a SDL static library (if available)")
-FetchContent_Declare(
-	SDL
-	GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-	GIT_TAG preview-3.1.6  # Replace this with a particular git tag or git hash
-	GIT_SHALLOW TRUE
-	GIT_PROGRESS TRUE
-)
-FetchContent_MakeAvailable(SDL)
-set_property(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_deps/sdl-src" PROPERTY EXCLUDE_FROM_ALL TRUE)
 
 ## glm
 FetchContent_Declare(
@@ -57,8 +45,8 @@ add_executable (DawnEngine ${SRC_FILES})
 #add_executable (DawnEngine "source/main.cpp"  "source/engine.cpp" "source/sdl3webgpu.cpp" "include/sdl3webgpu.hpp" "source/utilities.cpp"  "include/renderPipelineHelper.hpp" "source/renderPipelineHelper.cpp")
 
 target_link_libraries(DawnEngine 
-    PUBLIC dawn::webgpu_dawn SDL3::SDL3 glm::glm fastgltf::fastgltf
-    PRIVATE KTX::ktx
+    PUBLIC dawn::webgpu_dawn glm::glm fastgltf::fastgltf
+    PRIVATE SDL3::SDL3 KTX::ktx
 )
 
 #Disable compile warnings on libraries

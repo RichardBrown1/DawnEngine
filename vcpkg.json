@@ -1,11 +1,16 @@
 {
   "dependencies": [
-    "ktx"
+    "ktx",
+    "sdl3"
   ],
   "overrides": [
     {
       "name": "ktx",
       "version": "4.3.2"
+    },
+    {
+      "name": "sdl3",
+      "version": "3.2.10"
     }
   ]
 }
