@@ -1,5 +1,6 @@
 ﻿cmake_minimum_required (VERSION 3.28)
 
+set(CMAKE_CXX_STANDARD 20)
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
@@ -33,7 +34,7 @@ target_link_libraries(DawnEngine
 file(GLOB_RECURSE THIRD_PARTY "third_party/*.c" "third_party/*.cpp" "third_party/*.h" "third_party/*.hpp")
 
 if (MSVC)
-    target_compile_options(DawnEngine PRIVATE /W4 /WX /std:c++20)
+    target_compile_options(DawnEngine PRIVATE /W4 /WX)
     set_source_files_properties(${THIRD_PARTY} PROPERTIES COMPILE_FLAGS /w)
 else()
     target_compile_options(DawnEngine PRIVATE -Wall -Wextra -Wpedantic -Werror -std=c++20 -fsanitize=undefined -fsanitize=address)
