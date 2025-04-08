@@ -18,6 +18,7 @@ find_package(Ktx CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(fastgltf CONFIG REQUIRED)
+find_package(directx-dxc CONFIG REQUIRED)
 
 # Build
 file(GLOB_RECURSE SRC_FILES "source/*.cpp")
@@ -52,7 +53,6 @@ add_dependencies(DawnEngine CopyModels)
 #Shaders
 set(SHADERS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 set(SHADERS_DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
-set(DXC_PATH "C:/VulkanSDK/1.3.268.0/Bin/dxc.exe")
 
 file(GLOB_RECURSE HLSL_SHADER_FILES "shaders/*.hlsl")
 file(MAKE_DIRECTORY ${SHADERS_DEST_DIR})
@@ -62,8 +62,8 @@ foreach(FILE ${HLSL_SHADER_FILES})
   get_filename_component(FILE_WE ${FILE} NAME_WE)
   add_custom_command(
      TARGET Shaders
-     COMMAND ${DXC_PATH} -T vs_6_7 -E VS_main -spirv -Fo ${SHADERS_DEST_DIR}/v_${FILE_WE}.spv ${FILE}
-     COMMAND ${DXC_PATH} -T ps_6_7 -E FS_main -spirv -Fo ${SHADERS_DEST_DIR}/f_${FILE_WE}.spv ${FILE}
+     COMMAND ${DIRECTX_DXC_TOOL} -T vs_6_7 -E VS_main -spirv -Fo ${SHADERS_DEST_DIR}/v_${FILE_WE}.spv ${FILE}
+     COMMAND ${DIRECTX_DXC_TOOL} -T ps_6_7 -E FS_main -spirv -Fo ${SHADERS_DEST_DIR}/f_${FILE_WE}.spv ${FILE}
      MAIN_DEPENDENCY ${FILE}
      COMMENT "HLSL Vertex ${FILE}"
      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
