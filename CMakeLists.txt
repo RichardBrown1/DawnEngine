@@ -16,37 +16,16 @@ set(ENV(DAWN_DEBUG_BREAK_ON_ERROR) 1)
 #vcpkg Dependendencies
 find_package(Ktx CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
-
-#FetchContent Dependencies
-include(FetchContent)
-
-## glm
-FetchContent_Declare(
-    glm
- 	GIT_REPOSITORY	https://github.com/g-truc/glm.git
-    GIT_TAG 1.0.1
-)
-FetchContent_MakeAvailable(glm)
-
-# fastgltf
-#option(FASTGLTF_ENABLE_CPP_MODULES 1)
-FetchContent_Declare(
-    fastgltf
-    GIT_REPOSITORY https://github.com/spnda/fastgltf
-    GIT_TAG v0.8.0
-)
-FetchContent_MakeAvailable(fastgltf)
-get_target_property(fastgltfDirectories fastgltf::fastgltf INTERFACE_INCLUDE_DIRECTORIES)
-target_include_directories(fastgltf SYSTEM INTERFACE ${fastgltfDirectories})
+find_package(glm CONFIG REQUIRED)
+find_package(fastgltf CONFIG REQUIRED)
 
 # Build
 file(GLOB_RECURSE SRC_FILES "source/*.cpp")
 add_executable (DawnEngine ${SRC_FILES})
-#add_executable (DawnEngine "source/main.cpp"  "source/engine.cpp" "source/sdl3webgpu.cpp" "include/sdl3webgpu.hpp" "source/utilities.cpp"  "include/renderPipelineHelper.hpp" "source/renderPipelineHelper.cpp")
 
 target_link_libraries(DawnEngine 
-    PUBLIC dawn::webgpu_dawn glm::glm fastgltf::fastgltf
-    PRIVATE SDL3::SDL3 KTX::ktx
+    PUBLIC dawn::webgpu_dawn     
+    PRIVATE SDL3::SDL3 KTX::ktx glm::glm fastgltf::fastgltf
 )
 
 #Disable compile warnings on libraries
@@ -103,14 +82,3 @@ add_custom_command(TARGET DawnEngine POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
                 "${CMAKE_CURRENT_SOURCE_DIR}/third-party/dawn/bin/webgpu_dawn.pdb"
                 ${CMAKE_CURRENT_BINARY_DIR}/webgpu_dawn.pdb)
-
-#SDL
-add_custom_command(TARGET DawnEngine POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-                "${CMAKE_CURRENT_BINARY_DIR}/_deps/sdl-build/SDL3.dll"
-                ${CMAKE_CURRENT_BINARY_DIR}/SDL3.dll)
-
-add_custom_command(TARGET DawnEngine POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-                "${CMAKE_CURRENT_BINARY_DIR}/_deps/sdl-build/SDL3.pdb"
-                ${CMAKE_CURRENT_BINARY_DIR}/SDL3.pdb)
