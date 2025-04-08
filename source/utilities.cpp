@@ -99,7 +99,8 @@ namespace DawnEngine {
 		if (result != ktx_error_code_e::KTX_SUCCESS) {
 			throw std::runtime_error(ktxErrorString(result));
 		}
-
+		
+		ktxTexture_Destroy(p_ktxTexture);
 		return wgpu::Texture();
 	}
 
