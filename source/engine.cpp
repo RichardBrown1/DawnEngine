@@ -155,18 +155,17 @@ Engine::Engine() {
 
 void Engine::initGltf() {
 	_gltfParser = fastgltf::Parser::Parser( fastgltf::Extensions::KHR_lights_punctual | fastgltf::Extensions::KHR_texture_basisu);
-//	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/cornellBox/cornellbox.gltf");
-	auto gltfFile = fastgltf::GltfDataBuffer::FromPath("models/damagedHelmet/DamagedHelmetKtx.gltf");
-	Utilities::checkFastGltfError(gltfFile.error(), "cube databuffer fromPath");
+	auto gltfFile = fastgltf::GltfDataBuffer::FromPath(_gltfDirectory + _gltfFile);
+	Utilities::checkFastGltfError(gltfFile.error(), "error loading gltf file");
 
-//	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models/cornellBox", fastgltf::Options::LoadExternalBuffers);
-	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), "models/damagedHelmet", fastgltf::Options::LoadExternalBuffers);
-	Utilities::checkFastGltfError(wholeGltf.error(), "barcelonaHouse loadGltf");
+	auto wholeGltf = _gltfParser.loadGltf(gltfFile.get(), _gltfDirectory, fastgltf::Options::LoadExternalBuffers);
+	Utilities::checkFastGltfError(wholeGltf.error(), "error loading gltf directory");
 
 	auto& asset = wholeGltf.get();
 
 	initNodes(asset);
 	initSceneBuffers();
+	initImages(asset);
 	initTextures(asset);
 	initMaterialBuffer(asset);
 }
@@ -362,7 +361,7 @@ void Engine::initSceneBuffers() {
 void Engine::initImages(fastgltf::Asset& asset) {
 	for (const auto& i : asset.images) {
 		fastgltf::DataSource ds = i.data;
-		DawnEngine::getTexture(ds);
+		DawnEngine::getTexture(ds, _gltfDirectory);
 	}
 }
 void Engine::initTextures(fastgltf::Asset &asset) {

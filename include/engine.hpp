@@ -15,6 +15,8 @@ public:
 	void destroy();
 
 private:
+	const std::string _gltfDirectory = "models/damagedHelmet/";
+	const std::string _gltfFile = "DamagedHelmetKtx.gltf";
 	fastgltf::Parser _gltfParser;
 
 	wgpu::Instance _instance;

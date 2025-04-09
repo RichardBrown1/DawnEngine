@@ -5,6 +5,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <ktx.h>
 #include "../include/constants.hpp"
+#include "../include/vkFormat.hpp"
 
 namespace Utilities {
 
@@ -82,7 +83,7 @@ namespace DawnEngine {
 		}
 	}
 
-	wgpu::Texture getTexture(fastgltf::DataSource dataSource)
+	wgpu::Texture getTexture(fastgltf::DataSource dataSource, std::string gltfDirectory)
 	{
 		if (!std::holds_alternative<fastgltf::sources::URI>(dataSource)) {
 			throw std::runtime_error("Cannot get fastgltf::DataSource Texture, unsupported type");
@@ -92,15 +93,59 @@ namespace DawnEngine {
 			throw std::runtime_error("Only KTX2 Textures are supported");
 		}
 		
-		ktxTexture* p_ktxTexture;
+		ktxTexture2* p_ktxTexture;
 		KTX_error_code result;
 
-		result = ktxTexture_CreateFromNamedFile(p_uri->uri.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktxTexture);
+		std::string filePath = gltfDirectory.append(p_uri->uri.c_str());
+		result = ktxTexture2_CreateFromNamedFile(filePath.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktxTexture);
 		if (result != ktx_error_code_e::KTX_SUCCESS) {
 			throw std::runtime_error(ktxErrorString(result));
 		}
 		
-		ktxTexture_Destroy(p_ktxTexture);
+		ktx_uint32_t numLevels = p_ktxTexture->numLevels;
+		ktx_uint32_t baseWidth = p_ktxTexture->baseWidth;
+		ktx_bool_t isArray = p_ktxTexture->isArray;
+		std::cout << "numLevels: " << numLevels << std::endl;
+		std::cout << "baseWidth: " << baseWidth << std::endl;
+		std::cout << "isArray: " << isArray << std::endl;
+
+		
+		p_ktxTexture->vkFormat;
+	//	result = ktxTexture_GetImageOffset(p_ktxTexture, level, layer, faceSlice, &offset);
+		if (result != ktx_error_code_e::KTX_SUCCESS) {
+			throw std::runtime_error(ktxErrorString(result));
+		}
+		//ktxTexture2_GetColorModel_e() //DFD
+
+	//	ktx_uint8_t* p_imageData = ktxTexture_GetData(p_ktxTexture) + offset;
+	//	std::cout << "p_imageData: " << p_imageData << std::endl;
+	//	ktxTexture2_Destroy(p_ktxTexture);
+		
+		wgpu::TextureDimension textureDimension = [&p_ktxTexture]() {
+			switch (p_ktxTexture->numDimensions) {
+			case 1:
+				return wgpu::TextureDimension::e1D;
+			case 2:
+				return wgpu::TextureDimension::e2D;
+			case 3:
+				return wgpu::TextureDimension::e3D;
+			default:
+				throw std::runtime_error("unknown Texture Dimension");
+			}
+		}();
+
+		wgpu::TextureDescriptor textureDescriptor = {
+			.label = wgpu::StringView(filePath),
+			.usage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopyDst,
+			.dimension = textureDimension,
+			.size = wgpu::Extent3D {
+				.width = p_ktxTexture->baseWidth,
+				.height = p_ktxTexture->baseHeight,
+				.depthOrArrayLayers = p_ktxTexture->baseDepth,
+			},
+			.format = vkFormat::WebGpuImageFormat((vkFormat::VkFormat)p_ktxTexture->vkFormat),
+			.mipLevelCount = p_ktxTexture->numLevels,
+		};
 		return wgpu::Texture();
 	}
 
