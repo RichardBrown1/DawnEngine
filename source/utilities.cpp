@@ -43,6 +43,12 @@ namespace {
 
 		return buffer;
 	}
+
+	void checkKtxError(ktx_error_code_e errorCode) {
+		if (errorCode != ktx_error_code_e::KTX_SUCCESS) {
+			throw std::runtime_error(ktxErrorString(errorCode));
+		}
+	}
 };
 
 namespace DawnEngine {
@@ -83,7 +89,7 @@ namespace DawnEngine {
 		}
 	}
 
-	wgpu::Texture getTexture(fastgltf::DataSource dataSource, std::string gltfDirectory)
+	wgpu::Texture getTexture(wgpu::Device& device, fastgltf::DataSource dataSource, std::string gltfDirectory)
 	{
 		if (!std::holds_alternative<fastgltf::sources::URI>(dataSource)) {
 			throw std::runtime_error("Cannot get fastgltf::DataSource Texture, unsupported type");
@@ -94,13 +100,20 @@ namespace DawnEngine {
 		}
 		
 		ktxTexture2* p_ktxTexture;
-		KTX_error_code result;
 
 		std::string filePath = gltfDirectory.append(p_uri->uri.c_str());
-		result = ktxTexture2_CreateFromNamedFile(filePath.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktxTexture);
-		if (result != ktx_error_code_e::KTX_SUCCESS) {
-			throw std::runtime_error(ktxErrorString(result));
+		checkKtxError(ktxTexture2_CreateFromNamedFile(filePath.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktxTexture));
+
+		ktx_bool_t needsTranscoding = ktxTexture2_NeedsTranscoding(p_ktxTexture);
+		std::cout << "needs transcoding: " << needsTranscoding << std::endl;
+
+		ktx_transcode_fmt_e transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_NOSELECTION;
+		if (needsTranscoding) {
+			//khr_df_model_e colorModel = ktxTexture2_GetColorModel_e(p_ktxTexture);
+			throw std::runtime_error("ktx format unsupported");
+			//checkKtxError(ktxTexture2_TranscodeBasis(p_ktxTexture, transcodeFormat, 0));
 		}
+
 		
 		ktx_uint32_t numLevels = p_ktxTexture->numLevels;
 		ktx_uint32_t baseWidth = p_ktxTexture->baseWidth;
@@ -112,9 +125,6 @@ namespace DawnEngine {
 		
 		p_ktxTexture->vkFormat;
 	//	result = ktxTexture_GetImageOffset(p_ktxTexture, level, layer, faceSlice, &offset);
-		if (result != ktx_error_code_e::KTX_SUCCESS) {
-			throw std::runtime_error(ktxErrorString(result));
-		}
 		//ktxTexture2_GetColorModel_e() //DFD
 
 	//	ktx_uint8_t* p_imageData = ktxTexture_GetData(p_ktxTexture) + offset;

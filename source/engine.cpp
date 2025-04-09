@@ -100,9 +100,10 @@ Engine::Engine() {
 	std::cout << "Vertex Buffer Limit: " << supportedLimits.limits.maxVertexBuffers << std::endl;
 	std::cout << "BindGroup Limit: " << supportedLimits.limits.maxBindGroups << std::endl;
 	std::cout << "Max Bindings/BindGroup Limit: " << supportedLimits.limits.maxBindingsPerBindGroup << std::endl;
-
-	std::array<wgpu::FeatureName, 1> requiredFeatures = { 
-		wgpu::FeatureName::IndirectFirstInstance
+	
+	std::array<wgpu::FeatureName, 2> requiredFeatures = { 
+		wgpu::FeatureName::IndirectFirstInstance,
+		wgpu::FeatureName::TextureCompressionBC,
 	};
 	//wgpu::FeatureName requiredFeatures = wgpu::FeatureName::IndirectFirstInstance;
 	wgpu::DeviceDescriptor deviceDescriptor = {};
@@ -361,7 +362,7 @@ void Engine::initSceneBuffers() {
 void Engine::initImages(fastgltf::Asset& asset) {
 	for (const auto& i : asset.images) {
 		fastgltf::DataSource ds = i.data;
-		DawnEngine::getTexture(ds, _gltfDirectory);
+		DawnEngine::getTexture(_device, ds, _gltfDirectory);
 	}
 }
 void Engine::initTextures(fastgltf::Asset &asset) {
