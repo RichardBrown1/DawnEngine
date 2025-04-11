@@ -104,33 +104,34 @@ namespace DawnEngine {
 		std::string filePath = gltfDirectory.append(p_uri->uri.c_str());
 		checkKtxError(ktxTexture2_CreateFromNamedFile(filePath.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktxTexture));
 
+		//ktxTexture2_GetVkFormat
 		ktx_bool_t needsTranscoding = ktxTexture2_NeedsTranscoding(p_ktxTexture);
 		std::cout << "needs transcoding: " << needsTranscoding << std::endl;
 
 		ktx_transcode_fmt_e transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_NOSELECTION;
 		if (needsTranscoding) {
-			//khr_df_model_e colorModel = ktxTexture2_GetColorModel_e(p_ktxTexture);
-			throw std::runtime_error("ktx format unsupported");
-			//checkKtxError(ktxTexture2_TranscodeBasis(p_ktxTexture, transcodeFormat, 0));
+			khr_df_model_e colorModel = ktxTexture2_GetColorModel_e(p_ktxTexture);
+			std::cout << transcodeFormat << device.HasFeature(wgpu::FeatureName::TextureCompressionASTC);
+			std::cout << colorModel << std::endl;
+			//throw std::runtime_error("ktx format unsupported");
+			ktx_uint32_t numComponents = ktxTexture2_GetNumComponents(p_ktxTexture);
+			std::cout << "numComponents: " << numComponents << std::endl;
+			switch (numComponents) {
+				//TODO Implement other BC Formats.
+				//BC4, 5 and 6H seem interesting
+			case 3:
+			case 4:
+				transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_BC7_RGBA;
+				break;
+			default:
+				throw std::runtime_error("only bc7 is supported");
+			}
+			checkKtxError(ktxTexture2_TranscodeBasis(p_ktxTexture, transcodeFormat, 0));
 		}
-
 		
-		ktx_uint32_t numLevels = p_ktxTexture->numLevels;
-		ktx_uint32_t baseWidth = p_ktxTexture->baseWidth;
-		ktx_bool_t isArray = p_ktxTexture->isArray;
-		std::cout << "numLevels: " << numLevels << std::endl;
-		std::cout << "baseWidth: " << baseWidth << std::endl;
-		std::cout << "isArray: " << isArray << std::endl;
+		needsTranscoding = ktxTexture2_NeedsTranscoding(p_ktxTexture);
+		std::cout << "needs transcoding: " << needsTranscoding << std::endl;
 
-		
-		p_ktxTexture->vkFormat;
-	//	result = ktxTexture_GetImageOffset(p_ktxTexture, level, layer, faceSlice, &offset);
-		//ktxTexture2_GetColorModel_e() //DFD
-
-	//	ktx_uint8_t* p_imageData = ktxTexture_GetData(p_ktxTexture) + offset;
-	//	std::cout << "p_imageData: " << p_imageData << std::endl;
-	//	ktxTexture2_Destroy(p_ktxTexture);
-		
 		wgpu::TextureDimension textureDimension = [&p_ktxTexture]() {
 			switch (p_ktxTexture->numDimensions) {
 			case 1:
@@ -156,7 +157,9 @@ namespace DawnEngine {
 			.format = vkFormat::WebGpuImageFormat((vkFormat::VkFormat)p_ktxTexture->vkFormat),
 			.mipLevelCount = p_ktxTexture->numLevels,
 		};
-		return wgpu::Texture();
+		wgpu::Texture texture = device.CreateTexture(&textureDescriptor);
+		
+
 	}
 
 };
