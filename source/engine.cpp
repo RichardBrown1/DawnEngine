@@ -167,7 +167,7 @@ void Engine::initGltf() {
 	initNodes(asset);
 	initSceneBuffers();
 	initImages(asset);
-	initTextures(asset);
+//	initTextures(asset);
 	initMaterialBuffer(asset);
 }
 
@@ -362,7 +362,7 @@ void Engine::initSceneBuffers() {
 void Engine::initImages(fastgltf::Asset& asset) {
 	for (const auto& i : asset.images) {
 		fastgltf::DataSource ds = i.data;
-		DawnEngine::getTexture(_device, ds, _gltfDirectory);
+		//DawnEngine::getTexture(_device, ds, _gltfDirectory);
 	}
 }
 void Engine::initTextures(fastgltf::Asset &asset) {

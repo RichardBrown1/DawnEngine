@@ -100,40 +100,56 @@ namespace DawnEngine {
 		}
 		
 		ktxTexture2* p_ktxTexture;
-
 		std::string filePath = gltfDirectory.append(p_uri->uri.c_str());
+		std::cout << "Loading Texture: " << filePath << std::endl;
 		checkKtxError(ktxTexture2_CreateFromNamedFile(filePath.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktxTexture));
+		std::shared_ptr<ktxTexture2> sp_ktxTexture2(p_ktxTexture, [](ktxTexture2* k2){auto k = reinterpret_cast<ktxTexture*>(k2); ktxTexture_Destroy(k); });
+		std::shared_ptr<ktxTexture> sp_ktxTexture = std::reinterpret_pointer_cast<ktxTexture, ktxTexture2>(sp_ktxTexture2);
+		std::cout << "sp_ktxTexture2 Use Count: " << sp_ktxTexture2.use_count() << std::endl;
 
-		//ktxTexture2_GetVkFormat
-		ktx_bool_t needsTranscoding = ktxTexture2_NeedsTranscoding(p_ktxTexture);
+		ktx_bool_t needsTranscoding = ktxTexture2_NeedsTranscoding(sp_ktxTexture2.get());
 		std::cout << "needs transcoding: " << needsTranscoding << std::endl;
 
 		ktx_transcode_fmt_e transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_NOSELECTION;
+		ktx_uint32_t numComponents = 0;
+		ktx_uint32_t componentByteLength = 0;
+		ktxTexture2_GetComponentInfo(sp_ktxTexture2.get(), &numComponents, &componentByteLength);
+		ktx_uint32_t numChannels = 4; //magic number to replace
+		std::cout << "numComponents: " << numComponents << " componentByteLength: " << componentByteLength << std::endl;
 		if (needsTranscoding) {
-			khr_df_model_e colorModel = ktxTexture2_GetColorModel_e(p_ktxTexture);
+			khr_df_model_e colorModel = ktxTexture2_GetColorModel_e(sp_ktxTexture2.get());
 			std::cout << transcodeFormat << device.HasFeature(wgpu::FeatureName::TextureCompressionASTC);
 			std::cout << colorModel << std::endl;
 			//throw std::runtime_error("ktx format unsupported");
-			ktx_uint32_t numComponents = ktxTexture2_GetNumComponents(p_ktxTexture);
-			std::cout << "numComponents: " << numComponents << std::endl;
-			switch (numComponents) {
+			ktxTexture2_GetComponentInfo(sp_ktxTexture2.get(), &numComponents, &componentByteLength);
+			std::cout << "numComponents: " << numComponents << " componentByteLength: " << componentByteLength << std::endl;
 				//TODO Implement other BC Formats.
-				//BC4, 5 and 6H seem interesting
+				//5 and 6H seem interesting
+			switch (numChannels) {
+			case 1:
+				transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_BC4_R;
+				break;
+			case 2:
+				transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_BC5_RG;
+				break;
 			case 3:
 			case 4:
 				transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_BC7_RGBA;
 				break;
 			default:
-				throw std::runtime_error("only bc7 is supported");
+				throw std::runtime_error("unexpected numComponents() count");
 			}
-			checkKtxError(ktxTexture2_TranscodeBasis(p_ktxTexture, transcodeFormat, 0));
+			checkKtxError(ktxTexture2_TranscodeBasis(sp_ktxTexture2.get(), transcodeFormat, 0));
 		}
 		
-		needsTranscoding = ktxTexture2_NeedsTranscoding(p_ktxTexture);
+		needsTranscoding = ktxTexture2_NeedsTranscoding(sp_ktxTexture2.get());
 		std::cout << "needs transcoding: " << needsTranscoding << std::endl;
 
-		wgpu::TextureDimension textureDimension = [&p_ktxTexture]() {
-			switch (p_ktxTexture->numDimensions) {
+		//sp_ktxTexture2->generateMipmaps
+		
+
+		wgpu::TextureDimension textureDimension = [&sp_ktxTexture2]() {
+			switch (sp_ktxTexture2->numDimensions) {
 			case 1:
 				return wgpu::TextureDimension::e1D;
 			case 2:
@@ -147,19 +163,55 @@ namespace DawnEngine {
 
 		wgpu::TextureDescriptor textureDescriptor = {
 			.label = wgpu::StringView(filePath),
-			.usage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopyDst,
+			.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst,
 			.dimension = textureDimension,
 			.size = wgpu::Extent3D {
-				.width = p_ktxTexture->baseWidth,
-				.height = p_ktxTexture->baseHeight,
-				.depthOrArrayLayers = p_ktxTexture->baseDepth,
+				.width = sp_ktxTexture2->baseWidth,
+				.height = sp_ktxTexture2->baseHeight, 
+				.depthOrArrayLayers = sp_ktxTexture2->baseDepth,
 			},
-			.format = vkFormat::WebGpuImageFormat((vkFormat::VkFormat)p_ktxTexture->vkFormat),
-			.mipLevelCount = p_ktxTexture->numLevels,
+			.format = vkFormat::WebGpuImageFormat((vkFormat::VkFormat)sp_ktxTexture2->vkFormat),
+			.mipLevelCount = sp_ktxTexture2->numLevels,
 		};
 		wgpu::Texture texture = device.CreateTexture(&textureDescriptor);
-		
+		const wgpu::ImageCopyTexture imageCopyTexture = {
+			.texture = texture,
+			.mipLevel = 0,
+		};
+		const wgpu::TextureDataLayout textureDataLayout = {
+				.bytesPerRow = textureDescriptor.size.width * numChannels, //1 pixel = 4 bytes. Careful this will change with different formats
+				.rowsPerImage = textureDescriptor.size.height, 
+		};
 
+		const ktx_size_t imageSize = ktxTexture_GetImageSize(sp_ktxTexture.get(), 0);
+		const wgpu::Queue queue = device.GetQueue();
+		ktx_size_t offset = 0;
+		checkKtxError(ktxTexture_GetImageOffset(sp_ktxTexture.get(), 0, 0, 0, &offset));
+
+		//const wgpu::Extent3D dataLayoutSize = {
+		//	.width = textureDataLayout.bytesPerRow,
+		//	.height = textureDataLayout.rowsPerImage,
+		//};
+
+		queue.WriteTexture(
+			&imageCopyTexture,
+			ktxTexture_GetData(sp_ktxTexture.get()),
+			imageSize * numChannels,
+			&textureDataLayout,
+			&textureDescriptor.size
+			);
+
+//		wgpu::BufferDescriptor stagingBufferDescriptor = {
+//			.label = "texture staging buffer",
+//			.usage = wgpu::BufferUsage::MapWrite | wgpu::BufferUsage::CopySrc,
+//			.size = ktxTexture_GetImageSize(sp_ktxTexture.get(), 0),
+//			.mappedAtCreation = true,
+//		};
+//		wgpu::Buffer stagingBuffer = device.CreateBuffer(&stagingBufferDescriptor);
+//		//wgpu::TextureDataLayout().
+
+		
+		return texture;
 	}
 
 };
