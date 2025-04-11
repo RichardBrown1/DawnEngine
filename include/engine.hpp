@@ -16,7 +16,7 @@ public:
 
 private:
 	const std::string _gltfDirectory = "models/damagedHelmet/";
-	const std::string _gltfFile = "DamagedHelmetKtx.gltf";
+	const std::string _gltfFile = "DamagedHelmet.gltf";
 	fastgltf::Parser _gltfParser;
 
 	wgpu::Instance _instance;
