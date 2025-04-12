@@ -24,9 +24,20 @@ struct InstanceProperties
 };
 StructuredBuffer<InstanceProperties> instanceProperties : register(t2, space0);
 
+struct TextureInfo
+{
+	uint index;
+    uint texCoord;
+};
 struct Material
 {
     float4 baseColor;
+    float metallicFactor;
+    float roughnessFactor;
+    TextureInfo baseColorTextureInfo;
+    TextureInfo metallicRoughnessTextureInfo;
+    uint PAD0;
+    uint PAD1;
 };
 StructuredBuffer<Material> materials : register(t3, space0);
 

@@ -385,6 +385,7 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 
 		i++;
 	}
+//	materials.add(DawnEngine::DE);
 
 //	constexpr DawnEngine::Material defaultMaterial = {
 //		.baseColor = {1.0f, 1.0f, 1.0f, 1.0f},

@@ -82,6 +82,8 @@ namespace DawnEngine {
 		float roughnessFactor;
 		TextureInfo baseColorTextureInfo;
 		TextureInfo metallicRoughnessTextureInfo;
+		uint32_t PAD0;
+		uint32_t PAD1;
 	};
 
 	struct Material {
