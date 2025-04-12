@@ -9,3 +9,4 @@ Shaders are in HLSL -> SPIRV
 ## Requires
 - DAWN - compile from googles source and copy over.
 - VCPKG
+- Models are taken from Khronos Gltf Sample Assets usually

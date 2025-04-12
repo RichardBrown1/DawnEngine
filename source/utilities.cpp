@@ -67,7 +67,7 @@ namespace DawnEngine {
 
 	DawnEngine::Camera getDefaultCamera(wgpu::SurfaceConfiguration surfaceConfiguration)
 	{
-		constexpr glm::f32vec3 eye = { 0.0f, 0.0f, -10.0f };
+		constexpr glm::f32vec3 eye = { 0.0f, 0.0f, -0.1f };
 		constexpr glm::f32vec3 origin = glm::f32vec3(0.0f, 0.0f, 0.0f);
 		constexpr glm::f32vec3 up = glm::f32vec3(0.0, 1.0f, 0.0f);
 		return DawnEngine::Camera{
