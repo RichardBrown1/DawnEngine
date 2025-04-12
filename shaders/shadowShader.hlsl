@@ -1,19 +1,5 @@
+#include "definitions.hlsli"
 StructuredBuffer<float4x4> transforms : register(t1, space0);
-
-struct Light
-{
-    float4x4 lightSpaceMatrix;
-    float3 position;
-    uint PAD0;
-    float3 rotation;
-    uint PAD1;
-    float3 color;
-    uint type;
-    float intensity;
-    float range;
-    float innerConeAngle;
-    float outerConeAngle;
-};
 StructuredBuffer<Light> lights : register(t4, space0);
 
 struct VSInput

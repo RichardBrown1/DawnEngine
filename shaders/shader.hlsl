@@ -1,64 +1,15 @@
-//from FASTGLTF LightType
-#define LIGHTTYPE_DIRECTIONAL 0
-#define LIGHTTYPE_SPOT 1
-#define LIGHTTYPE_POINT 2
+#include "definitions.hlsli"
+#include "helpers.hlsli"
 
-struct UniformBufferControl
+cbuffer pv : register(b0, space0)
 {
-    float4x4 projection;
-    float4x4 view;
-};
-cbuffer ubo : register(b0, space0)
-{
-    UniformBufferControl ubo;
+    ProjectionView pv;
 }
-
 StructuredBuffer<float4x4> transforms : register(t1, space0);
-
-struct InstanceProperties
-{
-    uint materialIndex;
-    uint PAD0;
-    uint PAD1;
-    uint PAD2;
-};
 StructuredBuffer<InstanceProperties> instanceProperties : register(t2, space0);
-
-struct TextureInfo
-{
-	uint index;
-    uint texCoord;
-};
-struct Material
-{
-    float4 baseColor;
-    float metallicFactor;
-    float roughnessFactor;
-    TextureInfo baseColorTextureInfo;
-    TextureInfo metallicRoughnessTextureInfo;
-    uint PAD0;
-    uint PAD1;
-};
 StructuredBuffer<Material> materials : register(t3, space0);
-
-struct Light
-{
-    float4x4 lightSpaceMatrix;
-    float3 position;
-    uint PAD0;
-    float3 rotation;
-    uint PAD1;
-    float3 color;
-    uint type;
-    float intensity;
-    float range;
-    float innerConeAngle;
-    float outerConeAngle;
-};
 StructuredBuffer<Light> lights : register(t4, space0);
-
 Texture2D shadowMap : register(t5, space0);
-
 SamplerComparisonState depthSampler : register(t6, space0);
 
 struct VSInput
@@ -77,44 +28,6 @@ struct VSOutput
     [[vk::location(5)]] float4 color : COLOR0;
 };
 
-// Helper function to compute light direction from XYZ Euler angles (radians) in a left-handed system
-float3 ComputeLightDirection(float3 eulerRadians)
-{
-    const float x = eulerRadians.x; // Pitch (X-axis)
-    const float y = eulerRadians.y; // Yaw (Y-axis)
-    const float z = eulerRadians.z; // Roll (Z-axis)
-
-    // Left-handed rotation matrices
-    // X-axis rotation (pitch)
-    const float3x3 rotX = float3x3(
-        1, 0, 0,
-        0, cos(x), sin(x),
-        0, -sin(x), cos(x)
-    );
-
-    // Y-axis rotation (yaw)
-    const float3x3 rotY = float3x3(
-        cos(y), 0, -sin(y),
-        0, 1, 0,
-        sin(y), 0, cos(y)
-    );
-
-    // Z-axis rotation (roll)
-    const float3x3 rotZ = float3x3(
-        cos(z), sin(z), 0,
-        -sin(z), cos(z), 0,
-        0, 0, 1
-    );
-
-    // Combine rotations: Z * Y * X (applied in XYZ order)
-    const float3x3 finalRot = mul(rotZ, mul(rotY, rotX));
-
-    // Default forward direction in left-handed systems: positive Z
-    const float3 forward = float3(0, 0, 1);
-
-    return normalize(mul(finalRot, forward));
-}
-
 VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceIndex : SV_InstanceID)
 {
     const float4x4 inverseTransposeMultiplier = float4x4(1.0f, 0.0f, 0.0f, 0.0f, 
@@ -126,7 +39,7 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
     
     output.position = (float3) mul(transforms[InstanceIndex], float4(input.position, 1.0));
     output.cameraPosition = mul(
-                            mul(ubo.projection, ubo.view),
+                            mul(pv.projection, pv.view),
                             float4(output.position, 1.0)
                           );
     output.lightPosition = mul(lights[0].lightSpaceMatrix, float4(output.position, 1.0));
