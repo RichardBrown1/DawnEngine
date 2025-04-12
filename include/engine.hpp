@@ -16,7 +16,7 @@ public:
 
 private:
 	const std::string _gltfDirectory = "models/avocado/";
-	const std::string _gltfFile = "Avocado.glb";
+	const std::string _gltfFile = "AvocadoKtx.gltf";
 	fastgltf::Parser _gltfParser;
 
 	wgpu::Instance _instance;
