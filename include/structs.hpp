@@ -71,6 +71,11 @@ namespace DawnEngine {
 		uint32_t PAD2;
 	};
 
+	struct SamplerTexturePair {
+		uint32_t samplerIndex;
+		uint32_t textureIndex;
+	};
+
 	struct TextureInfo {
 		uint32_t index;
 		uint32_t texCoord;

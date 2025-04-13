@@ -17,6 +17,11 @@ struct InstanceProperties
     uint PAD2;
 };
 
+struct Texture
+{
+    uint samplerIndex;
+    uint imageIndex;
+};
 struct TextureInfo
 {
 	uint index;

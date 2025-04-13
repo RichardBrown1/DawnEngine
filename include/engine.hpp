@@ -29,22 +29,26 @@ private:
 	std::vector<uint16_t> _indices;
 	std::vector<DawnEngine::DrawInfo> _drawCalls;
 	std::vector<glm::f32mat4x4> _transforms;
+	std::vector<wgpu::Texture> _textures;
+	std::vector<DawnEngine::SamplerTexturePair> _samplerTexturePairs;
+	std::vector<DawnEngine::Samplers> _textureSamplers;
 	std::vector<DawnEngine::InstanceProperty> _instanceProperties;
 	std::unordered_map<uint32_t, DawnEngine::DrawInfo*> _meshIndexToDrawInfoMap;
 	std::vector<DawnEngine::Light> _lights;
 	std::vector<DawnEngine::Camera> _cameras;
 	DawnEngine::Buffers _buffers;
 	DawnEngine::TextureViews _textureViews;
-	DawnEngine::Samplers _samplers;
 	DawnEngine::BindGroups _bindGroups;
+	wgpu::Sampler _depthSampler;
 
 	void initGltf();
 	void initNodes(fastgltf::Asset& asset);
 	void addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex);
 	void addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex);
 	void addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t cameraIndex);
-	void initImages(fastgltf::Asset& asset);
 	void initTextures(fastgltf::Asset& asset);
+	void initSamplerTexturePairs(fastgltf::Asset& asset);
+	void initSamplers(fastgltf::Asset& asset);
 	void initSceneBuffers();
 	void initMaterialBuffer(fastgltf::Asset& asset);
 	void initDepthTexture();

@@ -55,7 +55,7 @@ namespace {
 			},
 			{
 				.binding = +DawnEngine::GPU_OBJECT_ID::DEPTH_SAMPLERS,
-				.sampler = descriptor.samplers.depth,
+				.sampler = descriptor.depthSampler,
 			},
 		};
 

@@ -166,8 +166,7 @@ void Engine::initGltf() {
 
 	initNodes(asset);
 	initSceneBuffers();
-	initImages(asset);
-//	initTextures(asset);
+	initTextures(asset);
 	initMaterialBuffer(asset);
 }
 
@@ -364,25 +363,36 @@ void Engine::initSceneBuffers() {
 	};
 	_buffers.transform = _device.CreateBuffer(&transformBufferDescriptor);
 	_queue.WriteBuffer(_buffers.transform, 0, _transforms.data(), transformBufferDescriptor.size);
-	
-	}
 
-void Engine::initImages(fastgltf::Asset& asset) {
+}
+
+void Engine::initTextures(fastgltf::Asset& asset) {
 	for (const auto& i : asset.images) {
 		fastgltf::DataSource ds = i.data;
-		//DawnEngine::getTexture(_device, ds, _gltfDirectory);
-	}
-}
-void Engine::initTextures(fastgltf::Asset &asset) {
-	for (const auto& t : asset.textures) {
-		if (!t.basisuImageIndex.has_value()) {
-			throw std::runtime_error("only ktx textures are supported");
-		}
-		auto image = asset.images[t.basisuImageIndex.value()];
+		_textures.push_back(DawnEngine::getTexture(_device, ds, _gltfDirectory));
 	}
 }
 
-//Default Material will be at end of material buffer
+void Engine::initSamplerTexturePairs(fastgltf::Asset &asset) {
+	for (const auto& t : asset.textures) {
+		if (!t.basisuImageIndex.has_value()) {
+			std::cout << "WARNING: NO BASISU IMAGE INDEX FOUND" << std::endl;
+		}
+
+		const DawnEngine::SamplerTexturePair texture = {
+			.samplerIndex = static_cast<uint32_t>(t.samplerIndex.value()),
+			.textureIndex = static_cast<uint32_t>(t.basisuImageIndex.value()),
+		};
+		_samplerTexturePairs.push_back(texture);
+	}
+}
+
+void Engine::initSamplers(fastgltf::Asset& asset) {
+	for (const auto& s : asset.samplers) {
+		std::cout << s.name << std::endl;
+	}
+}
+
 void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 	auto materials = std::vector<DawnEngine::Material>(asset.materials.size());
 	
@@ -439,7 +449,7 @@ void Engine::initDepthTexture() {
 		.compare = wgpu::CompareFunction::Less,
 	};
 
-	_samplers.depth =	_device.CreateSampler(&samplerDescriptor);	
+	_depthSampler =	_device.CreateSampler(&samplerDescriptor);	
 }
 
 void Engine::initRenderPipeline() {
@@ -451,7 +461,7 @@ void Engine::initRenderPipeline() {
 			.device = _device,
 			.buffers = _buffers,
 			.textureViews = _textureViews,
-			.samplers = _samplers,
+			.depthSampler = _depthSampler,
 			.bindGroups = _bindGroups,
 			.vertexShaderModule = vertexShaderModule,
 			.fragmentShaderModule = fragmentShaderModule,
@@ -468,7 +478,7 @@ void Engine::initRenderPipeline() {
 			.device = _device,
 			.buffers = _buffers,
 			.textureViews = _textureViews,
-			.samplers = _samplers,
+			.depthSampler = _depthSampler,
 			.bindGroups = _bindGroups,
 			.vertexShaderModule = vertexShaderModule,
 			.fragmentShaderModule = fragmentShaderModule,	
