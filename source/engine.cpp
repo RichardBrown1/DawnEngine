@@ -388,8 +388,66 @@ void Engine::initSamplerTexturePairs(fastgltf::Asset &asset) {
 }
 
 void Engine::initSamplers(fastgltf::Asset& asset) {
+	auto convertAddressMode = [](fastgltf::Wrap wrap) {
+		switch (wrap) {
+			case fastgltf::Wrap::ClampToEdge:
+				return wgpu::AddressMode::ClampToEdge;
+			case fastgltf::Wrap::MirroredRepeat:
+				return wgpu::AddressMode::MirrorRepeat;
+			case fastgltf::Wrap::Repeat:
+				return wgpu::AddressMode::Repeat;
+			default:
+				throw std::runtime_error("Unknown wrap type in AddressMode conversion");
+			}
+		};
+
+	auto convertFilter = [](fastgltf::Optional<fastgltf::Filter> filter) {
+		if (!filter.has_value()) {
+			return wgpu::FilterMode::Nearest; //default value in wgpu::SamplerDescriptor
+		}
+		switch (filter.value()) {
+			case fastgltf::Filter::Linear:
+			case fastgltf::Filter::LinearMipMapLinear:
+			case fastgltf::Filter::LinearMipMapNearest:
+				return wgpu::FilterMode::Linear;
+			case fastgltf::Filter::Nearest:
+			case fastgltf::Filter::NearestMipMapLinear:
+			case fastgltf::Filter::NearestMipMapNearest:
+				return wgpu::FilterMode::Nearest;
+			default:
+				throw std::runtime_error("Unknown Filter value");
+		}
+	};
+
+	auto convertMipMapFilter = [](fastgltf::Optional<fastgltf::Filter> filter) {
+		if (!filter.has_value()) {
+			return wgpu::MipmapFilterMode::Nearest; //default value in wgpu::SamplerDescriptor
+		}
+		switch (filter.value()) {
+			case fastgltf::Filter::Linear:
+			case fastgltf::Filter::Nearest:
+				return wgpu::MipmapFilterMode::Undefined;
+			case fastgltf::Filter::LinearMipMapLinear:
+			case fastgltf::Filter::NearestMipMapLinear:
+				return wgpu::MipmapFilterMode::Linear;
+			case fastgltf::Filter::LinearMipMapNearest:
+			case fastgltf::Filter::NearestMipMapNearest:
+				return wgpu::MipmapFilterMode::Nearest;
+			default:
+				throw std::runtime_error("Unknown MipMap Filter value");
+		}
+	};
+
 	for (const auto& s : asset.samplers) {
-		std::cout << s.name << std::endl;
+		const	wgpu::SamplerDescriptor samplerDescriptor = {
+			.label = s.name.c_str(),
+			.addressModeU = convertAddressMode(s.wrapS),
+			.addressModeV = convertAddressMode(s.wrapT),
+			.magFilter = convertFilter(s.magFilter),
+			.minFilter = convertFilter(s.minFilter),
+			.mipmapFilter = convertMipMapFilter(s.minFilter),
+		};
+		_textureSamplers.push_back(_device.CreateSampler(&samplerDescriptor));
 	}
 }
 

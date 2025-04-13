@@ -31,7 +31,7 @@ private:
 	std::vector<glm::f32mat4x4> _transforms;
 	std::vector<wgpu::Texture> _textures;
 	std::vector<DawnEngine::SamplerTexturePair> _samplerTexturePairs;
-	std::vector<DawnEngine::Samplers> _textureSamplers;
+	std::vector<wgpu::Sampler> _textureSamplers;
 	std::vector<DawnEngine::InstanceProperty> _instanceProperties;
 	std::unordered_map<uint32_t, DawnEngine::DrawInfo*> _meshIndexToDrawInfoMap;
 	std::vector<DawnEngine::Light> _lights;
