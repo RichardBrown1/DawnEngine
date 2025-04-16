@@ -89,7 +89,7 @@ namespace DawnEngine {
 		}
 	}
 
-	wgpu::Texture getTexture(wgpu::Device& device, fastgltf::DataSource dataSource, std::string gltfDirectory)
+	void getTexture(wgpu::Device& device, fastgltf::DataSource dataSource, std::string gltfDirectory, void *hostTexture)
 	{
 		if (!std::holds_alternative<fastgltf::sources::URI>(dataSource)) {
 			throw std::runtime_error("Cannot get fastgltf::DataSource Texture, unsupported type");
@@ -146,60 +146,8 @@ namespace DawnEngine {
 		std::cout << "needs transcoding: " << needsTranscoding << std::endl;
 
 		//sp_ktxTexture2->generateMipmaps
-		
-
-		wgpu::TextureDimension textureDimension = [&sp_ktxTexture2]() {
-			switch (sp_ktxTexture2->numDimensions) {
-			case 1:
-				return wgpu::TextureDimension::e1D;
-			case 2:
-				return wgpu::TextureDimension::e2D;
-			case 3:
-				return wgpu::TextureDimension::e3D;
-			default:
-				throw std::runtime_error("unknown Texture Dimension");
-			}
-		}();
-
-		wgpu::TextureDescriptor textureDescriptor = {
-			.label = wgpu::StringView(filePath),
-			.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst,
-			.dimension = textureDimension,
-			.size = wgpu::Extent3D {
-				.width = sp_ktxTexture2->baseWidth,
-				.height = sp_ktxTexture2->baseHeight, 
-				.depthOrArrayLayers = sp_ktxTexture2->baseDepth,
-			},
-			.format = vkFormat::WebGpuImageFormat((vkFormat::VkFormat)sp_ktxTexture2->vkFormat),
-			.mipLevelCount = sp_ktxTexture2->numLevels,
-		};
-		wgpu::Texture texture = device.CreateTexture(&textureDescriptor);
-		const wgpu::ImageCopyTexture imageCopyTexture = {
-			.texture = texture,
-			.mipLevel = 0,
-		};
-		const wgpu::TextureDataLayout textureDataLayout = {
-				.bytesPerRow = textureDescriptor.size.width * numChannels, //1 pixel = 4 bytes. Careful this will change with different formats
-				.rowsPerImage = textureDescriptor.size.height, 
-		};
-
-		const ktx_size_t imageSize = ktxTexture_GetImageSize(sp_ktxTexture.get(), 0);
-		const wgpu::Queue queue = device.GetQueue();
-		ktx_size_t offset = 0;
-		checkKtxError(ktxTexture_GetImageOffset(sp_ktxTexture.get(), 0, 0, 0, &offset));
-
-		//const wgpu::Extent3D dataLayoutSize = {
-		//	.width = textureDataLayout.bytesPerRow,
-		//	.height = textureDataLayout.rowsPerImage,
-		//};
-
-		queue.WriteTexture(
-			&imageCopyTexture,
-			ktxTexture_GetData(sp_ktxTexture.get()),
-			imageSize * numChannels,
-			&textureDataLayout,
-			&textureDescriptor.size
-			);
+		ktx_uint8_t *p8_textureData = ktxTexture_GetData(sp_ktxTexture.get());
+		memcpy(&hostTexture, p8_textureData, sizeof(hostTexture));
 
 //		wgpu::BufferDescriptor stagingBufferDescriptor = {
 //			.label = "texture staging buffer",
@@ -209,9 +157,6 @@ namespace DawnEngine {
 //		};
 //		wgpu::Buffer stagingBuffer = device.CreateBuffer(&stagingBufferDescriptor);
 //		//wgpu::TextureDataLayout().
-
-		
-		return texture;
 	}
 
 };

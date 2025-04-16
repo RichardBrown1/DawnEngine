@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <bitset>
 
 namespace DawnEngine {
 
@@ -10,6 +11,8 @@ namespace DawnEngine {
 		wgpu::Buffer instanceProperties;
 		wgpu::Buffer transform;
 		wgpu::Buffer material;
+		wgpu::Buffer samplerTexturePair;
+		wgpu::Buffer texture;
 		wgpu::Buffer light;
 	};
 
@@ -82,7 +85,7 @@ namespace DawnEngine {
 	};
 
 	struct PBRMetallicRoughness {
-		glm::vec4 baseColorFactor;
+		glm::f32vec4 baseColorFactor;
 		float metallicFactor;
 		float roughnessFactor;
 		TextureInfo baseColorTextureInfo;
@@ -91,8 +94,17 @@ namespace DawnEngine {
 		uint32_t PAD1;
 	};
 
+	//Corresponds to bitset textureOptions[i]
+	enum TEXTURE_OPTIONS_INDEX {
+		hasBaseColor = 0,
+		hasMetallicRoughness = 1,
+	};
 	struct Material {
 		PBRMetallicRoughness pbrMetallicRoughness;
+		std::bitset<1> textureOptions;
+		uint32_t PAD0;
+		uint32_t PAD1;
+		uint32_t PAD2;
 	};
 
 

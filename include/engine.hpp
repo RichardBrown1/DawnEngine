@@ -30,6 +30,7 @@ private:
 	std::vector<DawnEngine::DrawInfo> _drawCalls;
 	std::vector<glm::f32mat4x4> _transforms;
 	std::vector<wgpu::Texture> _textures;
+	std::unordered_map<size_t, uint32_t> _fastgltfTextureIdxToDawnEngineIdx;
 	std::vector<DawnEngine::SamplerTexturePair> _samplerTexturePairs;
 	std::vector<wgpu::Sampler> _textureSamplers;
 	std::vector<DawnEngine::InstanceProperty> _instanceProperties;
@@ -50,6 +51,7 @@ private:
 	void initSamplerTexturePairs(fastgltf::Asset& asset);
 	void initSamplers(fastgltf::Asset& asset);
 	void initSceneBuffers();
+	DawnEngine::TextureInfo getTextureInfo(fastgltf::TextureInfo& textureInfo);
 	void initMaterialBuffer(fastgltf::Asset& asset);
 	void initDepthTexture();
 	void initRenderPipeline();
