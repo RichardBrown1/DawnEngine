@@ -4,14 +4,14 @@ StructuredBuffer<Light> lights : register(t4, space0);
 
 struct VSInput
 {
-    [[vk::location(0)]] float3 Position : POSTION0;
-    [[vk::location(1)]] float3 Normal : NORMAL0;
+    float3 Position : POSTION0;
+    float3 Normal : NORMAL0;
 };
 
 struct VSOutput
 {
-    [[vk::location(0)]] float4 ClipPosition : SV_Position;
-    [[vk::location(1)]] float3 Position : POSITION0;
+    float4 ClipPosition : SV_Position;
+    float3 Position : POSITION0;
 };
 
 VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceIndex : SV_InstanceID)
