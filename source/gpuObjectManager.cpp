@@ -104,7 +104,7 @@ namespace DawnEngine {
 			{
 				.visibility = wgpu::ShaderStage::Fragment,
 				.texture = {
-					.samplerType = wgpu::TextureSampleType::Float,
+					.sampleType = wgpu::TextureSampleType::Float,
 					.viewDimension = wgpu::TextureViewDimension::e2DArray,
 				},
 			},
