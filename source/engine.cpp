@@ -380,58 +380,69 @@ void Engine::initTextures(fastgltf::Asset& asset) {
 	hostTextures.resize(asset.images.size());
 
 	for (int i = 0; i < asset.images.size(); i++) {
-	//	asset.images.
+		//	asset.images.
 		fastgltf::DataSource ds = asset.images[i].data;
 		DawnEngine::getTexture(_device, ds, _gltfDirectory, &hostTextures[i]);
 	}
-		
-//	wgpu::TextureDimension textureDimension = [&sp_ktxTexture2]() {
-//			switch (sp_ktxTexture2->numDimensions) {
-//			case 1:
-//				return wgpu::TextureDimension::e1D;
-//			case 2:
-//				return wgpu::TextureDimension::e2D;
-//			case 3:
-//				return wgpu::TextureDimension::e3D;
-//			default:
-//				throw std::runtime_error("unknown Texture Dimension");
-//			}
-//		}();
 
-		wgpu::TextureDescriptor textureDescriptor = {
-			.label = "2048", //wgpu::StringView(filePath),
-			.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst,
-			.dimension = wgpu::TextureDimension::e2D,
-			.size = wgpu::Extent3D {
-				.width = 2048, 
-				.height = 2048, 
-				.depthOrArrayLayers = static_cast<uint32_t>(hostTextures.size())
-			},
-			.format = wgpu::TextureFormat::BC7RGBAUnormSrgb,
-			.mipLevelCount = 1,
-		};
-		wgpu::Texture texture = _device.CreateTexture(&textureDescriptor);
-		const wgpu::ImageCopyTexture imageCopyTexture = {
-			.texture = texture,
-			.mipLevel = 0,
-		};
-		const wgpu::TextureDataLayout textureDataLayout = {
-				.bytesPerRow = textureDescriptor.size.width * 4, //1 pixel = 4 bytes. Careful this will change with different formats
-				.rowsPerImage = textureDescriptor.size.height, 
-		};
+	//	wgpu::TextureDimension textureDimension = [&sp_ktxTexture2]() {
+	//			switch (sp_ktxTexture2->numDimensions) {
+	//			case 1:
+	//				return wgpu::TextureDimension::e1D;
+	//			case 2:
+	//				return wgpu::TextureDimension::e2D;
+	//			case 3:
+	//				return wgpu::TextureDimension::e3D;
+	//			default:
+	//				throw std::runtime_error("unknown Texture Dimension");
+	//			}
+	//		}();
 
-		//const wgpu::Extent3D dataLayoutSize = {
-		//	.width = textureDataLayout.bytesPerRow,
-		//	.height = textureDataLayout.rowsPerImage,
-		//};
+	wgpu::TextureDescriptor textureDescriptor = {
+		.label = "2048", //wgpu::StringView(filePath),
+		.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst,
+		.dimension = wgpu::TextureDimension::e2D,
+		.size = wgpu::Extent3D {
+			.width = 2048,
+			.height = 2048,
+			.depthOrArrayLayers = static_cast<uint32_t>(hostTextures.size())
+		},
+		.format = wgpu::TextureFormat::BC7RGBAUnormSrgb,
+		.mipLevelCount = 1,
+	};
+	wgpu::Texture texture = _device.CreateTexture(&textureDescriptor);
+	const wgpu::ImageCopyTexture imageCopyTexture = {
+		.texture = texture,
+		.mipLevel = 0,
+	};
+	const wgpu::TextureDataLayout textureDataLayout = {
+			.bytesPerRow = textureDescriptor.size.width * 4, //1 pixel = 4 bytes. Careful this will change with different formats
+			.rowsPerImage = textureDescriptor.size.height,
+	};
 
-		_queue.WriteTexture(
-			&imageCopyTexture,
-			hostTextures.data(),
-			hostTextures.size() * sizeof(uint32_t) * 2048 * 2048,
-			&textureDataLayout,
-			&textureDescriptor.size
-			);
+	//const wgpu::Extent3D dataLayoutSize = {
+	//	.width = textureDataLayout.bytesPerRow,
+	//	.height = textureDataLayout.rowsPerImage,
+	//};
+
+	_queue.WriteTexture(
+		&imageCopyTexture,
+		hostTextures.data(),
+		hostTextures.size() * sizeof(uint32_t) * 2048 * 2048,
+		&textureDataLayout,
+		&textureDescriptor.size
+	);
+
+	const wgpu::TextureViewDescriptor textureViewDescriptor = {
+		.label = "Textures",
+		.format = textureDescriptor.format,
+		.dimension = wgpu::TextureViewDimension::e2DArray,
+		.mipLevelCount = textureDescriptor.mipLevelCount,
+		.arrayLayerCount = textureDescriptor.size.depthOrArrayLayers,
+		.usage = textureDescriptor.usage,
+	};
+	_textureViews.textures = texture.CreateView(&textureViewDescriptor);
+
 }
 
 void Engine::initSamplerTexturePairs(fastgltf::Asset &asset) {
@@ -508,7 +519,7 @@ void Engine::initSamplers(fastgltf::Asset& asset) {
 			.minFilter = convertFilter(s.minFilter),
 			.mipmapFilter = convertMipMapFilter(s.minFilter),
 		};
-		_textureSamplers.push_back(_device.CreateSampler(&samplerDescriptor));
+		_samplers.texture = _device.CreateSampler(&samplerDescriptor);
 	}
 }
 
@@ -572,7 +583,7 @@ void Engine::initDepthTexture() {
 		.compare = wgpu::CompareFunction::Less,
 	};
 
-	_depthSampler =	_device.CreateSampler(&samplerDescriptor);	
+	_samplers.depth =	_device.CreateSampler(&samplerDescriptor);	
 }
 
 void Engine::initRenderPipeline() {
@@ -584,7 +595,7 @@ void Engine::initRenderPipeline() {
 			.device = _device,
 			.buffers = _buffers,
 			.textureViews = _textureViews,
-			.depthSampler = _depthSampler,
+			.depthSampler = _samplers.depth,
 			.bindGroups = _bindGroups,
 			.vertexShaderModule = vertexShaderModule,
 			.fragmentShaderModule = fragmentShaderModule,
@@ -601,7 +612,7 @@ void Engine::initRenderPipeline() {
 			.device = _device,
 			.buffers = _buffers,
 			.textureViews = _textureViews,
-			.depthSampler = _depthSampler,
+			.depthSampler = _samplers.depth,
 			.bindGroups = _bindGroups,
 			.vertexShaderModule = vertexShaderModule,
 			.fragmentShaderModule = fragmentShaderModule,	

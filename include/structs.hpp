@@ -19,10 +19,12 @@ namespace DawnEngine {
 	struct TextureViews {
 		std::vector<wgpu::TextureView> shadowMaps;
 		wgpu::TextureView cameraDepth;
+		wgpu::TextureView textures;
 	};
 
 	struct Samplers {
 		wgpu::Sampler depth;
+		wgpu::Sampler texture;
 	};
 
 	struct BindGroups {

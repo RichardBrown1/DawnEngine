@@ -91,14 +91,24 @@ namespace DawnEngine {
 			}
 		},
 		{
-			GPU_OBJECT_ID::DEPTH_SAMPLERS,
+			GPU_OBJECT_ID::DEPTH_SAMPLER,
 			{
 				.visibility = wgpu::ShaderStage::Fragment,
 				.sampler = {
 					.type = wgpu::SamplerBindingType::Comparison
 				}
 			}
-		}
+		},
+		{
+			GPU_OBJECT_ID::TEXTURES,
+			{
+				.visibility = wgpu::ShaderStage::Fragment,
+				.texture = {
+					.samplerType = wgpu::TextureSampleType::Float,
+					.viewDimension = wgpu::TextureViewDimension::e2DArray,
+				},
+			},
+		},
 	};
 };
 

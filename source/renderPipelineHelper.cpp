@@ -15,7 +15,8 @@ namespace {
 			DawnEngine::GPU_OBJECT_ID::MATERIALS,
 			DawnEngine::GPU_OBJECT_ID::LIGHTS,
 			DawnEngine::GPU_OBJECT_ID::SHADOW_MAPS,
-			DawnEngine::GPU_OBJECT_ID::DEPTH_SAMPLERS,
+			DawnEngine::GPU_OBJECT_ID::DEPTH_SAMPLER,
+			DawnEngine::GPU_OBJECT_ID::TEXTURES,
 		};
 
 		auto p_GpuObjectManager = DawnEngine::GpuObjectManager::instance().get();
@@ -54,9 +55,13 @@ namespace {
 				.textureView = descriptor.textureViews.shadowMaps[0],
 			},
 			{
-				.binding = +DawnEngine::GPU_OBJECT_ID::DEPTH_SAMPLERS,
+				.binding = +DawnEngine::GPU_OBJECT_ID::DEPTH_SAMPLER,
 				.sampler = descriptor.depthSampler,
 			},
+			{
+				.binding = +DawnEngine::GPU_OBJECT_ID::TEXTURES,
+				.textureView = descriptor.textureViews.textures,
+			}
 		};
 
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {

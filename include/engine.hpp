@@ -29,10 +29,8 @@ private:
 	std::vector<uint16_t> _indices;
 	std::vector<DawnEngine::DrawInfo> _drawCalls;
 	std::vector<glm::f32mat4x4> _transforms;
-	std::vector<wgpu::Texture> _textures;
 	std::unordered_map<size_t, uint32_t> _fastgltfTextureIdxToDawnEngineIdx;
 	std::vector<DawnEngine::SamplerTexturePair> _samplerTexturePairs;
-	std::vector<wgpu::Sampler> _textureSamplers;
 	std::vector<DawnEngine::InstanceProperty> _instanceProperties;
 	std::unordered_map<uint32_t, DawnEngine::DrawInfo*> _meshIndexToDrawInfoMap;
 	std::vector<DawnEngine::Light> _lights;
@@ -40,7 +38,7 @@ private:
 	DawnEngine::Buffers _buffers;
 	DawnEngine::TextureViews _textureViews;
 	DawnEngine::BindGroups _bindGroups;
-	wgpu::Sampler _depthSampler;
+	DawnEngine::Samplers _samplers;
 
 	void initGltf();
 	void initNodes(fastgltf::Asset& asset);
