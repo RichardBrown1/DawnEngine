@@ -25,13 +25,13 @@ struct VSInput
 struct VSOutput
 {
     float4 cameraPosition : SV_Position;
+    uint instanceIndex : SV_InstanceID;
     float3 position : POSITION0;
     float4 lightPosition : POSITION1;
     float3 shadowMapPosition : POSITION2;
     float3 normal : NORMAL0;
     float4 color : COLOR0;
-    uint instanceIndex : SV_InstanceID;
-    //float2 texcoord : TEXCOORD0;
+    float2 texcoord : TEXCOORD0;
 };
 
 VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceIndex : SV_InstanceID)
@@ -52,7 +52,7 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
     output.shadowMapPosition = float3(output.lightPosition.xy * float2(0.5, -0.5) + float2(0.5, 0.5), output.lightPosition.z);
     output.normal = normalize((float3) mul(mul(inverseTransposeMultiplier, transforms[InstanceIndex]), float4(input.normal, 0.0)));
     output.color = float4(1.0, 1.0, 1.0, 1.0);
-    // output.texcoord = input.texcoord;
+    output.texcoord = input.texcoord;
 
 
     return output;
@@ -162,16 +162,16 @@ float4 FS_main(VSOutput input ) : SV_Target
     const InstanceProperties ip = instanceProperties[input.instanceIndex];
     const Material material = materials[ip.materialIndex];
     const uint hasBaseColorTexture = material.textureOptions << 31;
-//    if (hasBaseColorTexture)
-//    {
-//        const SamplerTexturePair stp = samplerTexturePair[material.baseColorTextureInfo.index];
-//        const float4 color = textures.Gather(textureSampler, float3(input.texcoord, stp.textureIndex), int2(0, 0));
-//        result *= color.rgb;
-//    }
-//    else
-//    {
-        result *= material.baseColor.rgb;
-//    }
+    if (hasBaseColorTexture)
+    {
+        const SamplerTexturePair stp = samplerTexturePair[material.baseColorTextureInfo.index];
+        const float4 color = textures.Gather(textureSampler, float3(input.texcoord, stp.textureIndex), int2(0, 0));
+        result *= color.rgb;
+    }
+    else
+    {
+      result *= material.baseColor.rgb;
+    }
 
     result *= calculateShadow(input, lights[0]); //TODO: Multiple light support
    
