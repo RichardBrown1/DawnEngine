@@ -4,18 +4,22 @@
 cbuffer pv : register(b0, space0)
 {
     ProjectionView pv;
-}
+};
 StructuredBuffer<float4x4> transforms : register(t1, space0);
 StructuredBuffer<InstanceProperties> instanceProperties : register(t2, space0);
 StructuredBuffer<Material> materials : register(t3, space0);
 StructuredBuffer<Light> lights : register(t4, space0);
 Texture2D shadowMap : register(t5, space0);
 SamplerComparisonState depthSampler : register(t6, space0);
+StructuredBuffer<SamplerTexturePair> samplerTexturePair : register(t7, space0);
+Texture2DArray textures : register(t8, space0);
+SamplerState textureSampler[2] : register(t9, space0);
 
 struct VSInput
 {
     float3 position : POSTION0;
     float3 normal : NORMAL0;
+    float2 texcoord : TEXCOORD0;
 };
 
 struct VSOutput
@@ -25,7 +29,7 @@ struct VSOutput
     float4 lightPosition : POSITION1;
     float3 shadowMapPosition : POSITION2;
     float3 normal : NORMAL0;
-    float4 color : COLOR0;
+    float2 texcoord : TEXCOORD0;
 };
 
 VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceIndex : SV_InstanceID)
@@ -46,8 +50,6 @@ VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
     output.shadowMapPosition = float3(output.lightPosition.xy * float2(0.5, -0.5) + float2(0.5, 0.5), output.lightPosition.z);
     output.normal = normalize((float3) mul(mul(inverseTransposeMultiplier, transforms[InstanceIndex]), float4(input.normal, 0.0)));
 
-    const InstanceProperties ip = instanceProperties[InstanceIndex];
-    output.color = materials[ip.materialIndex].baseColor;
     return output;
 }
 
@@ -124,7 +126,7 @@ float calculateShadow(VSOutput input, Light light)
 }
 
 
-float4 FS_main(VSOutput input) : SV_Target
+float4 FS_main(VSOutput input, uint InstanceIndex : SV_InstanceID ) : SV_Target
 {
     const float3 lightColor = float3(1.0, 1.0, 1.0);
     const float ambientStrength = float(0.1);
@@ -151,7 +153,20 @@ float4 FS_main(VSOutput input) : SV_Target
         }
     }
 
-    result *= input.color.xyz;
+    //if(materials[input.materialIndex].baseColorTextureInfo.ind)
+    const InstanceProperties ip = instanceProperties[InstanceIndex];
+    const Material material = materials[ip.materialIndex];
+    const uint hasBaseColorTexture = material.textureOptions << 31;
+    if (hasBaseColorTexture)
+    {
+        const SamplerTexturePair stp = samplerTexturePair[material.baseColorTextureInfo.index];
+        const float4 color = textures.Gather(textureSampler[stp.samplerIndex], float3(input.texcoord, stp.textureIndex), int2(0, 0));
+        result *= color.rgb;
+    }
+    else
+    {
+        result *= material.baseColor.rgb;
+    }
 
     result *= calculateShadow(input, lights[0]); //TODO: Multiple light support
    

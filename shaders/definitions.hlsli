@@ -22,11 +22,13 @@ struct Texture
     uint samplerIndex;
     uint imageIndex;
 };
+
 struct TextureInfo
 {
 	uint index;
     uint texCoord;
 };
+
 struct Material
 {
     float4 baseColor;
@@ -34,9 +36,10 @@ struct Material
     float roughnessFactor;
     TextureInfo baseColorTextureInfo;
     TextureInfo metallicRoughnessTextureInfo;
-    uint PAD0;
+    uint textureOptions;
     uint PAD1;
 };
+
 struct Light
 {
     float4x4 lightSpaceMatrix;
@@ -52,3 +55,8 @@ struct Light
     float outerConeAngle;
 };
 
+struct SamplerTexturePair
+{
+    uint samplerIndex;
+    uint textureIndex;
+};

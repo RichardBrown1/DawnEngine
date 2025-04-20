@@ -45,6 +45,7 @@ namespace DawnEngine {
 	struct VBO {
 		glm::f32vec3 vertex;
 		glm::f32vec3 normal;
+		glm::f32vec2 texcoord;
 	};
 
 	struct DrawInfo {
@@ -98,8 +99,8 @@ namespace DawnEngine {
 
 	//Corresponds to bitset textureOptions[i]
 	enum TEXTURE_OPTIONS_INDEX {
-		hasBaseColor = 0,
-		hasMetallicRoughness = 1,
+		hasBaseColorTexture = 0,
+		hasMetallicRoughnessTexture = 1,
 	};
 	struct Material {
 		PBRMetallicRoughness pbrMetallicRoughness;

@@ -17,7 +17,9 @@ namespace DawnEngine {
 		LIGHTS,
 		SHADOW_MAPS,
 		DEPTH_SAMPLER,
+		SAMPLER_TEXTURE_PAIR,
 		TEXTURES,
+		SAMPLER,
 	};
 
 	//To be replaced with std::to_underlying in c++23

@@ -29,7 +29,7 @@ namespace DawnEngine {
 		return device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	}
 
-  const std::unordered_map < GPU_OBJECT_ID, wgpu::BindGroupLayoutEntry > GpuObjectManager::gpuObjectsRegistry = {
+	const std::unordered_map < GPU_OBJECT_ID, wgpu::BindGroupLayoutEntry > GpuObjectManager::gpuObjectsRegistry = {
 		{
 			GPU_OBJECT_ID::CAMERA,
 			{
@@ -100,12 +100,31 @@ namespace DawnEngine {
 			}
 		},
 		{
+			GPU_OBJECT_ID::SAMPLER_TEXTURE_PAIR,
+			{
+				.visibility = wgpu::ShaderStage::Fragment,
+				.buffer = {
+					.type = wgpu::BufferBindingType::ReadOnlyStorage,
+					.minBindingSize = 0,
+				}
+			}
+		},
+		{
 			GPU_OBJECT_ID::TEXTURES,
 			{
 				.visibility = wgpu::ShaderStage::Fragment,
 				.texture = {
 					.sampleType = wgpu::TextureSampleType::Float,
 					.viewDimension = wgpu::TextureViewDimension::e2DArray,
+				},
+			},
+		},
+		{
+			GPU_OBJECT_ID::SAMPLER,
+			{
+				.visibility = wgpu::ShaderStage::Fragment,
+				.sampler = {
+					.type = wgpu::SamplerBindingType::Filtering,
 				},
 			},
 		},

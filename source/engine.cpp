@@ -168,8 +168,10 @@ void Engine::initGltf() {
 
 	initNodes(asset);
 	initSceneBuffers();
-	initTextures(asset);
 	initMaterialBuffer(asset);
+	initTextures(asset);
+	initSamplerTexturePairs(asset);
+	initSamplers(asset);
 }
 
 
@@ -212,12 +214,13 @@ void Engine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint
 	auto& mesh = asset.meshes[meshIndex];
 
 	for (auto& primitive : mesh.primitives) {
+		const size_t vbosOffset = _vbos.size();
+
 		_transforms.push_back(transform);
 
 		//vertice
 		fastgltf::Attribute& positionAttribute = *primitive.findAttribute("POSITION");
 		fastgltf::Accessor& positionAccessor = asset.accessors[positionAttribute.accessorIndex];
-		size_t vbosOffset = _vbos.size();
 		_vbos.resize(_vbos.size() + positionAccessor.count);
 		fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
 			asset, positionAccessor, [&](fastgltf::math::f32vec3 vertex, size_t i) {
@@ -231,6 +234,15 @@ void Engine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint
 		fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
 			asset, normalAccessor, [&](fastgltf::math::f32vec3 normal, size_t i) {
 				memcpy(&_vbos[i + vbosOffset].normal, &normal, sizeof(glm::f32vec3));			
+			}
+		);
+		
+		//texcoord_0
+		fastgltf::Attribute& texcoordAttribute = *primitive.findAttribute("TEXCOORD_0");
+		fastgltf::Accessor& texcoordAccessor = asset.accessors[texcoordAttribute.accessorIndex];
+		fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec2>(
+			asset, texcoordAccessor, [&](fastgltf::math::f32vec2 texcoord, size_t i) {
+				memcpy(&_vbos[i + vbosOffset].texcoord, &texcoord, sizeof(glm::f32vec2));
 			}
 		);
 
@@ -445,18 +457,35 @@ void Engine::initTextures(fastgltf::Asset& asset) {
 
 }
 
-void Engine::initSamplerTexturePairs(fastgltf::Asset &asset) {
+void Engine::initSamplerTexturePairs(fastgltf::Asset& asset) {
+	std::vector<DawnEngine::SamplerTexturePair> samplerTexturePairs;
 	for (const auto& t : asset.textures) {
 		if (!t.basisuImageIndex.has_value()) {
-			std::cout << "WARNING: NO BASISU IMAGE INDEX FOUND" << std::endl;
+			throw std::runtime_error("No Basisu Image Texture found");
+		}
+		if (t.imageIndex.has_value()) {
+			throw std::runtime_error("Found Normal Image Texture Index. - Unsupported in this application");
 		}
 
 		const DawnEngine::SamplerTexturePair texture = {
 			.samplerIndex = static_cast<uint32_t>(t.samplerIndex.value()),
 			.textureIndex = static_cast<uint32_t>(t.basisuImageIndex.value()),
 		};
-		_samplerTexturePairs.push_back(texture);
+		samplerTexturePairs.push_back(texture);
 	}
+
+	const wgpu::BufferDescriptor samplerTextureBufferDescriptor = {
+		.label = "sampler texture pair buffer",
+		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
+		.size = sizeof(DawnEngine::SamplerTexturePair) * samplerTexturePairs.size(),
+	};
+	_buffers.samplerTexturePair = _device.CreateBuffer(&samplerTextureBufferDescriptor);
+	_queue.WriteBuffer(
+		_buffers.samplerTexturePair,
+		0, 
+		samplerTexturePairs.data(), 
+		samplerTextureBufferDescriptor.size
+	);
 }
 
 void Engine::initSamplers(fastgltf::Asset& asset) {
@@ -529,7 +558,7 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 	for (int i = 0; auto &m : asset.materials) {
 		memcpy(&materials[i].pbrMetallicRoughness, &m.pbrData, sizeof(glm::f32vec4) + sizeof(float) * 2);
 		if (m.pbrData.baseColorTexture.has_value()) {
-			materials[i].textureOptions[DawnEngine::TEXTURE_OPTIONS_INDEX::hasBaseColor] = 1;
+			materials[i].textureOptions[DawnEngine::TEXTURE_OPTIONS_INDEX::hasBaseColorTexture] = 1;
 			DawnEngine::convertType(m.pbrData.baseColorTexture, materials[i].pbrMetallicRoughness.baseColorTextureInfo);
 			//DawnEngine::convertType(m.pbrData.metallicRoughnessTexture, materials[i].pbrMetallicRoughness.metallicRoughnessTextureInfo);
 		}
@@ -595,7 +624,7 @@ void Engine::initRenderPipeline() {
 			.device = _device,
 			.buffers = _buffers,
 			.textureViews = _textureViews,
-			.depthSampler = _samplers.depth,
+			.samplers = _samplers,
 			.bindGroups = _bindGroups,
 			.vertexShaderModule = vertexShaderModule,
 			.fragmentShaderModule = fragmentShaderModule,
@@ -612,7 +641,7 @@ void Engine::initRenderPipeline() {
 			.device = _device,
 			.buffers = _buffers,
 			.textureViews = _textureViews,
-			.depthSampler = _samplers.depth,
+			.samplers = _samplers,
 			.bindGroups = _bindGroups,
 			.vertexShaderModule = vertexShaderModule,
 			.fragmentShaderModule = fragmentShaderModule,	

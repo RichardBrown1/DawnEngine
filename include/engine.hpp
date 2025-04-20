@@ -30,7 +30,6 @@ private:
 	std::vector<DawnEngine::DrawInfo> _drawCalls;
 	std::vector<glm::f32mat4x4> _transforms;
 	std::unordered_map<size_t, uint32_t> _fastgltfTextureIdxToDawnEngineIdx;
-	std::vector<DawnEngine::SamplerTexturePair> _samplerTexturePairs;
 	std::vector<DawnEngine::InstanceProperty> _instanceProperties;
 	std::unordered_map<uint32_t, DawnEngine::DrawInfo*> _meshIndexToDrawInfoMap;
 	std::vector<DawnEngine::Light> _lights;

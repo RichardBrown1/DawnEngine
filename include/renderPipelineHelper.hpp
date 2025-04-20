@@ -12,7 +12,7 @@ namespace RenderPipelineHelper {
 		wgpu::Device& device;
 		DawnEngine::Buffers& buffers;
 		DawnEngine::TextureViews& textureViews;
-		wgpu::Sampler& depthSampler;
+		DawnEngine::Samplers& samplers;
 		DawnEngine::BindGroups& bindGroups;
 		wgpu::ShaderModule& vertexShaderModule;
 		wgpu::ShaderModule& fragmentShaderModule;
