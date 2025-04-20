@@ -6,6 +6,7 @@ struct VSInput
 {
     float3 Position : POSTION0;
     float3 Normal : NORMAL0;
+	float3 texcoord : TEXCOORD0;
 };
 
 struct VSOutput

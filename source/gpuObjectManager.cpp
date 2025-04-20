@@ -53,7 +53,7 @@ namespace DawnEngine {
 		{
 			GPU_OBJECT_ID::INSTANCE_PROPERTIES,
 			{
-				.visibility = wgpu::ShaderStage::Vertex,
+				.visibility = wgpu::ShaderStage::Fragment,
 				.buffer = {
 					.type = wgpu::BufferBindingType::ReadOnlyStorage,
 					.minBindingSize = sizeof(InstanceProperty),
@@ -63,7 +63,7 @@ namespace DawnEngine {
 		{
 			GPU_OBJECT_ID::MATERIALS,
 			{
-				.visibility = wgpu::ShaderStage::Vertex,
+				.visibility = wgpu::ShaderStage::Fragment,
 				.buffer = {
 					.type = wgpu::BufferBindingType::ReadOnlyStorage,
 					.minBindingSize = sizeof(Material),

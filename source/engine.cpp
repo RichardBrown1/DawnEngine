@@ -122,6 +122,7 @@ Engine::Engine() {
 		[](const wgpu::Device&, wgpu::DeviceLostReason reason, const char* message) {
 			std::cout << "DeviceLostReason: " << reason << std::endl;
 			std::cout << std::format(" Message: {}", message) << std::endl;
+			exit(2);
 		});
 
 	_device = adapter.CreateDevice(&deviceDescriptor);
@@ -686,7 +687,7 @@ void Engine::draw() {
 		renderPassEncoder.End();
 
 	}
-
+	
 	{ //Output Pass
 		const wgpu::RenderPassColorAttachment renderPassColorAttachment = {
 			.view = surfaceTextureView,
