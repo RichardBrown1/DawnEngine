@@ -5,7 +5,7 @@
         "commandLine": "",
         "environment": [
         ],
-        "executable": "E:\\Projects\\dawnEngine\\DawnEngine\\out\\build\\x64-debug\\DawnEngine.exe",
+        "executable": "E:\\Projects\\dawnEngine\\DawnEngine\\build\\DawnEngine.exe",
         "inject": false,
         "numQueuedFrames": 1,
         "options": {

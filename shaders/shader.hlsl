@@ -162,16 +162,16 @@ float4 FS_main(VSOutput input ) : SV_Target
     const InstanceProperties ip = instanceProperties[input.instanceIndex];
     const Material material = materials[ip.materialIndex];
     const uint hasBaseColorTexture = material.textureOptions << 31;
-    if (hasBaseColorTexture)
-    {
+    //if (hasBaseColorTexture)
+    //{
         const SamplerTexturePair stp = samplerTexturePair[material.baseColorTextureInfo.index];
         const float4 color = textures.Gather(textureSampler, float3(input.texcoord, stp.textureIndex), int2(0, 0));
         result *= color.rgb;
-    }
-    else
-    {
-      result *= material.baseColor.rgb;
-    }
+   // }
+   // else
+   // {
+   //   result *= material.baseColor.rgb;
+   // }
 
     result *= calculateShadow(input, lights[0]); //TODO: Multiple light support
    

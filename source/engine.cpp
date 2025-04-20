@@ -395,7 +395,7 @@ void Engine::initTextures(fastgltf::Asset& asset) {
 	for (int i = 0; i < asset.images.size(); i++) {
 		//	asset.images.
 		fastgltf::DataSource ds = asset.images[i].data;
-		DawnEngine::getTexture(_device, ds, _gltfDirectory, &hostTextures[i]);
+		DawnEngine::getTexture(_device, ds, _gltfDirectory, hostTextures[i]);
 	}
 
 	//	wgpu::TextureDimension textureDimension = [&sp_ktxTexture2]() {

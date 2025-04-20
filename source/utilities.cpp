@@ -89,7 +89,7 @@ namespace DawnEngine {
 		}
 	}
 
-	void getTexture(wgpu::Device& device, fastgltf::DataSource dataSource, std::string gltfDirectory, void *hostTexture)
+	void getTexture(wgpu::Device& device, fastgltf::DataSource dataSource, std::string gltfDirectory, std::array<std::array<uint32_t, 2048>, 2048> &hostTexture)
 	{
 		if (!std::holds_alternative<fastgltf::sources::URI>(dataSource)) {
 			throw std::runtime_error("Cannot get fastgltf::DataSource Texture, unsupported type");
@@ -147,7 +147,7 @@ namespace DawnEngine {
 
 		//sp_ktxTexture2->generateMipmaps
 		ktx_uint8_t *p8_textureData = ktxTexture_GetData(sp_ktxTexture.get());
-		memcpy(&hostTexture, p8_textureData, sizeof(hostTexture));
+		memcpy(hostTexture.data(), p8_textureData, hostTexture.size() * hostTexture[0].size());
 
 //		wgpu::BufferDescriptor stagingBufferDescriptor = {
 //			.label = "texture staging buffer",
