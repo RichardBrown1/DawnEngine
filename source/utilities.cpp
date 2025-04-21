@@ -145,9 +145,13 @@ namespace DawnEngine {
 		needsTranscoding = ktxTexture2_NeedsTranscoding(sp_ktxTexture2.get());
 		std::cout << "needs transcoding: " << needsTranscoding << std::endl;
 
+		ktx_size_t imageOffset;
+		ktxTexture_GetImageOffset(sp_ktxTexture.get(), 0, 0, 0, &imageOffset);
+		ktx_size_t imageSize = ktxTexture_GetImageSize(sp_ktxTexture.get(), 0);
+		std::cout << "image size of level 0: " << imageSize << std::endl;
 		//sp_ktxTexture2->generateMipmaps
 		ktx_uint8_t *p8_textureData = ktxTexture_GetData(sp_ktxTexture.get());
-		memcpy(hostTexture.data(), p8_textureData, hostTexture.size() * hostTexture[0].size());
+		memcpy(hostTexture.data(), p8_textureData + imageOffset, imageSize);
 
 //		wgpu::BufferDescriptor stagingBufferDescriptor = {
 //			.label = "texture staging buffer",
