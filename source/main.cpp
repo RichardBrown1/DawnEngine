@@ -5,8 +5,8 @@
 int main()
 {
 	try {
-		Engine wgpuEngine = Engine();
-		wgpuEngine.run();
+		Engine dawnEngine = Engine();
+		dawnEngine.run();
 	}
 	catch (std::exception& err) {
 		std::cout << "std::Exception: " << err.what() << std::endl;
