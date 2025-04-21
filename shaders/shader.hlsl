@@ -164,12 +164,12 @@ float4 FS_main(VSOutput input ) : SV_Target
     const uint hasBaseColorTexture = material.textureOptions << 31;
     //if (hasBaseColorTexture)
     //{
-   float2 texcoord = input.texcoord * 0.5 + 0.5;
-   texcoord.y = 1.0 - texcoord.y; // Flip Y
+    float2 texcoord = input.texcoord * 0.5 + 0.5;
+    texcoord.y = 1.0 - texcoord.y; // Flip Y
 
-        const SamplerTexturePair stp = samplerTexturePair[material.baseColorTextureInfo.index];
-        const float4 color = textures.Sample(textureSampler, float3(input.texcoord, stp.textureIndex), int2(0, 0));
-        result *= color.rgb;
+    const SamplerTexturePair stp = samplerTexturePair[material.baseColorTextureInfo.index];
+    const float4 color = textures.Sample(textureSampler, float3(input.texcoord, stp.textureIndex), int2(0, 0));
+    result *= color.rgb;
    // }
    // else
    // {
