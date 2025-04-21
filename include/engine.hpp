@@ -1,10 +1,14 @@
 #pragma once
+#define SDL_MAIN_HANDLED
+#include "../include/sdl3webgpu.hpp"
+#include "SDL3/SDL.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_LEFT_HANDED
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <webgpu/webgpu_cpp.h>
 #include <fastgltf/core.hpp>
+
 #include "structs.hpp"
 
 class Engine {
@@ -48,11 +52,11 @@ private:
 	void initSamplerTexturePairs(fastgltf::Asset& asset);
 	void initSamplers(fastgltf::Asset& asset);
 	void initSceneBuffers();
-	DawnEngine::TextureInfo getTextureInfo(fastgltf::TextureInfo& textureInfo);
 	void initMaterialBuffer(fastgltf::Asset& asset);
 	void initDepthTexture();
 	void initRenderPipeline();
 
 	void draw();
+	void handleKeys(const SDL_Event *e);
 	wgpu::TextureView getNextSurfaceTextureView();
 };

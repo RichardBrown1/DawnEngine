@@ -4,10 +4,6 @@
 #include <format>
 #include <chrono>
 
-#define SDL_MAIN_HANDLED
-#include "../include/sdl3webgpu.hpp"
-#include "SDL3/SDL.h"
-
 #include "../include/engine.hpp"
 #include <dawn/webgpu_cpp_print.h>
 
@@ -769,6 +765,12 @@ wgpu::TextureView Engine::getNextSurfaceTextureView() {
 	return textureView;
 }
 
+void Engine::handleKeys(const SDL_Event *e) {
+	SDL_assert(e->type == SDL_EVENT_KEY_DOWN); /* just checking key presses here... */
+	if (e->key.scancode == SDL_SCANCODE_W) {
+
+	};
+}
 
 void Engine::run() {
 	SDL_Event e;
