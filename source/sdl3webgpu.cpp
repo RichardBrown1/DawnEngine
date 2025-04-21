@@ -34,7 +34,7 @@
 
 
 
-#include "../include/sdl3webgpu.hpp"
+#include "sdl3webgpu.hpp"
 
 #include <webgpu/webgpu_cpp.h>
 #include <windows.h>

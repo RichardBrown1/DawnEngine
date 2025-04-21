@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <iostream>
-#include "../include/engine.hpp"
+#include "engine.hpp"
 
 int main()
 {

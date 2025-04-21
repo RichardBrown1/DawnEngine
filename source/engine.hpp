@@ -1,6 +1,6 @@
 #pragma once
 #define SDL_MAIN_HANDLED
-#include "../include/sdl3webgpu.hpp"
+#include "sdl3webgpu.hpp"
 #include "SDL3/SDL.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_LEFT_HANDED

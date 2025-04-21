@@ -1,11 +1,11 @@
-#include "../include/utilities.hpp"
+#include "utilities.hpp"
 #include <iostream>
 #include <fstream>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <ktx.h>
-#include "../include/constants.hpp"
-#include "../include/vkFormat.hpp"
+#include "constants.hpp"
+#include "vkFormat.hpp"
 
 namespace Utilities {
 

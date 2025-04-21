@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <webgpu/webgpu_cpp.h>
-#include "../include/structs.hpp"
+#include "structs.hpp"
 
 
 //Consider RenderBundles

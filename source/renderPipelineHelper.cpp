@@ -1,10 +1,10 @@
 #pragma once
 #include <array>
 
-#include "../include/renderPipelineHelper.hpp"
-#include "../include/constants.hpp"
-#include "../include/gpuObjectManager.hpp"
-#include "../include/utilities.hpp"
+#include "renderPipelineHelper.hpp"
+#include "constants.hpp"
+#include "gpuObjectManager.hpp"
+#include "utilities.hpp"
 
 namespace {
 	wgpu::BindGroupLayout initFixedBindGroupLayout(RenderPipelineHelper::RenderPipelineHelperDescriptor& descriptor) {

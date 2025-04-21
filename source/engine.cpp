@@ -4,7 +4,7 @@
 #include <format>
 #include <chrono>
 
-#include "../include/engine.hpp"
+#include "engine.hpp"
 #include <dawn/webgpu_cpp_print.h>
 
 #include <glm/ext/matrix_transform.hpp>
@@ -15,9 +15,9 @@
 #include <fastgltf/tools.hpp>
 #include <fastgltf/types.hpp>
 
-#include "../include/constants.hpp"
-#include "../include/utilities.hpp"
-#include "../include/renderPipelineHelper.hpp"
+#include "constants.hpp"
+#include "utilities.hpp"
+#include "renderPipelineHelper.hpp"
 
 static Engine* loadedEngine = nullptr;
 

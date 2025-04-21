@@ -1,4 +1,4 @@
-#include "../include/gpuObjectManager.hpp"
+#include "gpuObjectManager.hpp"
 
 namespace DawnEngine {
 	static GpuObjectManager* instance;
