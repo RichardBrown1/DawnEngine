@@ -134,7 +134,7 @@ float calculateShadow(VSOutput input, Light light)
 float4 FS_main(VSOutput input ) : SV_Target
 {
     const float3 lightColor = float3(1.0, 1.0, 1.0);
-    const float ambientStrength = float(0.1);
+    const float ambientStrength = float(1.0);
     const float3 ambientLight = lightColor * ambientStrength;
     float3 result = ambientLight;
     
@@ -164,8 +164,11 @@ float4 FS_main(VSOutput input ) : SV_Target
     const uint hasBaseColorTexture = material.textureOptions << 31;
     //if (hasBaseColorTexture)
     //{
+   float2 texcoord = input.texcoord * 0.5 + 0.5;
+   texcoord.y = 1.0 - texcoord.y; // Flip Y
+
         const SamplerTexturePair stp = samplerTexturePair[material.baseColorTextureInfo.index];
-        const float4 color = textures.Gather(textureSampler, float3(input.texcoord, stp.textureIndex), int2(0, 0));
+        const float4 color = textures.Sample(textureSampler, float3(input.texcoord, stp.textureIndex), int2(0, 0));
         result *= color.rgb;
    // }
    // else
