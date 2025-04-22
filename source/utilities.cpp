@@ -68,7 +68,7 @@ namespace DawnEngine {
 	DawnEngine::H_Camera getDefaultCamera(wgpu::SurfaceConfiguration surfaceConfiguration)
 	{
 		return {
-			.projection = glm::perspectiveRH_ZO(45.0f, surfaceConfiguration.width / (float)surfaceConfiguration.height, 0.1f, 1024.0f),
+			.projection = glm::perspectiveRH_ZO(45.0f, surfaceConfiguration.width / (float)surfaceConfiguration.height, 0.00001f, 1024.0f),
 			.position = { 0.0f, 0.0f, 0.1f },
 			.forward = { 0.0f, 0.0f, 0.1f },
 		};
