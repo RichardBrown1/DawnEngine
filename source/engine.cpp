@@ -302,14 +302,10 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 		//TODO what if there is 0 cameras or more than 1 cameras
 //		return;
 //	}
-	//std::cout << "Camera " << std::endl;
 	const glm::f32mat4x4 view = glm::inverse(transform);
 
 	fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera );
 	const glm::f32mat4x4 projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, _surfaceConfiguration.width / (float)_surfaceConfiguration.height, perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f));
-	//std::cout << glm::to_string(camera.view) << std::endl;
-	//std::cout << glm::to_string(transform) << std::endl;
-	//std::cout << glm::to_string(camera.projection) << std::endl;
 	_cameras.push_back(projection * view);
 
 	fastgltf::Camera::Orthographic* orthographicCamera = std::get_if<fastgltf::Camera::Orthographic>(&asset.cameras[cameraIndex].camera );
