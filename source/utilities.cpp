@@ -65,15 +65,14 @@ namespace DawnEngine {
 		return device.CreateShaderModule(&shaderModuleDescriptor);
 	}
 
-	DawnEngine::Camera getDefaultCamera(wgpu::SurfaceConfiguration surfaceConfiguration)
+	glm::f32mat4x4 getDefaultCamera(wgpu::SurfaceConfiguration surfaceConfiguration)
 	{
 		constexpr glm::f32vec3 eye = { 0.0f, 0.0f, -0.1f };
 		constexpr glm::f32vec3 origin = glm::f32vec3(0.0f, 0.0f, 0.0f);
 		constexpr glm::f32vec3 up = glm::f32vec3(0.0, 1.0f, 0.0f);
-		return DawnEngine::Camera{
-			.projection = glm::perspectiveRH_ZO(45.0f, surfaceConfiguration.width / (float)surfaceConfiguration.height, 0.1f, 1024.0f),
-			.view = glm::lookAt(eye, origin, up),
-		};
+		const glm::f32mat4x4 projection = glm::perspectiveRH_ZO(45.0f, surfaceConfiguration.width / (float)surfaceConfiguration.height, 0.1f, 1024.0f);
+		const glm::f32mat4x4 view = glm::lookAt(eye, origin, up);
+		return (projection * view);
 	}
 
 	void convertType(std::optional<fastgltf::TextureInfo> &fastgltfTextureInfo, DawnEngine::TextureInfo& dawnEngineTextureInfo)

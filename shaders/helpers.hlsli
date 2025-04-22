@@ -35,3 +35,14 @@ float3 ComputeLightDirection(float3 eulerRadians)
 
     return normalize(mul(finalRot, forward));
 }
+
+float4x4 invertTranspose(float4x4 m)
+{
+    const float4x4 inverseTransposeMultiplier = float4x4(1.0f, 0.0f, 0.0f, 0.0f,
+                                                         0.0f, 1.0f, 0.0f, 0.0f,
+                                                         0.0f, 0.0f, 1.0f, 0.0f, 
+                                                         0.0f, 0.0f, 0.0f, 1.0f);
+    return mul(m, inverseTransposeMultiplier);
+}
+
+

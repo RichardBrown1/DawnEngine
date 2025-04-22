@@ -1,10 +1,7 @@
 #include "definitions.hlsli"
 #include "helpers.hlsli"
 
-cbuffer pv : register(b0, space0)
-{
-    ProjectionView pv;
-};
+ConstantBuffer<ProjectionView> camera : register(b0, space0);
 StructuredBuffer<float4x4> transforms : register(t1, space0);
 StructuredBuffer<InstanceProperties> instanceProperties : register(t2, space0);
 StructuredBuffer<Material> materials : register(t3, space0);
@@ -36,24 +33,19 @@ struct VSOutput
 
 VSOutput VS_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceIndex : SV_InstanceID)
 {
-    const float4x4 inverseTransposeMultiplier = float4x4(1.0f, 0.0f, 0.0f, 0.0f, 
-                                                         0.0f, 1.0f, 0.0f, 0.0f,
-                                                         0.0f, 0.0f, 1.0f, 0.0f, 
-                                                         0.0f, 0.0f, 0.0f, 1.0f);
-    
+       
     VSOutput output = (VSOutput) 0;    
     
     output.position = (float3) mul(transforms[InstanceIndex], float4(input.position, 1.0));
     output.cameraPosition = mul(
-                            mul(pv.projection, pv.view),
+                            camera.projectionView,
                             float4(output.position, 1.0)
                           );
     output.lightPosition = mul(lights[0].lightSpaceMatrix, float4(output.position, 1.0));
     output.shadowMapPosition = float3(output.lightPosition.xy * float2(0.5, -0.5) + float2(0.5, 0.5), output.lightPosition.z);
-    output.normal = normalize((float3) mul(mul(inverseTransposeMultiplier, transforms[InstanceIndex]), float4(input.normal, 0.0)));
+    output.normal = normalize((float3) mul(invertTranspose(transforms[InstanceIndex]), float4(input.normal, 0.0)));
     output.color = float4(1.0, 1.0, 1.0, 1.0);
     output.texcoord = input.texcoord;
-
 
     return output;
 }
