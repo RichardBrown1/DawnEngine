@@ -69,8 +69,8 @@ namespace DawnEngine {
 	{
 		return {
 			.projection = glm::perspectiveRH_ZO(45.0f, surfaceConfiguration.width / (float)surfaceConfiguration.height, 0.1f, 1024.0f),
-			.position = { 0.0f, 0.0f, -0.1f },
-			.forward = { 0.0f, 0.0f, 0.0f },
+			.position = { 0.0f, 0.0f, -1.0f },
+			.forward = { 0.0f, 0.0f, 1.0f },
 		};
 	}
 
