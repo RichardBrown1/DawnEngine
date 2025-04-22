@@ -37,9 +37,11 @@ namespace DawnEngine {
 		wgpu::RenderPipeline geometry;
 	};
 
-	struct Camera {
-		alignas(sizeof(glm::mat4x4)) glm::mat4x4 projection;
-		alignas(sizeof(glm::mat4x4)) glm::mat4x4 view;
+	//Host Camera - This will be a f32mat4x4 projectionView at device
+	struct H_Camera {
+		glm::f32mat4x4 projection;
+    glm::f32vec3 position;
+		glm::f32vec3 forward;
 	};
 
 	struct VBO {
@@ -60,7 +62,7 @@ namespace DawnEngine {
 		glm::f32mat4x4 lightSpaceMatrix;
 		glm::f32vec3 position;
 		uint32_t PAD0;
-		glm::f32vec3 rotation;
+		glm::f32vec3 rotation; //TODO: check to see if alignas will do the trick
 		uint32_t PAD1;
 		glm::f32vec3 color;
 		glm::u32 type; //this is u32 instead of u8 for webgpu shader compatibility

@@ -37,7 +37,8 @@ private:
 	std::vector<DawnEngine::InstanceProperty> _instanceProperties;
 	std::unordered_map<uint32_t, DawnEngine::DrawInfo*> _meshIndexToDrawInfoMap;
 	std::vector<DawnEngine::Light> _lights;
-	std::vector<glm::f32mat4x4> _cameras;
+	std::vector<DawnEngine::H_Camera> _h_cameras;
+	glm::f32mat4x4 _s_camera;
 	DawnEngine::Buffers _buffers;
 	DawnEngine::TextureViews _textureViews;
 	DawnEngine::BindGroups _bindGroups;

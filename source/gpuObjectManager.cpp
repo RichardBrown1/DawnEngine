@@ -36,7 +36,7 @@ namespace DawnEngine {
 				.visibility = (wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment),
 				.buffer = {
 					.type = wgpu::BufferBindingType::Uniform,
-					.minBindingSize = sizeof(Camera),
+					.minBindingSize = sizeof(glm::f32mat4x4),
 				}
 			},
 		},

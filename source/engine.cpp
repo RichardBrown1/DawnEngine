@@ -303,29 +303,40 @@ void Engine::addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, ui
 //		return;
 //	}
 	const glm::f32mat4x4 view = glm::inverse(transform);
-
 	fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera );
-	const glm::f32mat4x4 projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, _surfaceConfiguration.width / (float)_surfaceConfiguration.height, perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f));
-	_cameras.push_back(projection * view);
-
 	fastgltf::Camera::Orthographic* orthographicCamera = std::get_if<fastgltf::Camera::Orthographic>(&asset.cameras[cameraIndex].camera );
 	if (orthographicCamera != nullptr) {
 		throw std::runtime_error("orthographic camera not supported");
 	}
+	
+	DawnEngine::H_Camera h_camera = {
+		.projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, _surfaceConfiguration.width / (float)_surfaceConfiguration.height, perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f)),
+		.position = glm::f32vec3(transform[3]),
+		.forward = -glm::normalize(glm::f32vec3(view[2])),
+	};
+
+	 _h_cameras.push_back(h_camera);
 }
 
 
 void Engine::initSceneBuffers() {
-	if (_cameras.size() == 0) {
-		_cameras.push_back(DawnEngine::getDefaultCamera(_surfaceConfiguration));
+	if (_h_cameras.size() == 0) {
+		_h_cameras.push_back(DawnEngine::getDefaultCamera(_surfaceConfiguration));
 	}
 	constexpr wgpu::BufferDescriptor cameraBufferDescriptor = {
 		.label = "camera buffer",
 		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
-		.size = sizeof(DawnEngine::Camera),
+		.size = sizeof(glm::f32mat4x4),
 	};
 	_buffers.camera = _device.CreateBuffer(&cameraBufferDescriptor);
-	_queue.WriteBuffer(_buffers.camera, 0, _cameras.data(), cameraBufferDescriptor.size);
+
+	const glm::f32mat4x4 view = glm::lookAt(
+		_h_cameras[0].position,
+		_h_cameras[0].position + _h_cameras[0].forward,
+		DawnEngine::UP
+	);
+	const glm::f32mat4x4 camera = _h_cameras[0].projection * view;
+	_queue.WriteBuffer(_buffers.camera, 0, _h_cameras.data(), cameraBufferDescriptor.size);
 
 	if (_lights.size() == 0) {
 		_lights.push_back(DawnEngine::DEFAULT_LIGHT);
