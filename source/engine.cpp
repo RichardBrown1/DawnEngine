@@ -336,7 +336,7 @@ void Engine::initSceneBuffers() {
 		DawnEngine::UP
 	);
 	const glm::f32mat4x4 camera = _h_cameras[0].projection * view;
-	_queue.WriteBuffer(_buffers.camera, 0, _h_cameras.data(), cameraBufferDescriptor.size);
+	_queue.WriteBuffer(_buffers.camera, 0, &camera, cameraBufferDescriptor.size);
 
 	if (_lights.size() == 0) {
 		_lights.push_back(DawnEngine::DEFAULT_LIGHT);
