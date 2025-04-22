@@ -42,7 +42,7 @@ float4x4 invertTranspose(float4x4 m)
                                                          0.0f, 1.0f, 0.0f, 0.0f,
                                                          0.0f, 0.0f, 1.0f, 0.0f, 
                                                          0.0f, 0.0f, 0.0f, 1.0f);
-    return mul(m, inverseTransposeMultiplier);
+    return mul(inverseTransposeMultiplier, m);
 }
 
 
