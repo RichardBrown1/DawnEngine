@@ -1,4 +1,4 @@
-// Copyright 2017-2023 The Dawn & Tint Authors
+// Copyright 2025 The Dawn & Tint Authors
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -24,3 +24,10 @@
 // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#ifndef INCLUDE_WEBGPU_WEBGPU_CPP_PRINT_H_
+#define INCLUDE_WEBGPU_WEBGPU_CPP_PRINT_H_
+
+#include "dawn/webgpu_cpp_print.h"
+
+#endif  // INCLUDE_WEBGPU_WEBGPU_CPP_PRINT_H_
