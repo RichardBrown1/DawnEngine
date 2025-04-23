@@ -39,7 +39,7 @@ Engine::Engine() {
 	}
 
 	constexpr wgpu::InstanceDescriptor instanceDescriptor = {
-		.features = {
+		.capabilities = {
 			.timedWaitAnyEnable = true,
 		},
 	};
@@ -54,24 +54,24 @@ Engine::Engine() {
 	}
 
 	// Synchronously request the adapter.
-	const wgpu::RequestAdapterOptions requestAdapterOptions = {};
-	wgpu::Adapter adapter;
-	const wgpu::RequestAdapterCallbackInfo callbackInfo = {
-		.nextInChain = nullptr,
-		.mode = wgpu::CallbackMode::WaitAnyOnly,
-		.callback =
-			[](WGPURequestAdapterStatus status, WGPUAdapter adapter,
-				WGPUStringView message, void* userdata) {
-					if (status != WGPURequestAdapterStatus_Success) {
-						std::cerr << "Failed to get an adapter:" << message.data;
-						return;
-					}
-				*static_cast<wgpu::Adapter*>(userdata) = wgpu::Adapter::Acquire(adapter);
-		},
-		.userdata = &adapter,
+	const wgpu::RequestAdapterOptions requestAdapterOptions = {
+	.powerPreference = wgpu::PowerPreference::HighPerformance
 	};
+	wgpu::Adapter adapter;
 
-	_instance.WaitAny(_instance.RequestAdapter(&requestAdapterOptions, callbackInfo), UINT64_MAX);
+	_instance.WaitAny(_instance.RequestAdapter(
+		&requestAdapterOptions, 
+		wgpu::CallbackMode::WaitAnyOnly,
+		[&](wgpu::RequestAdapterStatus status, 
+			 wgpu::Adapter a, 
+			 wgpu::StringView message) {
+				if (status != wgpu::RequestAdapterStatus::Success) {
+					std::cerr << "Failed to get an adapter:" << message.data;
+					return;
+				}
+				adapter = std::move(a);
+		}),
+	INT64_MAX);
 	if (adapter == nullptr) {
 		throw std::runtime_error("RequestAdapter failed!\n");
 	}
@@ -90,14 +90,14 @@ Engine::Engine() {
 	std::cout << "Driver description: " << info.description << "\n";
 
 	//limits
-	wgpu::SupportedLimits supportedLimits;
-	adapter.GetLimits(&supportedLimits);
-	std::cout << "Vertex Attribute Limit: " << supportedLimits.limits.maxVertexAttributes << std::endl;
-	std::cout << "Vertex Buffer Limit: " << supportedLimits.limits.maxVertexBuffers << std::endl;
-	std::cout << "BindGroup Limit: " << supportedLimits.limits.maxBindGroups << std::endl;
-	std::cout << "Max Bindings/BindGroup Limit: " << supportedLimits.limits.maxBindingsPerBindGroup << std::endl;
-	std::cout << "Max Texture Dimension 2D Limit: " << supportedLimits.limits.maxTextureDimension2D << std::endl;
-	std::cout << "Max Texture Array Layers Limit: " << supportedLimits.limits.maxTextureArrayLayers << std::endl;
+	wgpu::Limits limits;
+	adapter.GetLimits(&limits);
+	std::cout << "Vertex Attribute Limit: " << limits.maxVertexAttributes << std::endl;
+	std::cout << "Vertex Buffer Limit: " << limits.maxVertexBuffers << std::endl;
+	std::cout << "BindGroup Limit: " << limits.maxBindGroups << std::endl;
+	std::cout << "Max Bindings/BindGroup Limit: " << limits.maxBindingsPerBindGroup << std::endl;
+	std::cout << "Max Texture Dimension 2D Limit: " << limits.maxTextureDimension2D << std::endl;
+	std::cout << "Max Texture Array Layers Limit: " << limits.maxTextureArrayLayers << std::endl;
 	
 	std::array<wgpu::FeatureName, 2> requiredFeatures = { 
 		wgpu::FeatureName::IndirectFirstInstance,
@@ -108,28 +108,75 @@ Engine::Engine() {
 	deviceDescriptor.label = "device";
 	deviceDescriptor.requiredFeatures = requiredFeatures.data();
 	deviceDescriptor.requiredFeatureCount = requiredFeatures.size();
-	deviceDescriptor.SetUncapturedErrorCallback([](const wgpu::Device&, wgpu::ErrorType type, const char* message) {
-		std::cout << "Uncaptured device error type: " << type << std::endl;
-		std::cout << std::format("Uncaptured Error Message: {} \r\n", message);
-		exit(1);
-		});
+	deviceDescriptor.SetUncapturedErrorCallback(
+		[](const wgpu::Device&, wgpu::ErrorType type, wgpu::StringView message) {
+			const char* errorTypeName = "";
+			switch (type) {
+			case wgpu::ErrorType::Validation:
+				errorTypeName = "Validation";
+				break;
+			case wgpu::ErrorType::OutOfMemory:
+				errorTypeName = "Out of memory";
+				break;
+			case wgpu::ErrorType::Internal:
+				errorTypeName = "Internal";
+				break;
+			case wgpu::ErrorType::Unknown:
+				errorTypeName = "Unknown";
+				break;
+			default:
+				Utilities::unreachable();
+			}
+			std::cerr << errorTypeName << " error: " << message;
+		}
+	);
+
 	deviceDescriptor.SetDeviceLostCallback(
 		wgpu::CallbackMode::AllowSpontaneous,
-		[](const wgpu::Device&, wgpu::DeviceLostReason reason, const char* message) {
-			std::cout << "DeviceLostReason: " << reason << std::endl;
-			std::cout << std::format(" Message: {}", message) << std::endl;
-			exit(2);
-		});
-
+		[](const wgpu::Device&, wgpu::DeviceLostReason reason, wgpu::StringView message) {
+			std::string reasonName = "";
+			switch (reason) {
+			case wgpu::DeviceLostReason::Unknown:
+				reasonName = "Unknown";
+				break;
+			case wgpu::DeviceLostReason::Destroyed:
+				reasonName = "Destroyed";
+				break;
+			case wgpu::DeviceLostReason::CallbackCancelled:
+				reasonName = "CallbackCancelled";
+				break;
+			case wgpu::DeviceLostReason::FailedCreation:
+				reasonName = "FailedCreation";
+				break;
+			default:
+				Utilities::unreachable();
+			}
+			std::cerr << "Device lost because of " << reasonName << ": " << message;
+		}
+	);
 	_device = adapter.CreateDevice(&deviceDescriptor);
 
-	int userData;
 	_device.SetLoggingCallback(
-		[](WGPULoggingType type, struct WGPUStringView message, void*) {
-			std::string_view view = { message.data, message.length };
-			std::cout << "Type: " << type << std::endl;
-			std::cout << "Log Message: " << view << std::endl;
-		}, &userData);
+		[](wgpu::LoggingType type, wgpu::StringView message) {
+			std::string loggingType;
+			switch (type) {
+			case wgpu::LoggingType::Verbose:
+				loggingType = "Verbose";
+				break;
+			case wgpu::LoggingType::Info:
+				loggingType = "Info";
+				break;
+			case wgpu::LoggingType::Warning:
+				loggingType = "Warning";
+				break;
+			case wgpu::LoggingType::Error:
+				loggingType = "Error";
+				break;
+			default:
+				Utilities::unreachable();
+			}
+			std::cout << loggingType << message << std::endl;
+		});
 
 	_surfaceConfiguration.width = WIDTH;
 	_surfaceConfiguration.height = HEIGHT;
@@ -429,11 +476,11 @@ void Engine::initTextures(fastgltf::Asset& asset) {
 		.mipLevelCount = 1,
 	};
 	wgpu::Texture texture = _device.CreateTexture(&textureDescriptor);
-	const wgpu::ImageCopyTexture imageCopyTexture = {
+	const wgpu::TexelCopyTextureInfo texelCopyTextureInfo = {
 		.texture = texture,
 		.mipLevel = 0,
 	};
-	const wgpu::TextureDataLayout textureDataLayout = {
+	const wgpu::TexelCopyBufferLayout texelCopyBufferLayout = {
 			.bytesPerRow = textureDescriptor.size.width * 4, //1 pixel = 4 bytes. Careful this will change with different formats
 			.rowsPerImage = textureDescriptor.size.height,
 	};
@@ -444,10 +491,10 @@ void Engine::initTextures(fastgltf::Asset& asset) {
 	//};
 
 	_queue.WriteTexture(
-		&imageCopyTexture,
+		&texelCopyTextureInfo,
 		hostTextures.data(),
 		hostTextures.size() * sizeof(uint32_t) * 2048 * 2048,
-		&textureDataLayout,
+		&texelCopyBufferLayout,
 		&textureDescriptor.size
 	);
 
@@ -738,14 +785,14 @@ void Engine::draw() {
 
 	_device.Tick();
 
-	wgpu::PopErrorScopeCallbackInfo popErrorScopeCallbackInfo = {};
-	popErrorScopeCallbackInfo.callback = [](WGPUPopErrorScopeStatus status, WGPUErrorType, struct WGPUStringView message, void*) {
-		if (wgpu::PopErrorScopeStatus(status) != wgpu::PopErrorScopeStatus::Success) {
-			return;
-		}
-		std::cout << std::format("Error: {} \r\n", message.data);
-		};
-	_device.PopErrorScope(popErrorScopeCallbackInfo);
+	_device.PopErrorScope(
+		wgpu::CallbackMode::AllowSpontaneous,
+		[](wgpu::PopErrorScopeStatus status, wgpu::ErrorType, wgpu::StringView message) {
+			if (wgpu::PopErrorScopeStatus(status) != wgpu::PopErrorScopeStatus::Success) {
+				return;
+			}
+			std::cerr << std::format("Error: {} \r\n", message.data);
+		});
 
 	_surface.Present();
 
@@ -754,7 +801,7 @@ void Engine::draw() {
 wgpu::TextureView Engine::getNextSurfaceTextureView() {
 	wgpu::SurfaceTexture surfaceTexture;
 	_surface.GetCurrentTexture(&surfaceTexture);
-	if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::Success) {
+	if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal) {
 		throw std::runtime_error("failed to wgpu::SurfaceTexture from getCurrentTexture()");
 	}
 

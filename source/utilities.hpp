@@ -7,6 +7,7 @@
 #include "structs.hpp"
 
 namespace Utilities {
+	void unreachable();
 	void checkFastGltfError(const fastgltf::Error& error, const std::string& additionalMessage = "");
 };
 
