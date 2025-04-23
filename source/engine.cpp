@@ -5,7 +5,7 @@
 #include <chrono>
 
 #include "engine.hpp"
-#include <dawn/webgpu_cpp_print.h>
+#include <webgpu/webgpu_cpp_print.h>
 
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
@@ -384,6 +384,9 @@ void Engine::initSceneBuffers() {
 }
 
 void Engine::initTextures(fastgltf::Asset& asset) {
+	if (asset.images.size() == 0) {
+		return;
+	}
 	//Texture Management Architecture - Prototype
 	//1. 2D Textures will be in layered Textures with an ArrayIndex
 	// Can I use Texture2DArray in HLSL?
