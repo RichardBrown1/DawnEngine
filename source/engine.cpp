@@ -18,6 +18,7 @@
 #include "constants.hpp"
 #include "utilities.hpp"
 #include "renderPipelineHelper.hpp"
+#include "samplers.hpp"
 
 static Engine* loadedEngine = nullptr;
 
@@ -431,9 +432,6 @@ void Engine::initSceneBuffers() {
 }
 
 void Engine::initTextures(fastgltf::Asset& asset) {
-	if (asset.images.size() == 0) {
-		return;
-	}
 	//Texture Management Architecture - Prototype
 	//1. 2D Textures will be in layered Textures with an ArrayIndex
 	// Can I use Texture2DArray in HLSL?
@@ -448,6 +446,9 @@ void Engine::initTextures(fastgltf::Asset& asset) {
 		//	asset.images.
 		fastgltf::DataSource ds = asset.images[i].data;
 		DawnEngine::getTexture(_device, ds, _gltfDirectory, hostTextures[i]);
+	}
+	if (hostTextures.size() == 0) {
+		hostTextures.resize(1);
 	}
 
 	//	wgpu::TextureDimension textureDimension = [&sp_ktxTexture2]() {
@@ -526,6 +527,12 @@ void Engine::initSamplerTexturePairs(fastgltf::Asset& asset) {
 		};
 		samplerTexturePairs.push_back(texture);
 	}
+	if (asset.textures.size() == 0) {
+		samplerTexturePairs.push_back({
+			.samplerIndex = UINT32_MAX,
+			.textureIndex = UINT32_MAX,
+		});
+	}
 
 	const wgpu::BufferDescriptor samplerTextureBufferDescriptor = {
 		.label = "sampler texture pair buffer",
@@ -542,67 +549,7 @@ void Engine::initSamplerTexturePairs(fastgltf::Asset& asset) {
 }
 
 void Engine::initSamplers(fastgltf::Asset& asset) {
-	auto convertAddressMode = [](fastgltf::Wrap wrap) {
-		switch (wrap) {
-			case fastgltf::Wrap::ClampToEdge:
-				return wgpu::AddressMode::ClampToEdge;
-			case fastgltf::Wrap::MirroredRepeat:
-				return wgpu::AddressMode::MirrorRepeat;
-			case fastgltf::Wrap::Repeat:
-				return wgpu::AddressMode::Repeat;
-			default:
-				throw std::runtime_error("Unknown wrap type in AddressMode conversion");
-			}
-		};
-
-	auto convertFilter = [](fastgltf::Optional<fastgltf::Filter> filter) {
-		if (!filter.has_value()) {
-			return wgpu::FilterMode::Nearest; //default value in wgpu::SamplerDescriptor
-		}
-		switch (filter.value()) {
-			case fastgltf::Filter::Linear:
-			case fastgltf::Filter::LinearMipMapLinear:
-			case fastgltf::Filter::LinearMipMapNearest:
-				return wgpu::FilterMode::Linear;
-			case fastgltf::Filter::Nearest:
-			case fastgltf::Filter::NearestMipMapLinear:
-			case fastgltf::Filter::NearestMipMapNearest:
-				return wgpu::FilterMode::Nearest;
-			default:
-				throw std::runtime_error("Unknown Filter value");
-		}
-	};
-
-	auto convertMipMapFilter = [](fastgltf::Optional<fastgltf::Filter> filter) {
-		if (!filter.has_value()) {
-			return wgpu::MipmapFilterMode::Nearest; //default value in wgpu::SamplerDescriptor
-		}
-		switch (filter.value()) {
-			case fastgltf::Filter::Linear:
-			case fastgltf::Filter::Nearest:
-				return wgpu::MipmapFilterMode::Undefined;
-			case fastgltf::Filter::LinearMipMapLinear:
-			case fastgltf::Filter::NearestMipMapLinear:
-				return wgpu::MipmapFilterMode::Linear;
-			case fastgltf::Filter::LinearMipMapNearest:
-			case fastgltf::Filter::NearestMipMapNearest:
-				return wgpu::MipmapFilterMode::Nearest;
-			default:
-				throw std::runtime_error("Unknown MipMap Filter value");
-		}
-	};
-
-	for (const auto& s : asset.samplers) {
-		const	wgpu::SamplerDescriptor samplerDescriptor = {
-			.label = s.name.c_str(),
-			.addressModeU = convertAddressMode(s.wrapS),
-			.addressModeV = convertAddressMode(s.wrapT),
-			.magFilter = convertFilter(s.magFilter),
-			.minFilter = convertFilter(s.minFilter),
-			.mipmapFilter = convertMipMapFilter(s.minFilter),
-		};
-		_samplers.texture = _device.CreateSampler(&samplerDescriptor);
-	}
+	DawnEngine::getSamplers(_device, asset.samplers, _samplers);
 }
 
 void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
@@ -610,6 +557,7 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 	
 	for (int i = 0; auto &m : asset.materials) {
 		memcpy(&materials[i].pbrMetallicRoughness, &m.pbrData, sizeof(glm::f32vec4) + sizeof(float) * 2);
+
 		if (m.pbrData.baseColorTexture.has_value()) {
 			materials[i].textureOptions[DawnEngine::TEXTURE_OPTIONS_INDEX::hasBaseColorTexture] = 1;
 			DawnEngine::convertType(m.pbrData.baseColorTexture, materials[i].pbrMetallicRoughness.baseColorTextureInfo);
@@ -619,12 +567,6 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 
 		i++;
 	}
-//	materials.add(DawnEngine::DE);
-
-//	constexpr DawnEngine::Material defaultMaterial = {
-//		.baseColor = {1.0f, 1.0f, 1.0f, 1.0f},
-//	};
-	//materials[asset.materials.size()] = defaultMaterial;
 
 	const wgpu::BufferDescriptor materialBufferDescriptor = {
 		.label = "material buffer",

@@ -53,7 +53,7 @@ namespace DawnEngine {
 		{
 			GPU_OBJECT_ID::INSTANCE_PROPERTIES,
 			{
-				.visibility = wgpu::ShaderStage::Fragment,
+				.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
 				.buffer = {
 					.type = wgpu::BufferBindingType::ReadOnlyStorage,
 					.minBindingSize = sizeof(InstanceProperty),
@@ -63,7 +63,7 @@ namespace DawnEngine {
 		{
 			GPU_OBJECT_ID::MATERIALS,
 			{
-				.visibility = wgpu::ShaderStage::Fragment,
+				.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
 				.buffer = {
 					.type = wgpu::BufferBindingType::ReadOnlyStorage,
 					.minBindingSize = sizeof(Material),
@@ -105,7 +105,7 @@ namespace DawnEngine {
 				.visibility = wgpu::ShaderStage::Fragment,
 				.buffer = {
 					.type = wgpu::BufferBindingType::ReadOnlyStorage,
-					.minBindingSize = 0,
+					.minBindingSize = sizeof(DawnEngine::SamplerTexturePair),
 				}
 			}
 		},
@@ -124,7 +124,7 @@ namespace DawnEngine {
 			{
 				.visibility = wgpu::ShaderStage::Fragment,
 				.sampler = {
-					.type = wgpu::SamplerBindingType::Filtering,
+					.type = wgpu::SamplerBindingType::Filtering
 				},
 			},
 		},
