@@ -118,6 +118,7 @@ void TextureSamplerManager::addTexture(fastgltf::DataSource dataSource, std::str
 	};
 	wgpu::Texture texture = _device.CreateTexture(&textureDescriptor);
 	_textures.push_back(texture);
+
 	const wgpu::TexelCopyTextureInfo texelCopyTextureInfo = {
 		.texture = texture,
 		.mipLevel = 0,
