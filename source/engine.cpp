@@ -99,6 +99,7 @@ Engine::Engine() {
 	std::cout << "Max Bindings/BindGroup Limit: " << limits.maxBindingsPerBindGroup << std::endl;
 	std::cout << "Max Texture Dimension 2D Limit: " << limits.maxTextureDimension2D << std::endl;
 	std::cout << "Max Texture Array Layers Limit: " << limits.maxTextureArrayLayers << std::endl;
+	std::cout << "Max Compute Workgroups Per Dimension: " << limits.maxComputeWorkgroupsPerDimension << std::endl;
 	
 	std::array<wgpu::FeatureName, 2> requiredFeatures = { 
 		wgpu::FeatureName::IndirectFirstInstance,

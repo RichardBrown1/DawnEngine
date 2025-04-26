@@ -16,6 +16,10 @@ namespace {
 
 TextureSamplerManager::TextureSamplerManager(wgpu::Device device) {
 	_device = device;
+	_workgroupSize = {
+		.width = 1024,
+		.height = 720,
+	};
 };
 
 void TextureSamplerManager::addAsset(fastgltf::Asset& asset, std::string gltfDirectory) {
@@ -158,4 +162,79 @@ void TextureSamplerManager::addSampler(fastgltf::Sampler sampler) {
 			.mipmapFilter = Utilities::convertMipMapFilter(sampler.minFilter.value_or(fastgltf::Filter::Linear)),
 	};
 	_samplers.push_back(_device.CreateSampler(&samplerDescriptor));
+}
+
+//generate Texture Pipeline before this
+void TextureSamplerManager::doTextureCommands(wgpu::CommandEncoder& commandEncoder) {
+	wgpu::ComputePassDescriptor computePassDescriptor = {
+		.label = "texture compute pass",
+	};
+	wgpu::ComputePassEncoder computePassEncoder = commandEncoder.BeginComputePass(&computePassDescriptor);
+	computePassEncoder.SetPipeline(_computePipeline);
+	computePassEncoder.DispatchWorkgroups(_workgroupSize.width, _workgroupSize.height);
+	computePassEncoder.End();
+}
+
+
+wgpu::ComputePipeline TextureSamplerManager::generateTexturePipeline(GenerateTexturePipelineDescriptor descriptor) {
+	wgpu::ComputeState computeState = {
+		
+	};
+	const wgpu::BindGroupLayout bindGroupLayout = getBindGroupLayout(descriptor.colorTextureFormat);
+
+	const wgpu::PipelineLayoutDescriptor computePipelineLayoutDescriptor = {
+		.label = "texture pipeline layout",
+		.bindGroupLayoutCount = 1,
+		.bindGroupLayouts = &bindGroupLayout,
+	};
+	wgpu::PipelineLayout computePipelineLayout = _device.CreatePipelineLayout(&computePipelineLayoutDescriptor);
+	wgpu::ComputePipelineDescriptor computePipelineDescriptor = {
+		.label = "compute pipeline",
+		.layout = computePipelineLayout,
+		.compute = computeState,
+	};
+}
+
+wgpu::BindGroupLayout TextureSamplerManager::getBindGroupLayout(wgpu::TextureFormat accumulatorTextureFormat) {
+	//I think no samplers are needed for the accumulator and the info since we can get the pixel and the textures should be screen size
+	wgpu::BindGroupLayoutEntry accumulatorTexture = {
+		.binding = 0,
+		.storageTexture = {
+			.access = wgpu::StorageTextureAccess::ReadWrite,
+			.format = accumulatorTextureFormat,
+			.viewDimension = wgpu::TextureViewDimension::e2D,
+		},
+	};
+	wgpu::BindGroupLayoutEntry infoBuffer = { //this will have the same amount of elements as the screen size
+		.binding = 1,
+		.buffer = {
+			.type = wgpu::BufferBindingType::ReadOnlyStorage,
+			.minBindingSize = sizeof(DawnEngine::InfoBufferLayout)
+		},
+	};
+	wgpu::BindGroupLayoutEntry inputTexture = {
+		.binding = 2,
+		.texture = {
+			.sampleType = wgpu::TextureSampleType::Float,
+			.viewDimension = wgpu::TextureViewDimension::e2D,
+		},
+	};
+	wgpu::BindGroupLayoutEntry inputSampler = {
+		.binding = 3,
+		.sampler = {
+			.type = wgpu::SamplerBindingType::Filtering, //Use case of non filtering samplers?
+		},
+	};
+	std::array<wgpu::BindGroupLayoutEntry, 4>  bindGroupLayoutEntries = {
+		accumulatorTexture,
+		infoBuffer,
+		inputTexture,
+		inputSampler,
+	};
+	wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
+		.label = "texture bind group layout",
+		.entryCount = bindGroupLayoutEntries.size(),
+		.entries = bindGroupLayoutEntries.data(),
+	};
+	return _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 }
