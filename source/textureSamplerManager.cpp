@@ -11,6 +11,9 @@ namespace {
 	}
 }
 
+//TODO - Create a render pipeline that will do each Texture Sampling in a compute shader (can i just loop this in draw call?)
+//TODO - Create binding and binding group generator 
+
 TextureSamplerManager::TextureSamplerManager(wgpu::Device device) {
 	_device = device;
 };
@@ -25,8 +28,6 @@ void TextureSamplerManager::addAsset(fastgltf::Asset& asset, std::string gltfDir
 	for (auto& s : asset.samplers) {
 		addSampler(s);
 	}
-	//TODO - Create a render pipeline that will do each Texture Coloring in a compute shader
-
 }
 
 void TextureSamplerManager::addTextureSamplerPair(fastgltf::Texture texture) {
