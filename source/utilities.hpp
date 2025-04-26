@@ -9,6 +9,9 @@
 namespace Utilities {
 	void unreachable();
 	void checkFastGltfError(const fastgltf::Error& error, const std::string& additionalMessage = "");
+	wgpu::AddressMode convertType(fastgltf::Wrap wrap);
+	wgpu::FilterMode convertFilter(fastgltf::Filter filter);
+	wgpu::MipmapFilterMode convertMipMapFilter(fastgltf::Filter filter);
 };
 
 namespace DawnEngine {

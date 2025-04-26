@@ -36,6 +36,51 @@ namespace Utilities {
 			)
 		);
 	};
+
+	wgpu::AddressMode convertType(fastgltf::Wrap wrap) {
+		switch (wrap) {
+		case fastgltf::Wrap::ClampToEdge:
+			return wgpu::AddressMode::ClampToEdge;
+		case fastgltf::Wrap::MirroredRepeat:
+			return wgpu::AddressMode::MirrorRepeat;
+		case fastgltf::Wrap::Repeat:
+			return wgpu::AddressMode::Repeat;
+		default:
+			throw std::runtime_error("Invalid wrap conversion");
+		}
+	};
+
+	wgpu::FilterMode convertFilter(fastgltf::Filter filter) {
+		switch (filter) {
+		case fastgltf::Filter::Linear:
+		case fastgltf::Filter::LinearMipMapLinear:
+		case fastgltf::Filter::LinearMipMapNearest:
+			return wgpu::FilterMode::Linear;
+		case fastgltf::Filter::Nearest:
+		case fastgltf::Filter::NearestMipMapLinear:
+		case fastgltf::Filter::NearestMipMapNearest:
+			return wgpu::FilterMode::Nearest;
+		default:
+			throw std::runtime_error("Invalid filter conversion");
+		}
+	};
+
+	wgpu::MipmapFilterMode convertMipMapFilter(fastgltf::Filter filter) {
+		switch (filter) {
+		case fastgltf::Filter::Linear:
+		case fastgltf::Filter::Nearest:
+			return wgpu::MipmapFilterMode::Undefined;
+		case fastgltf::Filter::LinearMipMapLinear:
+		case fastgltf::Filter::NearestMipMapLinear:
+			return wgpu::MipmapFilterMode::Linear;
+		case fastgltf::Filter::LinearMipMapNearest:
+		case fastgltf::Filter::NearestMipMapNearest:
+			return wgpu::MipmapFilterMode::Nearest;
+		default:
+			throw std::runtime_error("Invalid mipmap filter conversion");
+		}
+	};
+
 };
 
 
@@ -173,4 +218,5 @@ namespace DawnEngine {
 //		//wgpu::TextureDataLayout().
 	}
 
-};
+
+	};
