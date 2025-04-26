@@ -31,6 +31,10 @@ public:
 	wgpu::ComputePipeline generateTexturePipeline(GenerateTexturePipelineDescriptor descriptor);
 
 private:
+	const wgpu::StringView BASE_COLOR_ACCUMULATOR_SHADER_LABEL = "base color accumulator shader";
+	const std::string BASE_COLOR_ACCUMULATOR_SHADER_PATH = "../shaders/baseColor.hlsl";
+	wgpu::ShaderModule _baseColorAccumulatorShaderModule;
+
 	wgpu::Device _device;
 	wgpu::ComputePipeline _computePipeline;
 	wgpu::Extent2D _workgroupSize;

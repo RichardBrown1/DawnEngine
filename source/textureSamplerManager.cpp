@@ -20,6 +20,12 @@ TextureSamplerManager::TextureSamplerManager(const TextureSamplerManagerDescript
 	_workgroupSize = descriptor.workgroupSize;
 	_invocationSize = descriptor.invocationSize;
 	_textureIndicesMap = descriptor.textureIndicesMap;
+
+	_baseColorAccumulatorShaderModule = Utilities::createShaderModule(
+		_device,
+		BASE_COLOR_ACCUMULATOR_SHADER_LABEL,
+		BASE_COLOR_ACCUMULATOR_SHADER_PATH
+	);
 };
 
 void TextureSamplerManager::addAsset(fastgltf::Asset& asset, std::string gltfDirectory) {
@@ -180,7 +186,8 @@ void TextureSamplerManager::doTextureCommands(wgpu::CommandEncoder& commandEncod
 
 wgpu::ComputePipeline TextureSamplerManager::generateTexturePipeline(GenerateTexturePipelineDescriptor descriptor) {
 	wgpu::ComputeState computeState = {
-		
+		.module = _baseColorAccumulatorShaderModule,
+		.entryPoint = "CS_Main"
 	};
 	const wgpu::BindGroupLayout bindGroupLayout = getBindGroupLayout(descriptor.colorTextureFormat);
 
