@@ -15,7 +15,7 @@ namespace {
 //TODO - Create a render pipeline that will do each Texture Sampling in a compute shader (can i just loop this in draw call?)
 //TODO - Create binding and binding group generator 
 
-TextureSamplerManager::TextureSamplerManager(TextureSamplerManagerDescriptor &descriptor) {
+TextureSamplerManager::TextureSamplerManager(const TextureSamplerManagerDescriptor &descriptor) {
 	_device = descriptor.device;
 	_workgroupSize = descriptor.workgroupSize;
 	_invocationSize = descriptor.invocationSize;
@@ -23,24 +23,26 @@ TextureSamplerManager::TextureSamplerManager(TextureSamplerManagerDescriptor &de
 };
 
 void TextureSamplerManager::addAsset(fastgltf::Asset& asset, std::string gltfDirectory) {
-	for (auto& t : asset.textures) {
-		addTextureSamplerPair(t);
+	for (uint32_t i = 0; auto & t : asset.textures) {
+		addTextureSamplerPair(t, _textureIndicesMap.at(i));
+		++i;
 	}
-	for (auto& i : asset.images) {
+	for (auto &i : asset.images) {
 		addTexture(i.data, gltfDirectory);
-	};
+	}
 	for (auto& s : asset.samplers) {
 		addSampler(s);
 	}
 }
 
-void TextureSamplerManager::addTextureSamplerPair(fastgltf::Texture texture) {
+void TextureSamplerManager::addTextureSamplerPair(fastgltf::Texture texture, DawnEngine::TextureType textureType) {
 		if (!texture.basisuImageIndex.has_value()) {
 			throw std::runtime_error("only KTX files are able to be used as textures");
 		}
 		const DawnEngine::SamplerTexturePair samplerTexturePair = {
 			.samplerIndex = static_cast<uint32_t>(texture.samplerIndex.has_value()),
 			.textureIndex = static_cast<uint32_t>(texture.basisuImageIndex.has_value()),
+			.textureType = textureType,
 		};
 		_samplerTexturePair.push_back(samplerTexturePair);
 }

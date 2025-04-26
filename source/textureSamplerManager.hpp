@@ -11,7 +11,7 @@ struct TextureSamplerManagerDescriptor {
 		.height = 720,
 	};
 	uint32_t invocationSize;
-	std::unordered_map<uint32_t, DawnEngine::TextureType> textureIndicesMap;
+	std::unordered_map<uint32_t, DawnEngine::TextureType>& textureIndicesMap;
 };
 struct GenerateTexturePipelineDescriptor {
 	wgpu::TextureView colorTextureView;
@@ -24,25 +24,25 @@ struct TextureBindGroupLayoutDescriptor {
 };
 
 class TextureSamplerManager {
-	public:
-		TextureSamplerManager(TextureSamplerManagerDescriptor &textureSamplerManagerDescriptor);
-		void addAsset(fastgltf::Asset& asset, std::string gltfDirectory);
-		void doTextureCommands(wgpu::CommandEncoder& commandEncoder);
-		wgpu::ComputePipeline generateTexturePipeline(GenerateTexturePipelineDescriptor descriptor);
+public:
+	TextureSamplerManager(const TextureSamplerManagerDescriptor& textureSamplerManagerDescriptor);
+	void addAsset(fastgltf::Asset& asset, std::string gltfDirectory);
+	void doTextureCommands(wgpu::CommandEncoder& commandEncoder);
+	wgpu::ComputePipeline generateTexturePipeline(GenerateTexturePipelineDescriptor descriptor);
 
-	private:
-		wgpu::Device _device;
-		wgpu::ComputePipeline _computePipeline;
-		wgpu::Extent2D _workgroupSize;
-		uint32_t _invocationSize;
-		std::vector<uint32_t, DawnEngine::TextureType> _textureIndicesMap;
-		std::vector<DawnEngine::SamplerTexturePair> _samplerTexturePair;
-		std::vector<wgpu::Texture> _textures;
-		std::vector<wgpu::TextureView> _textureViews;
-		std::vector<wgpu::Sampler> _samplers;
+private:
+	wgpu::Device _device;
+	wgpu::ComputePipeline _computePipeline;
+	wgpu::Extent2D _workgroupSize;
+	uint32_t _invocationSize;
+	std::unordered_map<uint32_t, DawnEngine::TextureType> _textureIndicesMap;
+	std::vector<DawnEngine::SamplerTexturePair> _samplerTexturePair;
+	std::vector<wgpu::Texture> _textures;
+	std::vector<wgpu::TextureView> _textureViews;
+	std::vector<wgpu::Sampler> _samplers;
 
-		wgpu::BindGroupLayout getBindGroupLayout(wgpu::TextureFormat accumulatorTextureFormat);
-		void addTextureSamplerPair(fastgltf::Texture texture);
-		void addTexture(fastgltf::DataSource dataSource, std::string gltfDirectory);
-		void addSampler(fastgltf::Sampler sampler);
+	wgpu::BindGroupLayout getBindGroupLayout(wgpu::TextureFormat accumulatorTextureFormat);
+	void addTextureSamplerPair(fastgltf::Texture texture, DawnEngine::TextureType textureType);
+	void addTexture(fastgltf::DataSource dataSource, std::string gltfDirectory);
+	void addSampler(fastgltf::Sampler sampler);
 };

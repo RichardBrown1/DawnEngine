@@ -82,6 +82,7 @@ namespace DawnEngine {
 	struct SamplerTexturePair {
 		uint32_t samplerIndex;
 		uint32_t textureIndex;
+		DawnEngine::TextureType textureType;
 	};
 
 	struct TextureInfo {
