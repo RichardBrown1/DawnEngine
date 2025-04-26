@@ -43,6 +43,7 @@ private:
 	DawnEngine::TextureViews _textureViews;
 	DawnEngine::BindGroups _bindGroups;
 	DawnEngine::Samplers _samplers;
+	std::unordered_map<uint32_t, DawnEngine::TextureType> _baseColorTextureIndices;
 
 	void initGltf();
 	void initNodes(fastgltf::Asset& asset);

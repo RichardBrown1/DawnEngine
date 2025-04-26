@@ -1,22 +1,31 @@
 #include <vector>
 #include <webgpu/webgpu_cpp.h>
 #include <fastgltf/types.hpp>
-
+#include "constants.hpp"
 #include "structs.hpp"
 
+struct TextureSamplerManagerDescriptor {
+	wgpu::Device device;
+	wgpu::Extent2D workgroupSize = {
+		.width = 1024,
+		.height = 720,
+	};
+	uint32_t invocationSize;
+	std::unordered_map<uint32_t, DawnEngine::TextureType> textureIndicesMap;
+};
 struct GenerateTexturePipelineDescriptor {
 	wgpu::TextureView colorTextureView;
 	wgpu::TextureFormat colorTextureFormat;
 };
 
-struct textureBindGroupLayoutDescriptor {
+struct TextureBindGroupLayoutDescriptor {
 	wgpu::TextureFormat accumulatorTextureFormat;
 	wgpu::SamplerBindingType inputSamplerBindingType;
 };
 
 class TextureSamplerManager {
 	public:
-		TextureSamplerManager(wgpu::Device device);
+		TextureSamplerManager(TextureSamplerManagerDescriptor &textureSamplerManagerDescriptor);
 		void addAsset(fastgltf::Asset& asset, std::string gltfDirectory);
 		void doTextureCommands(wgpu::CommandEncoder& commandEncoder);
 		wgpu::ComputePipeline generateTexturePipeline(GenerateTexturePipelineDescriptor descriptor);
@@ -25,6 +34,8 @@ class TextureSamplerManager {
 		wgpu::Device _device;
 		wgpu::ComputePipeline _computePipeline;
 		wgpu::Extent2D _workgroupSize;
+		uint32_t _invocationSize;
+		std::vector<uint32_t, DawnEngine::TextureType> _textureIndicesMap;
 		std::vector<DawnEngine::SamplerTexturePair> _samplerTexturePair;
 		std::vector<wgpu::Texture> _textures;
 		std::vector<wgpu::TextureView> _textureViews;

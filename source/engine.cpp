@@ -560,7 +560,10 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 		memcpy(&materials[i].pbrMetallicRoughness, &m.pbrData, sizeof(glm::f32vec4) + sizeof(float) * 2);
 
 		if (m.pbrData.baseColorTexture.has_value()) {
-			materials[i].textureOptions[DawnEngine::TEXTURE_OPTIONS_INDEX::hasBaseColorTexture] = 1;
+			uint32_t textureIndex = static_cast<uint32_t>(m.pbrData.baseColorTexture.value().textureIndex);
+			_baseColorTextureIndices.insert(std::make_pair(textureIndex, DawnEngine::TextureType::COLOR));
+
+			materials[i].textureOptions[DawnEngine::TextureOptionsIndex::HAS_BASE_COLOR_TEXTURE] = 1;
 			DawnEngine::convertType(m.pbrData.baseColorTexture, materials[i].pbrMetallicRoughness.baseColorTextureInfo);
 			//DawnEngine::convertType(m.pbrData.metallicRoughnessTexture, materials[i].pbrMetallicRoughness.metallicRoughnessTextureInfo);
 		}

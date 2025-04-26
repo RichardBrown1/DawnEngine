@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <ktx.h>
 #include "textureSamplerManager.hpp"
@@ -14,12 +15,11 @@ namespace {
 //TODO - Create a render pipeline that will do each Texture Sampling in a compute shader (can i just loop this in draw call?)
 //TODO - Create binding and binding group generator 
 
-TextureSamplerManager::TextureSamplerManager(wgpu::Device device) {
-	_device = device;
-	_workgroupSize = {
-		.width = 1024,
-		.height = 720,
-	};
+TextureSamplerManager::TextureSamplerManager(TextureSamplerManagerDescriptor &descriptor) {
+	_device = descriptor.device;
+	_workgroupSize = descriptor.workgroupSize;
+	_invocationSize = descriptor.invocationSize;
+	_textureIndicesMap = descriptor.textureIndicesMap;
 };
 
 void TextureSamplerManager::addAsset(fastgltf::Asset& asset, std::string gltfDirectory) {

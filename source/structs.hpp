@@ -99,11 +99,6 @@ namespace DawnEngine {
 		uint32_t PAD1;
 	};
 
-	//Corresponds to bitset textureOptions[i]
-	enum TEXTURE_OPTIONS_INDEX {
-		hasBaseColorTexture = 0,
-		hasMetallicRoughnessTexture = 1,
-	};
 	struct Material {
 		PBRMetallicRoughness pbrMetallicRoughness;
 		std::bitset<1> textureOptions;
