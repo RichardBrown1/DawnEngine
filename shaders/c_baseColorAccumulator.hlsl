@@ -19,11 +19,12 @@ Texture2D inputTexture : register(t3, space0);
 SamplerState inputSamplerState : register(s4, space0);
 
 
-void CS_main(uint2 dispatchThreadID: SV_DispatchThreadID)
+void cs_main(uint2 dispatchThreadID: SV_DispatchThreadID)
 {
-    accumulatorTexture.GetDimensions(width, height); //TODO: Convert this to shader constant
-    float4 result = accumulatorTexture.Load(dispatchThreadID.x, dispatchThreadID.y);
-    Info info = infoBuffer.Load(width * dispatchThreadID.y + dispatchThreadID.x);
-    if(info.materialId == )
-    accumulatorTexture[dispatchThreadID.x, dispatchThreadID.y] += inputTexture.Sample(inputSamplerState, )
+    Info info = infoBuffer.Load(inputInfoBuffer.dimensions.x * dispatchThreadID.y + dispatchThreadID.x);
+    float4 inputTextureColor = inputTexture.Sample(inputSamplerState, info.texcoord);
+    if (info.materialId == inputInfoBuffer.materialId)
+    {
+        accumulatorTexture[dispatchThreadID.x, dispatchThreadID.y] = inputTextureColor;
+    }
 }

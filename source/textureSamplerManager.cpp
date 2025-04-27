@@ -22,11 +22,11 @@ namespace {
 //TODO - Create a render pipeline that will do each Texture Sampling in a compute shader (can i just loop this in draw call?)
 //TODO - Create binding and binding group generator 
 
-TextureSamplerManager::TextureSamplerManager(const TextureSamplerManagerDescriptor &descriptor) {
-	_device = descriptor.device;
-	_workgroupSize = descriptor.workgroupSize;
-	_invocationSize = descriptor.invocationSize;
-	_textureIndicesMap = descriptor.textureIndicesMap;
+TextureSamplerManager::TextureSamplerManager(const TextureSamplerManagerDescriptor* descriptor) {
+	_device = descriptor->device;
+	_accumulatorTextureDimensions = descriptor->accumulatorTextureDimensions;
+	_invocationSize = descriptor->invocationSize;
+	_textureIndicesMap = descriptor->textureIndicesMap;
 
 	_baseColorAccumulatorShaderModule = Utilities::createShaderModule(
 		_device,
@@ -40,7 +40,7 @@ void TextureSamplerManager::addAsset(fastgltf::Asset& asset, std::string gltfDir
 		addTextureSamplerPair(t, _textureIndicesMap.at(i));
 		++i;
 	}
-	for (auto &i : asset.images) {
+	for (auto& i : asset.images) {
 		addTexture(i.data, gltfDirectory);
 	}
 	for (auto& s : asset.samplers) {
@@ -49,15 +49,15 @@ void TextureSamplerManager::addAsset(fastgltf::Asset& asset, std::string gltfDir
 }
 
 void TextureSamplerManager::addTextureSamplerPair(fastgltf::Texture texture, DawnEngine::TextureType textureType) {
-		if (!texture.basisuImageIndex.has_value()) {
-			throw std::runtime_error("only KTX files are able to be used as textures");
-		}
-		const DawnEngine::SamplerTexturePair samplerTexturePair = {
-			.samplerIndex = static_cast<uint32_t>(texture.samplerIndex.has_value()),
-			.textureIndex = static_cast<uint32_t>(texture.basisuImageIndex.has_value()),
-			.textureType = textureType,
-		};
-		_samplerTexturePair.push_back(samplerTexturePair);
+	if (!texture.basisuImageIndex.has_value()) {
+		throw std::runtime_error("only KTX files are able to be used as textures");
+	}
+	const DawnEngine::SamplerTexturePair samplerTexturePair = {
+		.samplerIndex = static_cast<uint32_t>(texture.samplerIndex.has_value()),
+		.textureIndex = static_cast<uint32_t>(texture.basisuImageIndex.has_value()),
+		.textureType = textureType,
+	};
+	_samplerTexturePair.push_back(samplerTexturePair);
 }
 
 
@@ -186,22 +186,25 @@ void TextureSamplerManager::doTextureCommands(wgpu::CommandEncoder& commandEncod
 	};
 	wgpu::ComputePassEncoder computePassEncoder = commandEncoder.BeginComputePass(&computePassDescriptor);
 	computePassEncoder.SetPipeline(_computePipeline);
-	computePassEncoder.DispatchWorkgroups(_workgroupSize.width, _workgroupSize.height);
+	computePassEncoder.DispatchWorkgroups(_accumulatorTextureDimensions.width, _accumulatorTextureDimensions.height);
 	computePassEncoder.End();
 }
 
 
-wgpu::ComputePipeline TextureSamplerManager::generateTexturePipeline(GenerateTexturePipelineDescriptor descriptor) {
+wgpu::ComputePipeline TextureSamplerManager::generateTexturePipeline(const GenerateTexturePipelineDescriptor* descriptor) {
 	wgpu::ComputeState computeState = {
 		.module = _baseColorAccumulatorShaderModule,
 		.entryPoint = "CS_Main"
 	};
-	const wgpu::BindGroupLayout bindGroupLayout = getBindGroupLayout(descriptor.colorTextureFormat);
+	std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = {
+		getAccumulatorAndInfoBindGroupLayout(descriptor->colorTextureFormat),
+		getInputBindGroupLayout(),
+	};
 
 	const wgpu::PipelineLayoutDescriptor computePipelineLayoutDescriptor = {
 		.label = "texture pipeline layout",
-		.bindGroupLayoutCount = 1,
-		.bindGroupLayouts = &bindGroupLayout,
+		.bindGroupLayoutCount = bindGroupLayouts.size(),
+		.bindGroupLayouts = bindGroupLayouts.data(),
 	};
 	wgpu::PipelineLayout computePipelineLayout = _device.CreatePipelineLayout(&computePipelineLayoutDescriptor);
 	wgpu::ComputePipelineDescriptor computePipelineDescriptor = {
@@ -211,12 +214,12 @@ wgpu::ComputePipeline TextureSamplerManager::generateTexturePipeline(GenerateTex
 	};
 }
 
-wgpu::BindGroupLayout TextureSamplerManager::getBindGroupLayout(wgpu::TextureFormat accumulatorTextureFormat) {
+wgpu::BindGroupLayout TextureSamplerManager::getAccumulatorAndInfoBindGroupLayout(wgpu::TextureFormat accumulatorTextureFormat) {
 	//I think no samplers are needed for the accumulator and the info since we can get the pixel and the textures should be screen size
 	wgpu::BindGroupLayoutEntry accumulatorTexture = {
 		.binding = 0,
 		.storageTexture = {
-			.access = wgpu::StorageTextureAccess::ReadWrite,
+			.access = wgpu::StorageTextureAccess::ReadWrite, //TODO: Should this be write only if I am only doing partial writes?
 			.format = accumulatorTextureFormat,
 			.viewDimension = wgpu::TextureViewDimension::e2D,
 		},
@@ -228,37 +231,90 @@ wgpu::BindGroupLayout TextureSamplerManager::getBindGroupLayout(wgpu::TextureFor
 			.minBindingSize = sizeof(DawnEngine::InfoBufferLayout)
 		},
 	};
+	std::array<wgpu::BindGroupLayoutEntry, 2>  bindGroupLayoutEntries = {
+		accumulatorTexture,
+		infoBuffer,
+	};
+	wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
+		.label = "texture accumulator and info bind group layout",
+		.entryCount = bindGroupLayoutEntries.size(),
+		.entries = bindGroupLayoutEntries.data(),
+	};
+	return _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+}
+
+wgpu::BindGroupLayout TextureSamplerManager::getInputBindGroupLayout() {
 	wgpu::BindGroupLayoutEntry inputInfoBuffer = {
-		.binding = 2,
+		.binding = 0,
 		.buffer = {
 			.type = wgpu::BufferBindingType::Uniform,
 			.minBindingSize = sizeof(InputInfo),
 		},
 	};
 	wgpu::BindGroupLayoutEntry inputTexture = {
-		.binding = 3,
+		.binding = 1,
 		.texture = {
 			.sampleType = wgpu::TextureSampleType::Float,
 			.viewDimension = wgpu::TextureViewDimension::e2D,
 		},
 	};
 	wgpu::BindGroupLayoutEntry inputSampler = {
-		.binding = 4,
+		.binding = 2,
 		.sampler = {
 			.type = wgpu::SamplerBindingType::Filtering, //Use case of non filtering samplers?
 		},
 	};
-	std::array<wgpu::BindGroupLayoutEntry, 5>  bindGroupLayoutEntries = {
-		accumulatorTexture,
-		infoBuffer,
+	std::array<wgpu::BindGroupLayoutEntry, 3>  bindGroupLayoutEntries = {
 		inputInfoBuffer,
 		inputTexture,
 		inputSampler,
 	};
 	wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-		.label = "texture bind group layout",
+		.label = "texture input bind group layout",
 		.entryCount = bindGroupLayoutEntries.size(),
 		.entries = bindGroupLayoutEntries.data(),
 	};
 	return _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+}
+
+wgpu::BindGroup TextureSamplerManager::generateAccumulatorAndInfoBindGroup(const GenerateAccumulatorAndInfoBindGroupDescriptor* descriptor) {
+	wgpu::BindGroupEntry accumulatorTexture = {
+		.textureView = descriptor->accumulatorTextureView,
+	};
+	wgpu::BindGroupEntry infoBuffer = {
+		.buffer = descriptor->infoBuffer,
+	};
+	std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
+			accumulatorTexture,
+			infoBuffer,
+	};
+	wgpu::BindGroupDescriptor bindGroupDescriptor = {
+		.label = "accumulator and info bind group",
+		.entryCount = bindGroupEntries.size(),
+		.entries = bindGroupEntries.data(),
+	};
+	_device.CreateBindGroup(&bindGroupDescriptor);
+}
+
+wgpu::BindGroup TextureSamplerManager::generateInputTextureBindGroup(const GenerateInputTextureBindGroupDescriptor* descriptor) {
+	wgpu::BindGroupEntry inputInfoBuffer = {
+		.buffer = descriptor->inputInfoBuffer,
+	};
+	wgpu::BindGroupEntry inputTexture = {
+		.textureView = descriptor->inputTexture,
+	};
+	wgpu::BindGroupEntry inputSampler = {
+		.sampler = descriptor->inputSampler,
+	};
+	std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = {
+			inputInfoBuffer,
+			inputTexture,
+			inputSampler,
+	};
+	wgpu::BindGroupDescriptor bindGroupDescriptor = {
+		.label = "accumulator and info bind group",
+		.entryCount = bindGroupEntries.size(),
+		.entries = bindGroupEntries.data(),
+	};
+	_device.CreateBindGroup(&bindGroupDescriptor);
 }

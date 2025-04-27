@@ -6,38 +6,43 @@
 
 struct TextureSamplerManagerDescriptor {
 	wgpu::Device device;
-	wgpu::Extent2D workgroupSize = {
-		.width = 1024,
-		.height = 720,
-	};
+	wgpu::Extent2D accumulatorTextureDimensions;
 	uint32_t invocationSize;
 	std::unordered_map<uint32_t, DawnEngine::TextureType>& textureIndicesMap;
+	wgpu::TextureFormat baseColorAccumulatorTextureFormat;
 };
 struct GenerateTexturePipelineDescriptor {
 	wgpu::TextureView colorTextureView;
 	wgpu::TextureFormat colorTextureFormat;
 };
-
-struct TextureBindGroupLayoutDescriptor {
-	wgpu::TextureFormat accumulatorTextureFormat;
-	wgpu::SamplerBindingType inputSamplerBindingType;
+struct GenerateAccumulatorAndInfoBindGroupDescriptor {
+	wgpu::TextureView accumulatorTextureView;
+	wgpu::Buffer infoBuffer;
+};
+struct GenerateInputTextureBindGroupDescriptor {
+	wgpu::Buffer inputInfoBuffer;
+	wgpu::TextureView inputTexture;
+	wgpu::Sampler inputSampler;
 };
 
 class TextureSamplerManager {
 public:
-	TextureSamplerManager(const TextureSamplerManagerDescriptor& textureSamplerManagerDescriptor);
+	TextureSamplerManager(const TextureSamplerManagerDescriptor* descriptor);
 	void addAsset(fastgltf::Asset& asset, std::string gltfDirectory);
 	void doTextureCommands(wgpu::CommandEncoder& commandEncoder);
-	wgpu::ComputePipeline generateTexturePipeline(GenerateTexturePipelineDescriptor descriptor);
+	wgpu::ComputePipeline generateTexturePipeline(const GenerateTexturePipelineDescriptor* descriptor);
+	wgpu::BindGroup generateAccumulatorAndInfoBindGroup(const GenerateAccumulatorAndInfoBindGroupDescriptor* descriptor);
+	wgpu::BindGroup generateInputTextureBindGroup(const GenerateInputTextureBindGroupDescriptor* descriptor);
 
 private:
 	const wgpu::StringView BASE_COLOR_ACCUMULATOR_SHADER_LABEL = "base color accumulator shader";
 	const std::string BASE_COLOR_ACCUMULATOR_SHADER_PATH = "shaders/c_colorAccumulator.spv";
 	wgpu::ShaderModule _baseColorAccumulatorShaderModule;
+	wgpu::TextureFormat baseColorAccumulatorTextureFormat;
 
 	wgpu::Device _device;
 	wgpu::ComputePipeline _computePipeline;
-	wgpu::Extent2D _workgroupSize;
+	wgpu::Extent2D _accumulatorTextureDimensions;
 	uint32_t _invocationSize;
 	std::unordered_map<uint32_t, DawnEngine::TextureType> _textureIndicesMap;
 	std::vector<DawnEngine::SamplerTexturePair> _samplerTexturePair;
@@ -45,7 +50,8 @@ private:
 	std::vector<wgpu::TextureView> _textureViews;
 	std::vector<wgpu::Sampler> _samplers;
 
-	wgpu::BindGroupLayout getBindGroupLayout(wgpu::TextureFormat accumulatorTextureFormat);
+	wgpu::BindGroupLayout getAccumulatorAndInfoBindGroupLayout(wgpu::TextureFormat accumulatorTextureFormat);
+	wgpu::BindGroupLayout getInputBindGroupLayout();
 	void addTextureSamplerPair(fastgltf::Texture texture, DawnEngine::TextureType textureType);
 	void addTexture(fastgltf::DataSource dataSource, std::string gltfDirectory);
 	void addSampler(fastgltf::Sampler sampler);
