@@ -10,6 +10,13 @@ namespace {
 			throw std::runtime_error(ktxErrorString(errorCode));
 		}
 	}
+
+	struct InputInfo {
+		glm::u32vec2 dimensions;
+		uint32_t materialId;
+		uint32_t PAD0;
+	};
+
 }
 
 //TODO - Create a render pipeline that will do each Texture Sampling in a compute shader (can i just loop this in draw call?)
@@ -221,22 +228,30 @@ wgpu::BindGroupLayout TextureSamplerManager::getBindGroupLayout(wgpu::TextureFor
 			.minBindingSize = sizeof(DawnEngine::InfoBufferLayout)
 		},
 	};
-	wgpu::BindGroupLayoutEntry inputTexture = {
+	wgpu::BindGroupLayoutEntry inputInfoBuffer = {
 		.binding = 2,
+		.buffer = {
+			.type = wgpu::BufferBindingType::Uniform,
+			.minBindingSize = sizeof(InputInfo),
+		},
+	};
+	wgpu::BindGroupLayoutEntry inputTexture = {
+		.binding = 3,
 		.texture = {
 			.sampleType = wgpu::TextureSampleType::Float,
 			.viewDimension = wgpu::TextureViewDimension::e2D,
 		},
 	};
 	wgpu::BindGroupLayoutEntry inputSampler = {
-		.binding = 3,
+		.binding = 4,
 		.sampler = {
 			.type = wgpu::SamplerBindingType::Filtering, //Use case of non filtering samplers?
 		},
 	};
-	std::array<wgpu::BindGroupLayoutEntry, 4>  bindGroupLayoutEntries = {
+	std::array<wgpu::BindGroupLayoutEntry, 5>  bindGroupLayoutEntries = {
 		accumulatorTexture,
 		infoBuffer,
+		inputInfoBuffer,
 		inputTexture,
 		inputSampler,
 	};

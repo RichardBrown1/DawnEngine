@@ -32,7 +32,7 @@ public:
 
 private:
 	const wgpu::StringView BASE_COLOR_ACCUMULATOR_SHADER_LABEL = "base color accumulator shader";
-	const std::string BASE_COLOR_ACCUMULATOR_SHADER_PATH = "../shaders/baseColor.hlsl";
+	const std::string BASE_COLOR_ACCUMULATOR_SHADER_PATH = "shaders/c_colorAccumulator.spv";
 	wgpu::ShaderModule _baseColorAccumulatorShaderModule;
 
 	wgpu::Device _device;

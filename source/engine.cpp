@@ -561,7 +561,7 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 
 		if (m.pbrData.baseColorTexture.has_value()) {
 			uint32_t textureIndex = static_cast<uint32_t>(m.pbrData.baseColorTexture.value().textureIndex);
-			_baseColorTextureIndices.insert(std::make_pair(textureIndex, DawnEngine::TextureType::COLOR));
+			_baseColorTextureIndices[textureIndex] = DawnEngine::TextureType::COLOR; 
 
 			materials[i].textureOptions[DawnEngine::TextureOptionsIndex::HAS_BASE_COLOR_TEXTURE] = 1;
 			DawnEngine::convertType(m.pbrData.baseColorTexture, materials[i].pbrMetallicRoughness.baseColorTextureInfo);
@@ -616,8 +616,8 @@ void Engine::initDepthTexture() {
 
 void Engine::initRenderPipeline() {
 	{
-		wgpu::ShaderModule vertexShaderModule =	DawnEngine::createShaderModule(_device, "vertex shadow shader module", std::string("shaders/v_shadowShader.spv"));
-		wgpu::ShaderModule fragmentShaderModule = DawnEngine::createShaderModule(_device, "fragment shadow shader module", std::string("shaders/f_shadowShader.spv"));
+		wgpu::ShaderModule vertexShaderModule =	Utilities::createShaderModule(_device, "vertex shadow shader module", std::string("shaders/v_shadowShader.spv"));
+		wgpu::ShaderModule fragmentShaderModule = Utilities::createShaderModule(_device, "fragment shadow shader module", std::string("shaders/f_shadowShader.spv"));
 
 		RenderPipelineHelper::RenderPipelineHelperDescriptor renderPipelineDescriptor = {
 			.device = _device,
@@ -633,8 +633,8 @@ void Engine::initRenderPipeline() {
 	}
 
 	{
-		wgpu::ShaderModule vertexShaderModule =	DawnEngine::createShaderModule(_device, "vertex output shader module", std::string("shaders/v_shader.spv"));
-		wgpu::ShaderModule fragmentShaderModule = DawnEngine::createShaderModule(_device, "fragment output shader module", std::string("shaders/f_shader.spv"));
+		wgpu::ShaderModule vertexShaderModule =	Utilities::createShaderModule(_device, "vertex output shader module", std::string("shaders/v_shader.spv"));
+		wgpu::ShaderModule fragmentShaderModule = Utilities::createShaderModule(_device, "fragment output shader module", std::string("shaders/f_shader.spv"));
 
 		RenderPipelineHelper::RenderPipelineHelperDescriptor renderPipelineDescriptor = {
 			.device = _device,
