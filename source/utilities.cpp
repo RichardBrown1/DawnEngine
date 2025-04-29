@@ -7,6 +7,30 @@
 #include "constants.hpp"
 #include "vkFormat.hpp"
 
+namespace {
+	std::vector<uint32_t> readShader(const std::string& filename) {
+		std::ifstream file(filename, std::ios::binary | std::ios::ate);
+		if (!file.is_open()) {
+			throw std::runtime_error("Failed to open SPIR-V Shader file.");
+		}
+
+		size_t fileSize = file.tellg();
+		file.seekg(0, std::ios::beg);
+
+		std::vector<uint32_t> buffer(fileSize / sizeof(uint32_t));
+		file.read(reinterpret_cast<char*>(buffer.data()), fileSize);
+		file.close();
+
+		return buffer;
+	}
+
+	void checkKtxError(ktx_error_code_e errorCode) {
+		if (errorCode != ktx_error_code_e::KTX_SUCCESS) {
+			throw std::runtime_error(ktxErrorString(errorCode));
+		}
+	}
+};
+
 namespace Utilities {
 
 	void unreachable()
@@ -93,32 +117,6 @@ namespace Utilities {
 		};
 		return device.CreateShaderModule(&shaderModuleDescriptor);
 	}
-
-};
-
-
-namespace {
-	std::vector<uint32_t> readShader(const std::string& filename) {
-		std::ifstream file(filename, std::ios::binary | std::ios::ate);
-		if (!file.is_open()) {
-			throw std::runtime_error("Failed to open SPIR-V Shader file.");
-		}
-
-		size_t fileSize = file.tellg();
-		file.seekg(0, std::ios::beg);
-
-		std::vector<uint32_t> buffer(fileSize / sizeof(uint32_t));
-		file.read(reinterpret_cast<char*>(buffer.data()), fileSize);
-		file.close();
-
-		return buffer;
-	}
-
-	void checkKtxError(ktx_error_code_e errorCode) {
-		if (errorCode != ktx_error_code_e::KTX_SUCCESS) {
-			throw std::runtime_error(ktxErrorString(errorCode));
-		}
-	}
 };
 
 namespace DawnEngine {
@@ -141,79 +139,4 @@ namespace DawnEngine {
 			return dawnEngineTextureInfo;
 	}
 
-	void getTexture(wgpu::Device& device, fastgltf::DataSource dataSource, std::string gltfDirectory, std::array<std::array<uint32_t, 2048>, 2048> &hostTexture)
-	{
-		if (!std::holds_alternative<fastgltf::sources::URI>(dataSource)) {
-			throw std::runtime_error("Cannot get fastgltf::DataSource Texture, unsupported type");
-		}
-		fastgltf::sources::URI *p_uri = std::get_if<fastgltf::sources::URI>(&dataSource);
-		if (p_uri->mimeType != fastgltf::MimeType::KTX2) {
-			throw std::runtime_error("Only KTX2 Textures are supported");
-		}
-		
-		ktxTexture2* p_ktxTexture;
-		std::string filePath = gltfDirectory.append(p_uri->uri.c_str());
-		std::cout << "Loading Texture: " << filePath << std::endl;
-		checkKtxError(ktxTexture2_CreateFromNamedFile(filePath.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktxTexture));
-		std::shared_ptr<ktxTexture2> sp_ktxTexture2(p_ktxTexture, [](ktxTexture2* k2){auto k = reinterpret_cast<ktxTexture*>(k2); ktxTexture_Destroy(k); });
-		std::shared_ptr<ktxTexture> sp_ktxTexture = std::reinterpret_pointer_cast<ktxTexture, ktxTexture2>(sp_ktxTexture2);
-		std::cout << "sp_ktxTexture2 Use Count: " << sp_ktxTexture2.use_count() << std::endl;
-
-		ktx_bool_t needsTranscoding = ktxTexture2_NeedsTranscoding(sp_ktxTexture2.get());
-		std::cout << "needs transcoding: " << needsTranscoding << std::endl;
-
-		ktx_transcode_fmt_e transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_NOSELECTION;
-		ktx_uint32_t numComponents = 0;
-		ktx_uint32_t componentByteLength = 0;
-		ktxTexture2_GetComponentInfo(sp_ktxTexture2.get(), &numComponents, &componentByteLength);
-		ktx_uint32_t numChannels = 4; //magic number to replace
-		std::cout << "numComponents: " << numComponents << " componentByteLength: " << componentByteLength << std::endl;
-		if (needsTranscoding) {
-			khr_df_model_e colorModel = ktxTexture2_GetColorModel_e(sp_ktxTexture2.get());
-			std::cout << transcodeFormat << device.HasFeature(wgpu::FeatureName::TextureCompressionASTC);
-			std::cout << colorModel << std::endl;
-			//throw std::runtime_error("ktx format unsupported");
-			ktxTexture2_GetComponentInfo(sp_ktxTexture2.get(), &numComponents, &componentByteLength);
-			std::cout << "numComponents: " << numComponents << " componentByteLength: " << componentByteLength << std::endl;
-				//TODO Implement other BC Formats.
-				//5 and 6H seem interesting
-			switch (numChannels) {
-			case 1:
-				transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_BC4_R;
-				break;
-			case 2:
-				transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_BC5_RG;
-				break;
-			case 3:
-			case 4:
-				transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_BC7_RGBA;
-				break;
-			default:
-				throw std::runtime_error("unexpected numComponents() count");
-			}
-			checkKtxError(ktxTexture2_TranscodeBasis(sp_ktxTexture2.get(), transcodeFormat, 0));
-		}
-		
-		needsTranscoding = ktxTexture2_NeedsTranscoding(sp_ktxTexture2.get());
-		std::cout << "needs transcoding: " << needsTranscoding << std::endl;
-
-		ktx_size_t imageOffset;
-		ktxTexture_GetImageOffset(sp_ktxTexture.get(), 0, 0, 0, &imageOffset);
-		ktx_size_t imageSize = ktxTexture_GetImageSize(sp_ktxTexture.get(), 0);
-		std::cout << "image size of level 0: " << imageSize << std::endl;
-		//sp_ktxTexture2->generateMipmaps
-		ktx_uint8_t *p8_textureData = ktxTexture_GetData(sp_ktxTexture.get());
-		memcpy(hostTexture.data(), p8_textureData + imageOffset, imageSize);
-
-//		wgpu::BufferDescriptor stagingBufferDescriptor = {
-//			.label = "texture staging buffer",
-//			.usage = wgpu::BufferUsage::MapWrite | wgpu::BufferUsage::CopySrc,
-//			.size = ktxTexture_GetImageSize(sp_ktxTexture.get(), 0),
-//			.mappedAtCreation = true,
-//		};
-//		wgpu::Buffer stagingBuffer = device.CreateBuffer(&stagingBufferDescriptor);
-//		//wgpu::TextureDataLayout().
-	}
-
-
-	};
+};

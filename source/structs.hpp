@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <bitset>
+#include "enums.hpp"
 
 namespace DawnEngine {
 

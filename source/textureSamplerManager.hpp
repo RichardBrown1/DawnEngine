@@ -13,15 +13,15 @@ namespace DawnEngine {
 		std::unordered_map<uint32_t, DawnEngine::TextureType>& textureIndicesMap;
 		wgpu::TextureFormat baseColorAccumulatorTextureFormat;
 	};
-	struct GenerateTexturePipelineDescriptor {
+	struct CreateTexturePipelineDescriptor {
 		wgpu::TextureView colorTextureView;
 		wgpu::TextureFormat colorTextureFormat;
 	};
-	struct GenerateAccumulatorAndInfoBindGroupDescriptor {
+	struct CreateAccumulatorAndInfoBindGroupDescriptor {
 		wgpu::TextureView accumulatorTextureView;
 		wgpu::Buffer infoBuffer;
 	};
-	struct GenerateInputTextureBindGroupDescriptor {
+	struct CreateInputTextureBindGroupDescriptor {
 		wgpu::Buffer textureInputInfoBuffer;
 		wgpu::TextureView inputTexture;
 		wgpu::Sampler inputSampler;
@@ -37,9 +37,9 @@ namespace DawnEngine {
 		TextureSamplerManager(const TextureSamplerManagerDescriptor* descriptor);
 		void addAsset(fastgltf::Asset& asset, std::string gltfDirectory);
 		void doTextureCommands(const DoTextureCommandsBindGroupDescriptor* descriptor);
-		wgpu::ComputePipeline generateTexturePipeline(const GenerateTexturePipelineDescriptor* descriptor);
-		wgpu::BindGroup generateAccumulatorAndInfoBindGroup(const GenerateAccumulatorAndInfoBindGroupDescriptor* descriptor);
-		wgpu::BindGroup generateInputTextureBindGroup(const GenerateInputTextureBindGroupDescriptor* descriptor);
+		wgpu::ComputePipeline createTexturePipeline(const CreateTexturePipelineDescriptor* descriptor);
+		wgpu::BindGroup createAccumulatorAndInfoBindGroup(const CreateAccumulatorAndInfoBindGroupDescriptor* descriptor);
+		wgpu::BindGroup createInputTextureBindGroup(const CreateInputTextureBindGroupDescriptor* descriptor);
 
 	private:
 		const wgpu::StringView BASE_COLOR_ACCUMULATOR_SHADER_LABEL = "base color accumulator shader";
