@@ -13,6 +13,11 @@ namespace DawnEngine {
 		std::unordered_map<uint32_t, DawnEngine::TextureType>& textureIndicesMap;
 		wgpu::TextureFormat baseColorAccumulatorTextureFormat;
 	};
+	struct GenerateGpuObjectsDescriptor {
+		CreateTexturePipelineDescriptor texturePipelineDescriptor;
+		CreateAccumulatorAndInfoBindGroupDescriptor accumulatorAndInfoBindGroupDescriptor;
+		CreateInputTextureBindGroupsDescriptor inputTextureBindGroupsDescriptor;
+	};
 	struct CreateTexturePipelineDescriptor {
 		wgpu::TextureView colorTextureView;
 		wgpu::TextureFormat colorTextureFormat;
@@ -21,10 +26,8 @@ namespace DawnEngine {
 		wgpu::TextureView accumulatorTextureView;
 		wgpu::TextureView masterTextureInfoTextureView;
 	};
-	struct CreateInputTextureBindGroupDescriptor {
-		wgpu::Buffer textureInputInfoBuffer;
-		wgpu::TextureView inputTexture;
-		wgpu::Sampler inputSampler;
+	struct CreateInputTextureBindGroupsDescriptor {
+		std::vector<SamplerTexturePair> samplerTexturePairs;
 	};
 	struct DoTextureSamplerCommandsDescriptor {
 		wgpu::CommandEncoder commandEncoder;
@@ -36,6 +39,7 @@ namespace DawnEngine {
 	public:
 		TextureSamplerManager(const TextureSamplerManagerDescriptor* descriptor);
 		void addAsset(fastgltf::Asset& asset, std::string gltfDirectory);
+		void generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor);
 		void doCommands(const DoTextureSamplerCommandsDescriptor* descriptor);
 
 	private:
@@ -47,6 +51,8 @@ namespace DawnEngine {
 		wgpu::Device _device;
 		wgpu::Queue _queue;
 		wgpu::ComputePipeline _computePipeline;
+		wgpu::BindGroup _accumulatorAndInfoBindGroup;
+		std::vector<wgpu::BindGroup> _inputTextureBindGroups;
 		wgpu::Extent2D _accumulatorTextureDimensions;
 		uint32_t _invocationSize;
 		std::unordered_map<uint32_t, DawnEngine::TextureType> _textureIndicesMap;
@@ -56,11 +62,11 @@ namespace DawnEngine {
 		std::vector<wgpu::TextureView> _textureViews;
 		std::vector<wgpu::Sampler> _samplers;
 
-		wgpu::ComputePipeline createTexturePipeline(const CreateTexturePipelineDescriptor* descriptor);
+		void createTexturePipeline(const CreateTexturePipelineDescriptor* descriptor);
 		wgpu::BindGroupLayout getAccumulatorAndInfoBindGroupLayout(wgpu::TextureFormat accumulatorTextureFormat);
 		wgpu::BindGroupLayout getInputBindGroupLayout();
-		wgpu::BindGroup createAccumulatorAndInfoBindGroup(const CreateAccumulatorAndInfoBindGroupDescriptor* descriptor);
-		wgpu::BindGroup createInputTextureBindGroup(const CreateInputTextureBindGroupDescriptor* descriptor);
+		void createAccumulatorAndInfoBindGroup(const CreateAccumulatorAndInfoBindGroupDescriptor* descriptor);
+		void createInputTextureBindGroups(const CreateInputTextureBindGroupsDescriptor* descriptor);
 		void addSamplerTexturePair(fastgltf::Texture texture, DawnEngine::TextureType textureType);
 		void addTextureInputInfoBuffer(uint32_t samplerTexturePairIndex);
 		void addTexture(fastgltf::DataSource dataSource, std::string gltfDirectory);

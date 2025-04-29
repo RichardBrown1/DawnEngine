@@ -194,6 +194,12 @@ namespace DawnEngine {
 		_samplers.push_back(_device.CreateSampler(&samplerDescriptor));
 	}
 
+	void TextureSamplerManager::generateGpuObjects(const GenerateGpuObjectsDescriptor *descriptor) {
+		createTexturePipeline(&descriptor->texturePipelineDescriptor);
+		createAccumulatorAndInfoBindGroup(&descriptor->accumulatorAndInfoBindGroupDescriptor);
+		createInputTextureBindGroups(&descriptor->inputTextureBindGroupsDescriptor);
+	}
+
 	//create Texture Pipeline before this
 	void TextureSamplerManager::doCommands(const DoTextureSamplerCommandsDescriptor* descriptor) {
 		wgpu::ComputePassDescriptor computePassDescriptor = {
@@ -205,29 +211,17 @@ namespace DawnEngine {
 			.accumulatorTextureView = descriptor->accumulatorTextureView,
 			.masterTextureInfoTextureView = descriptor->masterTextureInfoTextureView,
 		};
-		const wgpu::BindGroup accumulatorAndInfoBindGroup = createAccumulatorAndInfoBindGroup(&createAccumulatorAndInfoBindGroupDescriptor);
-		computePassEncoder.SetBindGroup(0, accumulatorAndInfoBindGroup);
+		computePassEncoder.SetBindGroup(0, _accumulatorAndInfoBindGroup);
 
-		for (int i = 0; auto & stp : _samplerTexturePairs) {
-			//TODO: _samplerTexturePairs need to be split into their own arrays on generation
-			if (stp.textureType != DawnEngine::TextureType::COLOR) {
-				continue;
-			}
-			CreateInputTextureBindGroupDescriptor createInputTextureBindGroupDescriptor = {
-				.textureInputInfoBuffer = _textureInputInfoBuffers[i],
-				.inputTexture = _textureViews[stp.samplerIndex]
-			};
-			const wgpu::BindGroup inputTextureBindGroup = createInputTextureBindGroup(&createInputTextureBindGroupDescriptor);
+		for (auto& inputTextureBindGroup : _inputTextureBindGroups) {
 			computePassEncoder.SetBindGroup(1, inputTextureBindGroup);
 			computePassEncoder.DispatchWorkgroups(_accumulatorTextureDimensions.width, _accumulatorTextureDimensions.height);
-
-			++i;
 		}
 		computePassEncoder.End();
 	}
 
 
-	wgpu::ComputePipeline TextureSamplerManager::createTexturePipeline(const CreateTexturePipelineDescriptor* descriptor) {
+	void TextureSamplerManager::createTexturePipeline(const CreateTexturePipelineDescriptor* descriptor) {
 		const wgpu::ComputeState computeState = {
 			.module = _baseColorAccumulatorShaderModule,
 			.entryPoint = DawnEngine::EntryPoint::COMPUTE,
@@ -248,7 +242,7 @@ namespace DawnEngine {
 			.layout = computePipelineLayout,
 			.compute = computeState,
 		};
-		return _device.CreateComputePipeline(&computePipelineDescriptor);
+		_computePipeline = _device.CreateComputePipeline(&computePipelineDescriptor);
 	}
 
 	wgpu::BindGroupLayout TextureSamplerManager::getAccumulatorAndInfoBindGroupLayout(wgpu::TextureFormat accumulatorTextureFormat) {
@@ -314,7 +308,7 @@ namespace DawnEngine {
 		return _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	}
 
-	wgpu::BindGroup TextureSamplerManager::createAccumulatorAndInfoBindGroup(const CreateAccumulatorAndInfoBindGroupDescriptor* descriptor) {
+	void TextureSamplerManager::createAccumulatorAndInfoBindGroup(const CreateAccumulatorAndInfoBindGroupDescriptor* descriptor) {
 		const wgpu::BindGroupEntry accumulatorTexture = {
 			.textureView = descriptor->accumulatorTextureView,
 		};
@@ -330,29 +324,31 @@ namespace DawnEngine {
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		return _device.CreateBindGroup(&bindGroupDescriptor);
+		_accumulatorAndInfoBindGroup = _device.CreateBindGroup(&bindGroupDescriptor);
 	}
 
-	wgpu::BindGroup TextureSamplerManager::createInputTextureBindGroup(const CreateInputTextureBindGroupDescriptor* descriptor) {
-		const wgpu::BindGroupEntry textureInputInfoBuffer = {
-			.buffer = descriptor->textureInputInfoBuffer,
-		};
-		const wgpu::BindGroupEntry inputTexture = {
-			.textureView = descriptor->inputTexture,
-		};
-		const wgpu::BindGroupEntry inputSampler = {
-			.sampler = descriptor->inputSampler,
-		};
-		const std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = {
-				textureInputInfoBuffer,
-				inputTexture,
-				inputSampler,
-		};
-		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
-			.label = "accumulator and info bind group",
-			.entryCount = bindGroupEntries.size(),
-			.entries = bindGroupEntries.data(),
-		};
-		return _device.CreateBindGroup(&bindGroupDescriptor);
+	void TextureSamplerManager::createInputTextureBindGroups(const CreateInputTextureBindGroupsDescriptor* descriptor) {
+		for (int i = 0; auto & stp : descriptor->samplerTexturePairs) {
+			const wgpu::BindGroupEntry textureInputInfoBuffer = {
+				.buffer = _textureInputInfoBuffers[i],
+			};
+			const wgpu::BindGroupEntry inputTexture = {
+				.textureView = _textureViews[stp.textureIndex],
+			};
+			const wgpu::BindGroupEntry inputSampler = {
+				.sampler = _samplers[stp.samplerIndex],
+			};
+			const std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = {
+					textureInputInfoBuffer,
+					inputTexture,
+					inputSampler,
+			};
+			const wgpu::BindGroupDescriptor bindGroupDescriptor = {
+				.label = "accumulator and info bind group",
+				.entryCount = bindGroupEntries.size(),
+				.entries = bindGroupEntries.data(),
+			};
+			_inputTextureBindGroups.push_back(_device.CreateBindGroup(&bindGroupDescriptor));
+		}
 	}
 }
