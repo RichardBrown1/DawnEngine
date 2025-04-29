@@ -14,7 +14,7 @@ struct TextureInputInfo
 };
 
 RWTexture2D accumulatorTexture : register(t0, space0);
-StructuredBuffer<TextureMasterInfo> textureMasterBuffer : register(b1, space0);
+StructuredBuffer<TextureMasterInfo> textureMasterBuffer : register(t1, space0);
 ConstantBuffer<TextureInputInfo> textureInputInfoBuffer : register(b2, space0);
 Texture2D inputTexture : register(t3, space0);
 SamplerState inputSamplerState : register(s4, space0);
