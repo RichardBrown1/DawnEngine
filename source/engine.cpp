@@ -564,7 +564,8 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 			_baseColorTextureIndices[textureIndex] = DawnEngine::TextureType::COLOR; 
 
 			materials[i].textureOptions[DawnEngine::TextureOptionsIndex::HAS_BASE_COLOR_TEXTURE] = 1;
-			DawnEngine::convertType(m.pbrData.baseColorTexture, materials[i].pbrMetallicRoughness.baseColorTextureInfo);
+			materials[i].pbrMetallicRoughness.baseColorTextureInfo = DawnEngine::convertType(m.pbrData.baseColorTexture.value());
+			
 			//DawnEngine::convertType(m.pbrData.metallicRoughnessTexture, materials[i].pbrMetallicRoughness.metallicRoughnessTextureInfo);
 		}
 		//DawnEngine::convertType(material.pbrData.baseColorTexture, materials[i].pbrMetallicRoughness.baseColorTextureInfo);

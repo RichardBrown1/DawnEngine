@@ -132,17 +132,13 @@ namespace DawnEngine {
 		};
 	}
 
-	void convertType(std::optional<fastgltf::TextureInfo> &fastgltfTextureInfo, DawnEngine::TextureInfo& dawnEngineTextureInfo)
+	DawnEngine::TextureInfo convertType(const fastgltf::TextureInfo &textureInfo)
 	{
-		if (fastgltfTextureInfo.has_value()) {
-			fastgltf::TextureInfo &ti = fastgltfTextureInfo.value();
-			dawnEngineTextureInfo = {
-				.index = static_cast<uint32_t>(ti.textureIndex),
-				.texCoord = static_cast<uint32_t>(ti.texCoordIndex),
+			DawnEngine::TextureInfo dawnEngineTextureInfo = {
+				.index = static_cast<uint32_t>(textureInfo.textureIndex),
+				.texCoord = static_cast<uint32_t>(textureInfo.texCoordIndex),
 			};
-		}	else {
-			dawnEngineTextureInfo = DawnEngine::NO_TEXTURE;
-		}
+			return dawnEngineTextureInfo;
 	}
 
 	void getTexture(wgpu::Device& device, fastgltf::DataSource dataSource, std::string gltfDirectory, std::array<std::array<uint32_t, 2048>, 2048> &hostTexture)

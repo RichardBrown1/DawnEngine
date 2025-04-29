@@ -108,9 +108,9 @@ namespace DawnEngine {
 		uint32_t PAD2;
 	};
 
-	struct InfoBufferLayout {
+	struct TextureMasterInfo {
 		glm::f32vec2 texcoord;
-		uint32_t materialId;
+		uint32_t baseColorTextureSamplerPairId;
 		uint32_t PAD0;
 	};
 

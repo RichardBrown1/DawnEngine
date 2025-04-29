@@ -11,9 +11,9 @@ namespace {
 		}
 	}
 
-	struct InputInfo {
-		glm::u32vec2 dimensions;
-		uint32_t materialId;
+	struct TextureInputInfo {
+		wgpu::Extent2D dimensions;
+		uint32_t textureSamplerPairId;
 		uint32_t PAD0;
 	};
 
@@ -37,7 +37,8 @@ TextureSamplerManager::TextureSamplerManager(const TextureSamplerManagerDescript
 
 void TextureSamplerManager::addAsset(fastgltf::Asset& asset, std::string gltfDirectory) {
 	for (uint32_t i = 0; auto & t : asset.textures) {
-		addTextureSamplerPair(t, _textureIndicesMap.at(i));
+		addSamplerTexturePair(t, _textureIndicesMap.at(i));
+		addTextureInputInfoBuffer(i);
 		++i;
 	}
 	for (auto& i : asset.images) {
@@ -48,7 +49,7 @@ void TextureSamplerManager::addAsset(fastgltf::Asset& asset, std::string gltfDir
 	}
 }
 
-void TextureSamplerManager::addTextureSamplerPair(fastgltf::Texture texture, DawnEngine::TextureType textureType) {
+void TextureSamplerManager::addSamplerTexturePair(fastgltf::Texture texture, DawnEngine::TextureType textureType) {
 	if (!texture.basisuImageIndex.has_value()) {
 		throw std::runtime_error("only KTX files are able to be used as textures");
 	}
@@ -57,9 +58,24 @@ void TextureSamplerManager::addTextureSamplerPair(fastgltf::Texture texture, Daw
 		.textureIndex = static_cast<uint32_t>(texture.basisuImageIndex.has_value()),
 		.textureType = textureType,
 	};
-	_samplerTexturePair.push_back(samplerTexturePair);
+	_samplerTexturePairs.push_back(samplerTexturePair);
 }
 
+void TextureSamplerManager::addTextureInputInfoBuffer(uint32_t samplerTexturePairIndex) {
+	const TextureInputInfo textureInputInfo = {
+		.dimensions = _accumulatorTextureDimensions,
+		.textureSamplerPairId = samplerTexturePairIndex,
+	};
+	wgpu::BufferDescriptor textureInputInfoBufferDescriptor = {
+		.label = "texture input buffer descriptor",
+		.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst,
+		.size = sizeof(TextureInputInfo),
+	};
+	wgpu::Buffer textureInputInfoBuffer = _device.CreateBuffer(&textureInputInfoBufferDescriptor);
+	const wgpu::Queue queue = _device.GetQueue();
+	queue.WriteBuffer(textureInputInfoBuffer, 0, &textureInputInfo, textureInputInfoBufferDescriptor.size);
+	_textureInputInfoBuffers.push_back(textureInputInfoBuffer);
+}
 
 void TextureSamplerManager::addTexture(fastgltf::DataSource dataSource, std::string gltfDirectory)
 {
@@ -180,13 +196,34 @@ void TextureSamplerManager::addSampler(fastgltf::Sampler sampler) {
 }
 
 //generate Texture Pipeline before this
-void TextureSamplerManager::doTextureCommands(wgpu::CommandEncoder& commandEncoder) {
+void TextureSamplerManager::doTextureCommands(const DoTextureCommandsBindGroupDescriptor* descriptor) {
 	wgpu::ComputePassDescriptor computePassDescriptor = {
 		.label = "texture compute pass",
 	};
-	wgpu::ComputePassEncoder computePassEncoder = commandEncoder.BeginComputePass(&computePassDescriptor);
+	wgpu::ComputePassEncoder computePassEncoder = descriptor->commandEncoder.BeginComputePass(&computePassDescriptor);
 	computePassEncoder.SetPipeline(_computePipeline);
-	computePassEncoder.DispatchWorkgroups(_accumulatorTextureDimensions.width, _accumulatorTextureDimensions.height);
+	GenerateAccumulatorAndInfoBindGroupDescriptor generateAccumulatorAndInfoBindGroupDescriptor = {
+		.accumulatorTextureView = descriptor->accumulatorTextureView,
+		.infoBuffer = descriptor->infoBuffer,
+	};
+	const wgpu::BindGroup accumulatorAndInfoBindGroup = generateAccumulatorAndInfoBindGroup(&generateAccumulatorAndInfoBindGroupDescriptor);
+	computePassEncoder.SetBindGroup(0, accumulatorAndInfoBindGroup);
+
+	for (int i = 0; auto & stp : _samplerTexturePairs) {
+		//TODO: _samplerTexturePairs need to be split into their own arrays on generation
+		if (stp.textureType != DawnEngine::TextureType::COLOR) { 
+			continue; 
+		}
+		GenerateInputTextureBindGroupDescriptor generateInputTextureBindGroupDescriptor = {
+			.textureInputInfoBuffer = _textureInputInfoBuffers[i],
+			.inputTexture = _textureViews[stp.samplerIndex]
+		};
+		const wgpu::BindGroup inputTextureBindGroup = generateInputTextureBindGroup(&generateInputTextureBindGroupDescriptor);
+		computePassEncoder.SetBindGroup(1, inputTextureBindGroup );
+		computePassEncoder.DispatchWorkgroups(_accumulatorTextureDimensions.width, _accumulatorTextureDimensions.height);
+
+		++i;
+	}
 	computePassEncoder.End();
 }
 
@@ -228,7 +265,7 @@ wgpu::BindGroupLayout TextureSamplerManager::getAccumulatorAndInfoBindGroupLayou
 		.binding = 1,
 		.buffer = {
 			.type = wgpu::BufferBindingType::ReadOnlyStorage,
-			.minBindingSize = sizeof(DawnEngine::InfoBufferLayout)
+			.minBindingSize = sizeof(DawnEngine::TextureMasterInfo),
 		},
 	};
 	std::array<wgpu::BindGroupLayoutEntry, 2>  bindGroupLayoutEntries = {
@@ -244,11 +281,11 @@ wgpu::BindGroupLayout TextureSamplerManager::getAccumulatorAndInfoBindGroupLayou
 }
 
 wgpu::BindGroupLayout TextureSamplerManager::getInputBindGroupLayout() {
-	wgpu::BindGroupLayoutEntry inputInfoBuffer = {
+	wgpu::BindGroupLayoutEntry textureInputInfoBuffer = {
 		.binding = 0,
 		.buffer = {
 			.type = wgpu::BufferBindingType::Uniform,
-			.minBindingSize = sizeof(InputInfo),
+			.minBindingSize = sizeof(TextureInputInfo),
 		},
 	};
 	wgpu::BindGroupLayoutEntry inputTexture = {
@@ -265,7 +302,7 @@ wgpu::BindGroupLayout TextureSamplerManager::getInputBindGroupLayout() {
 		},
 	};
 	std::array<wgpu::BindGroupLayoutEntry, 3>  bindGroupLayoutEntries = {
-		inputInfoBuffer,
+		textureInputInfoBuffer,
 		inputTexture,
 		inputSampler,
 	};
@@ -297,8 +334,8 @@ wgpu::BindGroup TextureSamplerManager::generateAccumulatorAndInfoBindGroup(const
 }
 
 wgpu::BindGroup TextureSamplerManager::generateInputTextureBindGroup(const GenerateInputTextureBindGroupDescriptor* descriptor) {
-	wgpu::BindGroupEntry inputInfoBuffer = {
-		.buffer = descriptor->inputInfoBuffer,
+	wgpu::BindGroupEntry textureInputInfoBuffer = {
+		.buffer = descriptor->textureInputInfoBuffer,
 	};
 	wgpu::BindGroupEntry inputTexture = {
 		.textureView = descriptor->inputTexture,
@@ -307,7 +344,7 @@ wgpu::BindGroup TextureSamplerManager::generateInputTextureBindGroup(const Gener
 		.sampler = descriptor->inputSampler,
 	};
 	std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = {
-			inputInfoBuffer,
+			textureInputInfoBuffer,
 			inputTexture,
 			inputSampler,
 	};

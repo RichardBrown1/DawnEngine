@@ -17,7 +17,6 @@ namespace Utilities {
 
 namespace DawnEngine {
 	DawnEngine::H_Camera getDefaultCamera(wgpu::SurfaceConfiguration surfaceConfiguration);
-
-	void convertType(std::optional<fastgltf::TextureInfo>& fastGltfTextureInfo, DawnEngine::TextureInfo& DawnEngineTextureInfo);
+	DawnEngine::TextureInfo convertType(const fastgltf::TextureInfo& textureInfo);
 	void getTexture(wgpu::Device& device, fastgltf::DataSource dataSource, std::string gltfDirectory, std::array<std::array<uint32_t, 2048>, 2048>& hostTexture);
 };
