@@ -40,7 +40,6 @@ namespace DawnEngine {
 		wgpu::ComputePipeline generateTexturePipeline(const GenerateTexturePipelineDescriptor* descriptor);
 		wgpu::BindGroup generateAccumulatorAndInfoBindGroup(const GenerateAccumulatorAndInfoBindGroupDescriptor* descriptor);
 		wgpu::BindGroup generateInputTextureBindGroup(const GenerateInputTextureBindGroupDescriptor* descriptor);
-		void addTextureInputInfoBuffer(uint32_t samplerTexturePairIndex);
 
 	private:
 		const wgpu::StringView BASE_COLOR_ACCUMULATOR_SHADER_LABEL = "base color accumulator shader";
@@ -63,6 +62,7 @@ namespace DawnEngine {
 		wgpu::BindGroupLayout getAccumulatorAndInfoBindGroupLayout(wgpu::TextureFormat accumulatorTextureFormat);
 		wgpu::BindGroupLayout getInputBindGroupLayout();
 		void addSamplerTexturePair(fastgltf::Texture texture, DawnEngine::TextureType textureType);
+		void addTextureInputInfoBuffer(uint32_t samplerTexturePairIndex);
 		void addTexture(fastgltf::DataSource dataSource, std::string gltfDirectory);
 		void addSampler(fastgltf::Sampler sampler);
 	};
