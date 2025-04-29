@@ -1,0 +1,27 @@
+#include <vector>
+#include <webgpu/webgpu_cpp.h>
+#include <fastgltf/types.hpp>
+#include "constants.hpp"
+#include "structs.hpp"
+
+namespace DawnEngine {
+	struct InitialRenderDescriptor = {
+		wgpu::Device device;
+		wgpu::Queue queue;
+	};
+
+	class InitialRender {
+	public:
+		InitialRender(const InitialRenderDescriptor* descriptor);
+
+	private:
+		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
+		const std::string INITIAL_RENDER_SHADER_PATH = "shaders/v_initialRender.spv";
+
+		wgpu::Device _device;
+		wgpu::Queue _queue;
+
+		wgpu::ShaderModule _initialRenderVertexShaderModule;
+		wgpu::TextureFormat _baseColorAccumulatorTextureFormat;
+	};
+}
