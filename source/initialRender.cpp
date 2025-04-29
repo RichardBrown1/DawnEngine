@@ -1,6 +1,6 @@
 #include "initialRender.hpp"
 
-namespace {
+namespace DawnEngine {
 	InitialRender::InitialRender(const InitialRenderDescriptor* descriptor) {
 		_device = descriptor.device;
 		_queue = descriptor.queue;
