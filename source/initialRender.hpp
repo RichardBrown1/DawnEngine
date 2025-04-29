@@ -9,14 +9,16 @@ namespace DawnEngine {
 	struct InitialRenderDescriptor {
 		wgpu::Device device;
 	};
-	struct InitialRenderPipelineDescriptor {
-		uint32_t test;
+
+	struct DoInitialRenderCommandsDescriptor {
+		wgpu::CommandEncoder commandEncoder;
 	};
 
 	class InitialRender {
 	public:
 		InitialRender(const InitialRenderDescriptor* descriptor);
-		wgpu::RenderPipeline createPipeline(const InitialRenderPipelineDescriptor* descriptor);
+		wgpu::RenderPipeline createPipeline();
+		void doCommands(const DoInitialRenderCommandsDescriptor* descriptor);
 
 	private:
 		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";

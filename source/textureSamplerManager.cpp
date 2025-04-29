@@ -195,7 +195,7 @@ namespace DawnEngine {
 	}
 
 	//create Texture Pipeline before this
-	void TextureSamplerManager::doTextureCommands(const DoTextureCommandsBindGroupDescriptor* descriptor) {
+	void TextureSamplerManager::doCommands(const DoTextureSamplerCommandsDescriptor* descriptor) {
 		wgpu::ComputePassDescriptor computePassDescriptor = {
 			.label = "texture compute pass",
 		};
@@ -203,7 +203,7 @@ namespace DawnEngine {
 		computePassEncoder.SetPipeline(_computePipeline);
 		CreateAccumulatorAndInfoBindGroupDescriptor createAccumulatorAndInfoBindGroupDescriptor = {
 			.accumulatorTextureView = descriptor->accumulatorTextureView,
-			.infoBuffer = descriptor->infoBuffer,
+			.masterTextureInfoTextureView = descriptor->masterTextureInfoTextureView,
 		};
 		const wgpu::BindGroup accumulatorAndInfoBindGroup = createAccumulatorAndInfoBindGroup(&createAccumulatorAndInfoBindGroupDescriptor);
 		computePassEncoder.SetBindGroup(0, accumulatorAndInfoBindGroup);
@@ -230,7 +230,7 @@ namespace DawnEngine {
 	wgpu::ComputePipeline TextureSamplerManager::createTexturePipeline(const CreateTexturePipelineDescriptor* descriptor) {
 		const wgpu::ComputeState computeState = {
 			.module = _baseColorAccumulatorShaderModule,
-			.entryPoint = "CS_Main"
+			.entryPoint = DawnEngine::EntryPoint::COMPUTE,
 		};
 		const std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = {
 			getAccumulatorAndInfoBindGroupLayout(descriptor->colorTextureFormat),
@@ -318,12 +318,12 @@ namespace DawnEngine {
 		const wgpu::BindGroupEntry accumulatorTexture = {
 			.textureView = descriptor->accumulatorTextureView,
 		};
-		const wgpu::BindGroupEntry infoBuffer = {
-			.buffer = descriptor->infoBuffer,
+		const wgpu::BindGroupEntry masterTextureInfo = {
+			.textureView = descriptor->masterTextureInfoTextureView,
 		};
 		const std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
 				accumulatorTexture,
-				infoBuffer,
+				masterTextureInfo,
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 			.label = "accumulator and info bind group",

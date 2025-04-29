@@ -19,27 +19,24 @@ namespace DawnEngine {
 	};
 	struct CreateAccumulatorAndInfoBindGroupDescriptor {
 		wgpu::TextureView accumulatorTextureView;
-		wgpu::Buffer infoBuffer;
+		wgpu::TextureView masterTextureInfoTextureView;
 	};
 	struct CreateInputTextureBindGroupDescriptor {
 		wgpu::Buffer textureInputInfoBuffer;
 		wgpu::TextureView inputTexture;
 		wgpu::Sampler inputSampler;
 	};
-	struct DoTextureCommandsBindGroupDescriptor {
+	struct DoTextureSamplerCommandsDescriptor {
 		wgpu::CommandEncoder commandEncoder;
 		wgpu::TextureView accumulatorTextureView;
-		wgpu::Buffer infoBuffer;
+		wgpu::TextureView masterTextureInfoTextureView;
 	};
 
 	class TextureSamplerManager {
 	public:
 		TextureSamplerManager(const TextureSamplerManagerDescriptor* descriptor);
 		void addAsset(fastgltf::Asset& asset, std::string gltfDirectory);
-		void doTextureCommands(const DoTextureCommandsBindGroupDescriptor* descriptor);
-		wgpu::ComputePipeline createTexturePipeline(const CreateTexturePipelineDescriptor* descriptor);
-		wgpu::BindGroup createAccumulatorAndInfoBindGroup(const CreateAccumulatorAndInfoBindGroupDescriptor* descriptor);
-		wgpu::BindGroup createInputTextureBindGroup(const CreateInputTextureBindGroupDescriptor* descriptor);
+		void doCommands(const DoTextureSamplerCommandsDescriptor* descriptor);
 
 	private:
 		const wgpu::StringView BASE_COLOR_ACCUMULATOR_SHADER_LABEL = "base color accumulator shader";
@@ -59,8 +56,11 @@ namespace DawnEngine {
 		std::vector<wgpu::TextureView> _textureViews;
 		std::vector<wgpu::Sampler> _samplers;
 
+		wgpu::ComputePipeline createTexturePipeline(const CreateTexturePipelineDescriptor* descriptor);
 		wgpu::BindGroupLayout getAccumulatorAndInfoBindGroupLayout(wgpu::TextureFormat accumulatorTextureFormat);
 		wgpu::BindGroupLayout getInputBindGroupLayout();
+		wgpu::BindGroup createAccumulatorAndInfoBindGroup(const CreateAccumulatorAndInfoBindGroupDescriptor* descriptor);
+		wgpu::BindGroup createInputTextureBindGroup(const CreateInputTextureBindGroupDescriptor* descriptor);
 		void addSamplerTexturePair(fastgltf::Texture texture, DawnEngine::TextureType textureType);
 		void addTextureInputInfoBuffer(uint32_t samplerTexturePairIndex);
 		void addTexture(fastgltf::DataSource dataSource, std::string gltfDirectory);

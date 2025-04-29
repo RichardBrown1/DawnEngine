@@ -15,7 +15,7 @@ namespace DawnEngine {
 		);
 	};
 
-	wgpu::RenderPipeline InitialRender::createPipeline(const InitialRenderPipelineDescriptor* descriptor) {
+	wgpu::RenderPipeline InitialRender::createPipeline() {
 		const wgpu::PipelineLayout pipelineLayout = getPipelineLayout();
 
 		constexpr wgpu::VertexAttribute positionAttribute = {
@@ -142,4 +142,12 @@ namespace DawnEngine {
 		};
 		return _device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};
+
+	void InitialRender::doCommands(const DoInitialRenderCommandsDescriptor* descriptor) {
+		wgpu::RenderPassDescriptor renderPassDescriptor = {
+			.label = "initial render pass"
+		};
+		wgpu::RenderPassEncoder renderPassEncoder = descriptor->commandEncoder.BeginRenderPass(&renderPassDescriptor);
+		renderPassEncoder.SetPipeline(_initialRenderPipeline);
+	}
 }
