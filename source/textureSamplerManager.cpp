@@ -19,9 +19,6 @@ namespace {
 
 }
 
-//TODO - Create a render pipeline that will do each Texture Sampling in a compute shader (can i just loop this in draw call?)
-//TODO - Create binding and binding group generator 
-
 namespace DawnEngine {
 	TextureSamplerManager::TextureSamplerManager(const TextureSamplerManagerDescriptor* descriptor) {
 		_device = descriptor->device;
