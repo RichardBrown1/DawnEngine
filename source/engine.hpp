@@ -49,9 +49,6 @@ private:
 	void addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex);
 	void addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex);
 	void addCameraData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t cameraIndex);
-	void initTextures(fastgltf::Asset& asset);
-	void initSamplerTexturePairs(fastgltf::Asset& asset);
-	void initSamplers(fastgltf::Asset& asset);
 	void initSceneBuffers();
 	void initMaterialBuffer(fastgltf::Asset& asset);
 	void initDepthTexture();

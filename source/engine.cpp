@@ -215,9 +215,6 @@ void Engine::initGltf() {
 	initNodes(asset);
 	initSceneBuffers();
 	initMaterialBuffer(asset);
-	initTextures(asset);
-	initSamplerTexturePairs(asset);
-	initSamplers(asset);
 }
 
 
@@ -432,127 +429,6 @@ void Engine::initSceneBuffers() {
 
 }
 
-void Engine::initTextures(fastgltf::Asset& asset) {
-	//Texture Management Architecture - Prototype
-	//1. 2D Textures will be in layered Textures with an ArrayIndex
-	// Can I use Texture2DArray in HLSL?
-	//	a. There may have to be different layered textures depending on amount of channels
-	//2. SamplerTexturePair will also have an indicator of Texture Size used to set bounds when sampling
-	//	a. 
-
-	std::vector<std::array<std::array<uint32_t, 2048>, 2048 >> hostTextures;
-	hostTextures.resize(asset.images.size());
-
-	for (int i = 0; i < asset.images.size(); i++) {
-		//	asset.images.
-		fastgltf::DataSource ds = asset.images[i].data;
-		DawnEngine::getTexture(_device, ds, _gltfDirectory, hostTextures[i]);
-	}
-	if (hostTextures.size() == 0) {
-		hostTextures.resize(1);
-	}
-
-	//	wgpu::TextureDimension textureDimension = [&sp_ktxTexture2]() {
-	//			switch (sp_ktxTexture2->numDimensions) {
-	//			case 1:
-	//				return wgpu::TextureDimension::e1D;
-	//			case 2:
-	//				return wgpu::TextureDimension::e2D;
-	//			case 3:
-	//				return wgpu::TextureDimension::e3D;
-	//			default:
-	//				throw std::runtime_error("unknown Texture Dimension");
-	//			}
-	//		}();
-
-	wgpu::TextureDescriptor textureDescriptor = {
-		.label = "2048", //wgpu::StringView(filePath),
-		.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst,
-		.dimension = wgpu::TextureDimension::e2D,
-		.size = wgpu::Extent3D {
-			.width = 2048,
-			.height = 2048,
-			.depthOrArrayLayers = static_cast<uint32_t>(hostTextures.size())
-		},
-		.format = wgpu::TextureFormat::BC7RGBAUnormSrgb,
-		.mipLevelCount = 1,
-	};
-	wgpu::Texture texture = _device.CreateTexture(&textureDescriptor);
-	const wgpu::TexelCopyTextureInfo texelCopyTextureInfo = {
-		.texture = texture,
-		.mipLevel = 0,
-	};
-	const wgpu::TexelCopyBufferLayout texelCopyBufferLayout = {
-			.bytesPerRow = textureDescriptor.size.width * 4, //1 pixel = 4 bytes. Careful this will change with different formats
-			.rowsPerImage = textureDescriptor.size.height,
-	};
-
-	//const wgpu::Extent3D dataLayoutSize = {
-	//	.width = textureDataLayout.bytesPerRow,
-	//	.height = textureDataLayout.rowsPerImage,
-	//};
-
-	_queue.WriteTexture(
-		&texelCopyTextureInfo,
-		hostTextures.data(),
-		hostTextures.size() * sizeof(uint32_t) * 2048 * 2048,
-		&texelCopyBufferLayout,
-		&textureDescriptor.size
-	);
-
-	const wgpu::TextureViewDescriptor textureViewDescriptor = {
-		.label = "Textures",
-		.format = textureDescriptor.format,
-		.dimension = wgpu::TextureViewDimension::e2DArray,
-		.mipLevelCount = textureDescriptor.mipLevelCount,
-		.arrayLayerCount = textureDescriptor.size.depthOrArrayLayers,
-		.usage = textureDescriptor.usage,
-	};
-	_textureViews.textures = texture.CreateView(&textureViewDescriptor);
-
-}
-
-void Engine::initSamplerTexturePairs(fastgltf::Asset& asset) {
-	std::vector<DawnEngine::SamplerTexturePair> samplerTexturePairs;
-	for (const auto& t : asset.textures) {
-		if (!t.basisuImageIndex.has_value()) {
-			throw std::runtime_error("No Basisu Image Texture found");
-		}
-		if (t.imageIndex.has_value()) {
-			throw std::runtime_error("Found Normal Image Texture Index. - Unsupported in this application");
-		}
-
-		const DawnEngine::SamplerTexturePair texture = {
-			.samplerIndex = static_cast<uint32_t>(t.samplerIndex.value()),
-			.textureIndex = static_cast<uint32_t>(t.basisuImageIndex.value()),
-		};
-		samplerTexturePairs.push_back(texture);
-	}
-	if (asset.textures.size() == 0) {
-		samplerTexturePairs.push_back({
-			.samplerIndex = UINT32_MAX,
-			.textureIndex = UINT32_MAX,
-		});
-	}
-
-	const wgpu::BufferDescriptor samplerTextureBufferDescriptor = {
-		.label = "sampler texture pair buffer",
-		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
-		.size = sizeof(DawnEngine::SamplerTexturePair) * samplerTexturePairs.size(),
-	};
-	_buffers.samplerTexturePair = _device.CreateBuffer(&samplerTextureBufferDescriptor);
-	_queue.WriteBuffer(
-		_buffers.samplerTexturePair,
-		0, 
-		samplerTexturePairs.data(), 
-		samplerTextureBufferDescriptor.size
-	);
-}
-
-void Engine::initSamplers(fastgltf::Asset& asset) {
-	DawnEngine::getSamplers(_device, asset.samplers, _samplers);
-}
-
 void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 	auto materials = std::vector<DawnEngine::Material>(asset.materials.size());
 	
@@ -560,9 +436,6 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 		memcpy(&materials[i].pbrMetallicRoughness, &m.pbrData, sizeof(glm::f32vec4) + sizeof(float) * 2);
 
 		if (m.pbrData.baseColorTexture.has_value()) {
-			uint32_t textureIndex = static_cast<uint32_t>(m.pbrData.baseColorTexture.value().textureIndex);
-			_baseColorTextureIndices[textureIndex] = DawnEngine::TextureType::COLOR; 
-
 			materials[i].textureOptions[DawnEngine::TextureOptionsIndex::HAS_BASE_COLOR_TEXTURE] = 1;
 			materials[i].pbrMetallicRoughness.baseColorTextureInfo = DawnEngine::convertType(m.pbrData.baseColorTexture.value());
 			
