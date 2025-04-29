@@ -26,6 +26,8 @@ namespace DawnEngine {
 		_invocationSize = descriptor->invocationSize;
 		_textureIndicesMap = descriptor->textureIndicesMap;
 
+		_queue = _device.GetQueue();
+
 		_baseColorAccumulatorShaderModule = Utilities::createShaderModule(
 			_device,
 			BASE_COLOR_ACCUMULATOR_SHADER_LABEL,
@@ -70,8 +72,7 @@ namespace DawnEngine {
 			.size = sizeof(TextureInputInfo),
 		};
 		wgpu::Buffer textureInputInfoBuffer = _device.CreateBuffer(&textureInputInfoBufferDescriptor);
-		const wgpu::Queue queue = _device.GetQueue();
-		queue.WriteBuffer(textureInputInfoBuffer, 0, &textureInputInfo, textureInputInfoBufferDescriptor.size);
+		_queue.WriteBuffer(textureInputInfoBuffer, 0, &textureInputInfo, textureInputInfoBufferDescriptor.size);
 		_textureInputInfoBuffers.push_back(textureInputInfoBuffer);
 	}
 
@@ -161,8 +162,7 @@ namespace DawnEngine {
 				.rowsPerImage = textureDescriptor.size.height,
 		};
 
-		const wgpu::Queue queue = _device.GetQueue();
-		queue.WriteTexture(
+		_queue.WriteTexture(
 			&texelCopyTextureInfo,
 			p8_textureData,
 			sizeof(float) * sp_ktxTexture->baseWidth * sp_ktxTexture->baseHeight,

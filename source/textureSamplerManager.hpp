@@ -49,6 +49,7 @@ namespace DawnEngine {
 		wgpu::TextureFormat baseColorAccumulatorTextureFormat;
 
 		wgpu::Device _device;
+		wgpu::Queue _queue;
 		wgpu::ComputePipeline _computePipeline;
 		wgpu::Extent2D _accumulatorTextureDimensions;
 		uint32_t _invocationSize;
