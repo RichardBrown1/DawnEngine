@@ -17,11 +17,50 @@ namespace DawnEngine {
 
 	wgpu::RenderPipeline InitialRender::createPipeline(const InitialRenderPipelineDescriptor* descriptor) {
 		const wgpu::PipelineLayout pipelineLayout = getPipelineLayout();
+
+		constexpr wgpu::VertexAttribute positionAttribute = {
+			.format = wgpu::VertexFormat::Float32x3,
+			.offset = 0,
+			.shaderLocation = 0,
+		};
+		constexpr wgpu::VertexAttribute normalAttribute = {
+			.format = wgpu::VertexFormat::Float32x3,
+			.offset = offsetof(DawnEngine::VBO, normal),
+			.shaderLocation = 1,
+		};
+		constexpr wgpu::VertexAttribute texcoordAttribute = {
+			.format = wgpu::VertexFormat::Float32x2,
+			.offset = offsetof(DawnEngine::VBO, texcoord),
+			.shaderLocation = 2,
+		};
+		const auto vertexAttributes = std::vector<wgpu::VertexAttribute>{ 
+			positionAttribute, 
+			normalAttribute, 
+			texcoordAttribute
+		};
+
+		const	wgpu::VertexBufferLayout vertexBufferLayout = {
+			.arrayStride = sizeof(DawnEngine::VBO),
+			.attributeCount = vertexAttributes.size(),
+			.attributes = vertexAttributes.data(),
+		};
+		const wgpu::VertexState vertexState = {
+			.module = _initialRenderVertexShaderModule,
+			.entryPoint = DawnEngine::EntryPoint::VERTEX,
+			.bufferCount = 1,
+			.buffers = &vertexBufferLayout,
+		};
 		
-		wgpu::ColorTargetState textureMasterInfoColorTargetState = {
+		constexpr wgpu::DepthStencilState depthStencilState = {
+			.format = DawnEngine::DEPTH_FORMAT,
+			.depthWriteEnabled = true,
+			.depthCompare = wgpu::CompareFunction::Less,
+		};
+
+		const	wgpu::ColorTargetState textureMasterInfoColorTargetState = {
 			.format = wgpu::TextureFormat::RGBA32Uint,
 		};
-		wgpu::ColorTargetState baseColorColorTargetState = {
+		const wgpu::ColorTargetState baseColorColorTargetState = {
 			.format = wgpu::TextureFormat::RGBA16Unorm,
 		};
 		const std::array<wgpu::ColorTargetState, 2> colorTargetStates = {
@@ -29,16 +68,26 @@ namespace DawnEngine {
 			baseColorColorTargetState,
 		};
 		const wgpu::FragmentState fragmentState = {
+			.module = _initialRenderFragmentShaderModule,
+			.entryPoint = DawnEngine::EntryPoint::FRAGMENT,
 			.targetCount = colorTargetStates.size(),
 			.targets = colorTargetStates.data(),
 		};
 		const wgpu::RenderPipelineDescriptor renderPipelineDescriptor = {
-			.label = "input render pipeline",
+			.label = "initial render pipeline",
 			.layout = pipelineLayout,
-	//		.vertex = vertexState,
+			.vertex = vertexState,
+			.primitive = wgpu::PrimitiveState {
+				.topology = wgpu::PrimitiveTopology::TriangleList,
+				.cullMode = wgpu::CullMode::Back,
+			},
+			.depthStencil = &depthStencilState,
+			.multisample = wgpu::MultisampleState {
+				.count = 1,
+				.mask = ~0u,
+				.alphaToCoverageEnabled = false,
+			},
 			.fragment = &fragmentState,
-//			.primitive = primitiveState,
-	//		.depthStencilState = depthStencilState,
 		};
 		_device.CreateRenderPipeline(&renderPipelineDescriptor);
 	}

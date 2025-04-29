@@ -261,16 +261,16 @@ namespace DawnEngine {
 				.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
 		};
-		wgpu::BindGroupLayoutEntry infoBuffer = { //this will have the same amount of elements as the screen size
+		wgpu::BindGroupLayoutEntry masterInfoTexture = { //this will have the same amount of elements as the screen size
 			.binding = 1,
-			.buffer = {
-				.type = wgpu::BufferBindingType::ReadOnlyStorage,
-				.minBindingSize = sizeof(DawnEngine::TextureMasterInfo),
+			.texture = {
+				.sampleType = wgpu::TextureSampleType::Uint,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
 		};
 		std::array<wgpu::BindGroupLayoutEntry, 2>  bindGroupLayoutEntries = {
 			accumulatorTexture,
-			infoBuffer,
+			masterInfoTexture,
 		};
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
 			.label = "texture accumulator and info bind group layout",
