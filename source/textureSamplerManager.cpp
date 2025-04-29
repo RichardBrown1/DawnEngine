@@ -33,6 +33,7 @@ namespace DawnEngine {
 			BASE_COLOR_ACCUMULATOR_SHADER_LABEL,
 			BASE_COLOR_ACCUMULATOR_SHADER_PATH
 		);
+		baseColorAccumulatorTextureFormat = descriptor->baseColorAccumulatorTextureFormat;
 	};
 
 	void TextureSamplerManager::addAsset(fastgltf::Asset& asset, std::string gltfDirectory) {

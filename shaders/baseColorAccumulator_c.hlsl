@@ -1,9 +1,3 @@
-struct TextureMasterInfo //struct DawnEngine::InfoBufferLayout
-{
-    float2 texcoord;
-    uint samplerTexturePairId;
-    uint PAD0;
-};
 
 struct TextureInputInfo
 {

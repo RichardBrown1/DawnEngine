@@ -5,14 +5,18 @@
 #include "structs.hpp"
 
 namespace DawnEngine {
-	struct InitialRenderDescriptor = {
+
+	struct InitialRenderDescriptor {
 		wgpu::Device device;
-		wgpu::Queue queue;
+	};
+	struct InitialRenderPipelineDescriptor {
+		uint32_t test;
 	};
 
 	class InitialRender {
 	public:
 		InitialRender(const InitialRenderDescriptor* descriptor);
+		wgpu::RenderPipeline createPipeline(const InitialRenderPipelineDescriptor* descriptor);
 
 	private:
 		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
@@ -23,5 +27,7 @@ namespace DawnEngine {
 
 		wgpu::ShaderModule _initialRenderVertexShaderModule;
 		wgpu::TextureFormat _baseColorAccumulatorTextureFormat;
+
+		wgpu::PipelineLayout getPipelineLayout();
 	};
 }

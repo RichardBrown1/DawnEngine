@@ -1,4 +1,4 @@
-#include "definitions.hlsli"
+#include "_definitions.hlsli"
 StructuredBuffer<float4x4> transforms : register(t1, space0);
 StructuredBuffer<Light> lights : register(t4, space0);
 
