@@ -19,6 +19,7 @@
 #include "utilities.hpp"
 #include "renderPipelineHelper.hpp"
 #include "samplers.hpp"
+#include "initialRender.hpp"
 
 static Engine* loadedEngine = nullptr;
 
@@ -198,9 +199,9 @@ Engine::Engine() {
 	
 	initGltf();
 	initDepthTexture();
-	initRenderPipeline();
-}
 
+	DawnEngine::InitialRender initialRender(_device);
+}
 
 void Engine::initGltf() {
 	_gltfParser = fastgltf::Parser::Parser( fastgltf::Extensions::KHR_lights_punctual | fastgltf::Extensions::KHR_texture_basisu);
@@ -320,7 +321,7 @@ void Engine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint
 }
 
 void::Engine::addLightData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
-	DawnEngine::Light l;
+	DawnEngine::Light l = {};
 	glm::f32quat quaterion;
 	glm::f32vec3 scale, skew;
 	glm::f32vec4 perspective;

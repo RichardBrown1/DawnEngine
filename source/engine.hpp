@@ -10,6 +10,7 @@
 #include <fastgltf/core.hpp>
 
 #include "structs.hpp"
+#include "initialRender.hpp"
 
 class Engine {
 
@@ -43,6 +44,8 @@ private:
 	DawnEngine::TextureViews _textureViews;
 	DawnEngine::BindGroups _bindGroups;
 	DawnEngine::Samplers _samplers;
+
+	DawnEngine::InitialRender _initialRender;
 
 	void initGltf();
 	void initNodes(fastgltf::Asset& asset);

@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include <string>
 #include <iostream>
@@ -5,22 +6,19 @@
 #include <fastgltf/types.hpp>
 #include "constants.hpp"
 #include "structs.hpp"
+#include "utilities.hpp"
 
 namespace DawnEngine {
-
-	struct InitialRenderDescriptor {
-		wgpu::Device device;
-	};
-
-	struct GenerateGpuObjectsDescriptor {
-		InitialRenderCreateBindGroupDescriptor initialRenderCreateBindGroupDescriptor;
-	};
 
 	struct InitialRenderCreateBindGroupDescriptor {
 		wgpu::Buffer cameraBuffer;
 		wgpu::Buffer transformsBuffer;
 		wgpu::Buffer instancePropertiesBuffer;
 		wgpu::Buffer materialsBuffer;
+	};
+
+	struct GenerateGpuObjectsDescriptor {
+		InitialRenderCreateBindGroupDescriptor initialRenderCreateBindGroupDescriptor;
 	};
 
 	struct DoInitialRenderCommandsDescriptor {
@@ -31,16 +29,31 @@ namespace DawnEngine {
 
 	class InitialRender {
 	public:
-		InitialRender(const InitialRenderDescriptor* descriptor);
+		InitialRender() {};
+		explicit InitialRender(
+			const wgpu::Device& device
+		) : _device(device) {
+			_queue = device.GetQueue();
+			_vertexShaderModule = Utilities::createShaderModule(_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
+			_fragmentShaderModule = Utilities::createShaderModule(_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
+		};
+		InitialRender(const InitialRender&) = delete;
+	  void operator=(const InitialRender&) = delete;
+
 		void generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor);
 		void doCommands(const DoInitialRenderCommandsDescriptor* descriptor);
 
+		//TODO Other Texture Formats for other texture accumulators
+		const wgpu::TextureFormat baseColorAccumulatorTextureFormat = wgpu::TextureFormat::RGBA32Float;
+		//const wgpu::TextureFormat metallicRoughnessAccumulatorTextureFormat = wgpu::TextureFormat::RGBA32Float;
+
 	private:
+		static DawnEngine::InitialRender *instance;
 		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
 		const std::string VERTEX_SHADER_PATH = "shaders/v_initialRender.spv";
 
-		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render fragment shader";
-		const std::string INITIAL_SHADER_PATH = "shaders/f_initialRener.spv";
+		const wgpu::StringView FRAGMENT_SHADER_LABEL = "initial render fragment shader";
+		const std::string FRAGMENT_SHADER_PATH = "shaders/f_initialRener.spv";
 
 		wgpu::Device _device;
 		wgpu::Queue _queue;
@@ -52,7 +65,6 @@ namespace DawnEngine {
 		wgpu::ShaderModule _vertexShaderModule;
 		wgpu::ShaderModule _fragmentShaderModule;
 
-		wgpu::TextureFormat _baseColorAccumulatorTextureFormat;
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createBindGroupLayout();

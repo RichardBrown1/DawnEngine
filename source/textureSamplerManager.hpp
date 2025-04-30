@@ -13,11 +13,7 @@ namespace DawnEngine {
 		std::unordered_map<uint32_t, DawnEngine::TextureType>& textureIndicesMap;
 		wgpu::TextureFormat baseColorAccumulatorTextureFormat;
 	};
-	struct GenerateGpuObjectsDescriptor {
-		CreateTexturePipelineDescriptor texturePipelineDescriptor;
-		CreateAccumulatorAndInfoBindGroupDescriptor accumulatorAndInfoBindGroupDescriptor;
-		CreateInputTextureBindGroupsDescriptor inputTextureBindGroupsDescriptor;
-	};
+
 	struct CreateTexturePipelineDescriptor {
 		wgpu::TextureView colorTextureView;
 		wgpu::TextureFormat colorTextureFormat;
@@ -29,6 +25,12 @@ namespace DawnEngine {
 	struct CreateInputTextureBindGroupsDescriptor {
 		std::vector<SamplerTexturePair> samplerTexturePairs;
 	};
+	struct GenerateGpuObjectsDescriptor {
+		CreateTexturePipelineDescriptor texturePipelineDescriptor;
+		CreateAccumulatorAndInfoBindGroupDescriptor accumulatorAndInfoBindGroupDescriptor;
+		CreateInputTextureBindGroupsDescriptor inputTextureBindGroupsDescriptor;
+	};
+
 	struct DoTextureSamplerCommandsDescriptor {
 		wgpu::CommandEncoder commandEncoder;
 		wgpu::TextureView accumulatorTextureView;
