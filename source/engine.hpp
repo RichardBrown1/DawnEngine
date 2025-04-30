@@ -45,7 +45,7 @@ private:
 	DawnEngine::BindGroups _bindGroups;
 	DawnEngine::Samplers _samplers;
 
-	DawnEngine::InitialRender _initialRender;
+	DawnEngine::InitialRender _initialRender = nullptr;
 
 	void initGltf();
 	void initNodes(fastgltf::Asset& asset);

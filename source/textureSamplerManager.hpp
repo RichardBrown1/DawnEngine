@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include <webgpu/webgpu_cpp.h>
 #include <fastgltf/types.hpp>

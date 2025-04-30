@@ -1,3 +1,4 @@
+#pragma once
 #include "gpuObjectManager.hpp"
 
 namespace DawnEngine {

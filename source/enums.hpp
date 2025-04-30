@@ -1,3 +1,4 @@
+#pragma once
 namespace DawnEngine {
 
 	namespace EntryPoint { //fake enum - is there a better way to do this?

@@ -4,6 +4,10 @@
 #include "utilities.hpp"
 
 namespace DawnEngine {
+	InitialRender::InitialRender(wgpu::Device* device) {
+			_device = device;
+	};
+
 //	InitialRender::InitialRender(wgpu::Device &device, const InitialRenderDescriptor* descriptor) {
 //		_device = descriptor->device;
 //		_queue = _device.GetQueue();
@@ -24,6 +28,9 @@ namespace DawnEngine {
 		createBindGroupLayout();
 		createPipeline();
 		createBindGroup(&descriptor->initialRenderCreateBindGroupDescriptor);
+
+		_vertexShaderModule = Utilities::createShaderModule(*_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
+		_fragmentShaderModule = Utilities::createShaderModule(*_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	};
 
 	void InitialRender::doCommands(const DoInitialRenderCommandsDescriptor* descriptor) {
@@ -116,7 +123,7 @@ namespace DawnEngine {
 			},
 			.fragment = &fragmentState,
 		};
-		_renderPipeline = _device.CreateRenderPipeline(&renderPipelineDescriptor);
+		_renderPipeline = _device->CreateRenderPipeline(&renderPipelineDescriptor);
 	}
 
 	void InitialRender::createBindGroup(const InitialRenderCreateBindGroupDescriptor* descriptor) {
@@ -152,7 +159,7 @@ namespace DawnEngine {
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		_bindGroup = _device.CreateBindGroup(&bindGroupDescriptor);
+		_bindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
 	}
 
 	void InitialRender::createBindGroupLayout() {
@@ -196,7 +203,7 @@ namespace DawnEngine {
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		_bindGroupLayout = _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+		_bindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
 	wgpu::PipelineLayout InitialRender::getPipelineLayout() {
@@ -206,7 +213,7 @@ namespace DawnEngine {
 			.bindGroupLayoutCount = 1,
 			.bindGroupLayouts = &_bindGroupLayout,
 		};
-		return _device.CreatePipelineLayout(&pipelineLayoutDescriptor);
+		return _device->CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};
 
 }

@@ -1,3 +1,4 @@
+#pragma once
 #include "utilities.hpp"
 #include <iostream>
 #include <fstream>

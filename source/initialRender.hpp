@@ -11,10 +11,10 @@
 namespace DawnEngine {
 
 	struct InitialRenderCreateBindGroupDescriptor {
-		wgpu::Buffer cameraBuffer;
-		wgpu::Buffer transformsBuffer;
-		wgpu::Buffer instancePropertiesBuffer;
-		wgpu::Buffer materialsBuffer;
+		wgpu::Buffer& cameraBuffer;
+		wgpu::Buffer& transformsBuffer;
+		wgpu::Buffer& instancePropertiesBuffer;
+		wgpu::Buffer& materialsBuffer;
 	};
 
 	struct GenerateGpuObjectsDescriptor {
@@ -29,17 +29,8 @@ namespace DawnEngine {
 
 	class InitialRender {
 	public:
-		InitialRender() {};
-		explicit InitialRender(
-			const wgpu::Device& device
-		) : _device(device) {
-			_queue = device.GetQueue();
-			_vertexShaderModule = Utilities::createShaderModule(_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
-			_fragmentShaderModule = Utilities::createShaderModule(_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
-		};
-		InitialRender(const InitialRender&) = delete;
-	  void operator=(const InitialRender&) = delete;
-
+		InitialRender() = delete;
+		InitialRender(wgpu::Device* device);
 		void generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor);
 		void doCommands(const DoInitialRenderCommandsDescriptor* descriptor);
 
@@ -55,8 +46,7 @@ namespace DawnEngine {
 		const wgpu::StringView FRAGMENT_SHADER_LABEL = "initial render fragment shader";
 		const std::string FRAGMENT_SHADER_PATH = "shaders/f_initialRener.spv";
 
-		wgpu::Device _device;
-		wgpu::Queue _queue;
+		wgpu::Device* _device;
 
 		wgpu::RenderPipeline _renderPipeline;
 		wgpu::BindGroupLayout _bindGroupLayout;

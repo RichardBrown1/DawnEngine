@@ -33,7 +33,7 @@
  */
 
 
-
+#pragma once
 #include "sdl3webgpu.hpp"
 
 #include <webgpu/webgpu_cpp.h>

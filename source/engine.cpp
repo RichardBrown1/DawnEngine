@@ -200,7 +200,8 @@ Engine::Engine() {
 	initGltf();
 	initDepthTexture();
 
-	DawnEngine::InitialRender initialRender(_device);
+	DawnEngine::InitialRender* initialRender = new DawnEngine::InitialRender(&_device);
+	std::cout << initialRender->baseColorAccumulatorTextureFormat << std::endl;
 }
 
 void Engine::initGltf() {
