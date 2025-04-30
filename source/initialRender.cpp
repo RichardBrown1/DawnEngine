@@ -7,15 +7,37 @@ namespace DawnEngine {
 	InitialRender::InitialRender(const InitialRenderDescriptor* descriptor) {
 		_device = descriptor->device;
 		_queue = _device.GetQueue();
-
-		_initialRenderVertexShaderModule = Utilities::createShaderModule(
+		
+		_vertexShaderModule = Utilities::createShaderModule(
 			_device,
 			VERTEX_SHADER_LABEL,
-			INITIAL_RENDER_SHADER_PATH
+			VERTEX_SHADER_PATH
 		);
 	};
 
-	wgpu::RenderPipeline InitialRender::createPipeline() {
+	void InitialRender::generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor) {
+		createBindGroupLayout();
+		createPipeline();
+		createBindGroup(&descriptor->initialRenderCreateBindGroupDescriptor);
+	};
+
+	void InitialRender::doCommands(const DoInitialRenderCommandsDescriptor* descriptor) {
+		wgpu::RenderPassDescriptor renderPassDescriptor = {
+			.label = "initial render pass"
+		};
+		wgpu::RenderPassEncoder renderPassEncoder = descriptor->commandEncoder.BeginRenderPass(&renderPassDescriptor);
+		renderPassEncoder.SetPipeline(_renderPipeline);
+		renderPassEncoder.SetVertexBuffer(0, descriptor->vertexBuffer, 0, descriptor->vertexBuffer.GetSize());
+		renderPassEncoder.SetIndexBuffer(
+			descriptor->indexBuffer,
+			wgpu::IndexFormat::Uint16, 
+			0, 
+			descriptor->indexBuffer.GetSize()
+		);
+		renderPassEncoder.SetBindGroup(0, _bindGroup);
+	}
+
+	void InitialRender::createPipeline() {
 		const wgpu::PipelineLayout pipelineLayout = getPipelineLayout();
 
 		constexpr wgpu::VertexAttribute positionAttribute = {
@@ -45,7 +67,7 @@ namespace DawnEngine {
 			.attributes = vertexAttributes.data(),
 		};
 		const wgpu::VertexState vertexState = {
-			.module = _initialRenderVertexShaderModule,
+			.module = _vertexShaderModule,
 			.entryPoint = DawnEngine::EntryPoint::VERTEX,
 			.bufferCount = 1,
 			.buffers = &vertexBufferLayout,
@@ -68,7 +90,7 @@ namespace DawnEngine {
 			baseColorColorTargetState,
 		};
 		const wgpu::FragmentState fragmentState = {
-			.module = _initialRenderFragmentShaderModule,
+			.module = _fragmentShaderModule,
 			.entryPoint = DawnEngine::EntryPoint::FRAGMENT,
 			.targetCount = colorTargetStates.size(),
 			.targets = colorTargetStates.data(),
@@ -89,10 +111,46 @@ namespace DawnEngine {
 			},
 			.fragment = &fragmentState,
 		};
-		_device.CreateRenderPipeline(&renderPipelineDescriptor);
+		_renderPipeline = _device.CreateRenderPipeline(&renderPipelineDescriptor);
 	}
 
-	wgpu::PipelineLayout InitialRender::getPipelineLayout() {
+	void InitialRender::createBindGroup(const InitialRenderCreateBindGroupDescriptor* descriptor) {
+		const wgpu::BindGroupEntry cameraBindGroupEntry = {
+			.binding = 0,
+			.buffer = descriptor->cameraBuffer,
+			.size = descriptor->cameraBuffer.GetSize(),
+		};
+		const wgpu::BindGroupEntry transformsBindGroupEntry = {
+			.binding = 1,
+			.buffer = descriptor->transformsBuffer,
+			.size = descriptor->transformsBuffer.GetSize(),
+		};
+		const wgpu::BindGroupEntry instancePropertiesBindGroupEntry = {
+			.binding = 2,
+			.buffer = descriptor->instancePropertiesBuffer,
+			.size = descriptor->instancePropertiesBuffer.GetSize(),
+		};
+		const wgpu::BindGroupEntry materialsBindGroupEntry = {
+			.binding = 3,
+			.buffer = descriptor->materialsBuffer,
+			.size = descriptor->materialsBuffer.GetSize(),
+		};
+		std::array<wgpu::BindGroupEntry, 4> bindGroupEntries = {
+			cameraBindGroupEntry,
+			transformsBindGroupEntry,
+			instancePropertiesBindGroupEntry,
+			materialsBindGroupEntry,
+		};
+		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
+			.label = "initial render group",
+			.layout = _bindGroupLayout,
+			.entryCount = bindGroupEntries.size(),
+			.entries = bindGroupEntries.data(),
+		};
+		_bindGroup = _device.CreateBindGroup(&bindGroupDescriptor);
+	}
+
+	void InitialRender::createBindGroupLayout() {
 		const wgpu::BindGroupLayoutEntry cameraBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Vertex,
@@ -108,7 +166,7 @@ namespace DawnEngine {
 				.minBindingSize = sizeof(glm::f32mat4x4),
 			},
 		};
-		const wgpu::BindGroupLayoutEntry instancePropertyBindGroupLayoutEntry = {
+		const wgpu::BindGroupLayoutEntry instancePropertiesBindGroupLayoutEntry = {
 			.visibility = wgpu::ShaderStage::Vertex,
 			.buffer = {
 				.type = wgpu::BufferBindingType::ReadOnlyStorage,
@@ -126,28 +184,24 @@ namespace DawnEngine {
 		std::array<wgpu::BindGroupLayoutEntry, 4> bindGroupLayoutEntries = {
 			cameraBindGroupLayoutEntry,
 			transformsBindGroupLayoutEntry,
-			instancePropertyBindGroupLayoutEntry,
+			instancePropertiesBindGroupLayoutEntry,
 			materialsBindGroupLayoutEntry,
 		};
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		const wgpu::BindGroupLayout bindGroupLayout = _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+		_bindGroupLayout = _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+	};
+
+	wgpu::PipelineLayout InitialRender::getPipelineLayout() {
 
 		const wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
 			.label = "initial render pipeline layout",
 			.bindGroupLayoutCount = 1,
-			.bindGroupLayouts = &bindGroupLayout,
+			.bindGroupLayouts = &_bindGroupLayout,
 		};
 		return _device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};
 
-	void InitialRender::doCommands(const DoInitialRenderCommandsDescriptor* descriptor) {
-		wgpu::RenderPassDescriptor renderPassDescriptor = {
-			.label = "initial render pass"
-		};
-		wgpu::RenderPassEncoder renderPassEncoder = descriptor->commandEncoder.BeginRenderPass(&renderPassDescriptor);
-		renderPassEncoder.SetPipeline(_initialRenderPipeline);
-	}
 }
