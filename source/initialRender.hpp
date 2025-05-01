@@ -29,7 +29,6 @@ namespace DawnEngine {
 
 	class InitialRender {
 	public:
-		InitialRender() {};
 		InitialRender(wgpu::Device* device);
 		void generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor);
 		void doCommands(const DoInitialRenderCommandsDescriptor* descriptor);
@@ -40,20 +39,18 @@ namespace DawnEngine {
 
 	private:
 		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
-		const std::string VERTEX_SHADER_PATH = "shaders/v_initialRender.spv";
+		const std::string VERTEX_SHADER_PATH = "shaders/initialRender_v.spv";
 
 		const wgpu::StringView FRAGMENT_SHADER_LABEL = "initial render fragment shader";
-		const std::string FRAGMENT_SHADER_PATH = "shaders/f_initialRener.spv";
+		const std::string FRAGMENT_SHADER_PATH = "shaders/initialRender_f.spv";
 
-		wgpu::Device* _device;
-
+		wgpu::Device *_device;
 		wgpu::RenderPipeline _renderPipeline;
 		wgpu::BindGroupLayout _bindGroupLayout;
 		wgpu::BindGroup _bindGroup;
 
 		wgpu::ShaderModule _vertexShaderModule;
 		wgpu::ShaderModule _fragmentShaderModule;
-
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createBindGroupLayout();

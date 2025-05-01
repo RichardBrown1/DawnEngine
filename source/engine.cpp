@@ -200,7 +200,7 @@ Engine::Engine() {
 	initGltf();
 	initDepthTexture();
 
-	_initialRender = DawnEngine::InitialRender(&_device);
+	_initialRender = new DawnEngine::InitialRender(&_device);
 	DawnEngine::GenerateGpuObjectsDescriptor generateGpuObjectsDescriptor = {
 		.initialRenderCreateBindGroupDescriptor = {
 			.cameraBuffer = _buffers.camera,
@@ -209,7 +209,7 @@ Engine::Engine() {
 			.materialBuffer = _buffers.material,
 		},
 	};
-	_initialRender.generateGpuObjects(&generateGpuObjectsDescriptor);
+	_initialRender->generateGpuObjects(&generateGpuObjectsDescriptor);
 }
 
 void Engine::initGltf() {
@@ -550,7 +550,7 @@ void Engine::draw() {
 		.vertexBuffer = _buffers.vbo,
 		.indexBuffer = _buffers.index,
 	};
-	_initialRender.doCommands(&doInitialRenderCommandsDescriptor);
+	_initialRender->doCommands(&doInitialRenderCommandsDescriptor);
 
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
 		.label = "Command Buffer",

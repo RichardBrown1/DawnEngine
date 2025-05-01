@@ -9,12 +9,13 @@ namespace DawnEngine {
 	};
 
 	void InitialRender::generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor) {
+		_vertexShaderModule = Utilities::createShaderModule(*_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
+		_fragmentShaderModule =  Utilities::createShaderModule(*_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
+
 		createBindGroupLayout();
 		createPipeline();
 		createBindGroup(&descriptor->initialRenderCreateBindGroupDescriptor);
 
-		_vertexShaderModule = Utilities::createShaderModule(*_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
-		_fragmentShaderModule = Utilities::createShaderModule(*_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	};
 
 	void InitialRender::doCommands(const DoInitialRenderCommandsDescriptor* descriptor) {
