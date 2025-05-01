@@ -39,7 +39,6 @@ namespace DawnEngine {
 		//const wgpu::TextureFormat metallicRoughnessAccumulatorTextureFormat = wgpu::TextureFormat::RGBA32Float;
 
 	private:
-		static DawnEngine::InitialRender *instance;
 		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
 		const std::string VERTEX_SHADER_PATH = "shaders/v_initialRender.spv";
 
