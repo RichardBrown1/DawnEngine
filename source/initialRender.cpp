@@ -8,22 +8,6 @@ namespace DawnEngine {
 			_device = device;
 	};
 
-//	InitialRender::InitialRender(wgpu::Device &device, const InitialRenderDescriptor* descriptor) {
-//		_device = descriptor->device;
-//		_queue = _device.GetQueue();
-//		
-//		_vertexShaderModule = Utilities::createShaderModule(
-//			_device,
-//			VERTEX_SHADER_LABEL,
-//			VERTEX_SHADER_PATH
-//		);
-//		_fragmentShaderModule = Utilities::createShaderModule(
-//			_device,
-//			FRAGMENT_SHADER_LABEL,
-//			FRAGMENT_SHADER_PATH
-//		);
-//	};
-
 	void InitialRender::generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor) {
 		createBindGroupLayout();
 		createPipeline();
