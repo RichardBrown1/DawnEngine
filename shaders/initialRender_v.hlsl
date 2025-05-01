@@ -4,8 +4,6 @@
 
 ConstantBuffer<ProjectionView> camera : register(b0, space0);
 StructuredBuffer<float4x4> transforms : register(t1, space0);
-StructuredBuffer<InstanceProperties> instanceProperties : register(t2, space0);
-StructuredBuffer<Material> materials : register(t3, space0);
 
 struct VSInput
 {
@@ -14,23 +12,19 @@ struct VSInput
     float2 texcoord : TEXCOORD0;
 };
 
-VSOutput vs_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceIndex : SV_InstanceID)
+VSOutput vs_main(VSInput input, uint vertexIndex : SV_VertexID, uint instanceIndex : SV_InstanceID)
 {
     VSOutput output = (VSOutput) 0;    
     
-    const float3 position = (float3) mul(transforms[InstanceIndex], float4(input.position, 1.0));
+    const float3 position = (float3) mul(transforms[instanceIndex], float4(input.position, 1.0));
     output.cameraPosition = mul(
                             camera.projectionView,
                             float4(position, 1.0)
                           );
     output.texcoord = input.texcoord;
-    output.normal = normalize((float3) mul(invertTranspose(transforms[InstanceIndex]), float4(input.normal, 0.0)));
+    output.normal = normalize((float3) mul(invertTranspose(transforms[instanceIndex]), float4(input.normal, 0.0)));
     
-    const InstanceProperties ip = instanceProperties[InstanceIndex];
-    const Material material = materials[ip.materialIndex];
-    output.color = material.baseColor;
-
-    output.materialIndex = ip.materialIndex;
+    output.instanceIndex = instanceIndex;
 
     return output;
 }

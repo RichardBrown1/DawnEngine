@@ -58,36 +58,36 @@ set(SHADERS_DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 file(MAKE_DIRECTORY ${SHADERS_DEST_DIR})
 add_custom_target(Shaders)
 
-file(GLOB_RECURSE HLSL_VERTEX_SHADER_FILES "shaders/v_*.hlsl")
+file(GLOB_RECURSE HLSL_VERTEX_SHADER_FILES "shaders/*_v.hlsl")
 foreach(FILE ${HLSL_VERTEX_SHADER_FILES})
   get_filename_component(FILE_WE ${FILE} NAME_WE)
   add_custom_command(
      TARGET Shaders
-     COMMAND ${DIRECTX_DXC_TOOL} -T vs_6_7 -E vs_main -spirv -Fo ${SHADERS_DEST_DIR}/v_${FILE_WE}.spv ${FILE}
+     COMMAND ${DIRECTX_DXC_TOOL} -T vs_6_7 -E vs_main -spirv -Fo ${SHADERS_DEST_DIR}/${FILE_WE}.spv ${FILE}
      MAIN_DEPENDENCY ${FILE}
      COMMENT "HLSL Vertex ${FILE}"
      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   VERBATIM)
 endforeach(FILE)
 
-file(GLOB_RECURSE HLSL_FRAGMENT_SHADER_FILES "shaders/f_*.hlsl")
+file(GLOB_RECURSE HLSL_FRAGMENT_SHADER_FILES "shaders/*_f.hlsl")
 foreach(FILE ${HLSL_FRAGMENT_SHADER_FILES})
   get_filename_component(FILE_WE ${FILE} NAME_WE)
   add_custom_command(
      TARGET Shaders
-     COMMAND ${DIRECTX_DXC_TOOL} -T vs_6_7 -E ps_main -spirv -Fo ${SHADERS_DEST_DIR}/f_${FILE_WE}.spv ${FILE}
+     COMMAND ${DIRECTX_DXC_TOOL} -T ps_6_7 -E fs_main -spirv -Fo ${SHADERS_DEST_DIR}/${FILE_WE}.spv ${FILE}
      MAIN_DEPENDENCY ${FILE}
      COMMENT "HLSL Fragment ${FILE}"
      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   VERBATIM)
 endforeach(FILE)
 
-file(GLOB_RECURSE HLSL_VERTEX_SHADER_FILES "shaders/c_*.hlsl")
+file(GLOB_RECURSE HLSL_VERTEX_SHADER_FILES "shaders/*_c.hlsl")
 foreach(FILE ${HLSL_VERTEX_SHADER_FILES})
   get_filename_component(FILE_WE ${FILE} NAME_WE)
   add_custom_command(
      TARGET Shaders
-     COMMAND ${DIRECTX_DXC_TOOL} -T cs_6_7 -E VS_main -spirv -Fo ${SHADERS_DEST_DIR}/c_${FILE_WE}.spv ${FILE}
+     COMMAND ${DIRECTX_DXC_TOOL} -T cs_6_7 -E cs_main -spirv -Fo ${SHADERS_DEST_DIR}/${FILE_WE}.spv ${FILE}
      MAIN_DEPENDENCY ${FILE}
      COMMENT "HLSL Compute ${FILE}"
      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
