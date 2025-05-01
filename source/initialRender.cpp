@@ -118,8 +118,8 @@ namespace DawnEngine {
 		};
 		const wgpu::BindGroupEntry transformsBindGroupEntry = {
 			.binding = 1,
-			.buffer = descriptor->transformsBuffer,
-			.size = descriptor->transformsBuffer.GetSize(),
+			.buffer = descriptor->transformBuffer,
+			.size = descriptor->transformBuffer.GetSize(),
 		};
 		const wgpu::BindGroupEntry instancePropertiesBindGroupEntry = {
 			.binding = 2,
@@ -128,8 +128,8 @@ namespace DawnEngine {
 		};
 		const wgpu::BindGroupEntry materialsBindGroupEntry = {
 			.binding = 3,
-			.buffer = descriptor->materialsBuffer,
-			.size = descriptor->materialsBuffer.GetSize(),
+			.buffer = descriptor->materialBuffer,
+			.size = descriptor->materialBuffer.GetSize(),
 		};
 		std::array<wgpu::BindGroupEntry, 4> bindGroupEntries = {
 			cameraBindGroupEntry,
@@ -156,6 +156,7 @@ namespace DawnEngine {
 			},
 		};
 		const wgpu::BindGroupLayoutEntry transformsBindGroupLayoutEntry = {
+			.binding = 1,
 			.visibility = wgpu::ShaderStage::Vertex,
 			.buffer = {
 				.type = wgpu::BufferBindingType::ReadOnlyStorage,
@@ -163,6 +164,7 @@ namespace DawnEngine {
 			},
 		};
 		const wgpu::BindGroupLayoutEntry instancePropertiesBindGroupLayoutEntry = {
+			.binding = 2,
 			.visibility = wgpu::ShaderStage::Vertex,
 			.buffer = {
 				.type = wgpu::BufferBindingType::ReadOnlyStorage,
@@ -170,6 +172,7 @@ namespace DawnEngine {
 			}
 		};
 		const wgpu::BindGroupLayoutEntry materialsBindGroupLayoutEntry = {
+			.binding = 3,
 			.visibility = wgpu::ShaderStage::Vertex,
 			.buffer = {
 				.type = wgpu::BufferBindingType::ReadOnlyStorage,
@@ -184,6 +187,7 @@ namespace DawnEngine {
 			materialsBindGroupLayoutEntry,
 		};
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
+			.label = "initial render bind group layout",
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};

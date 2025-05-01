@@ -12,9 +12,9 @@ namespace DawnEngine {
 
 	struct InitialRenderCreateBindGroupDescriptor {
 		wgpu::Buffer& cameraBuffer;
-		wgpu::Buffer& transformsBuffer;
+		wgpu::Buffer& transformBuffer;
 		wgpu::Buffer& instancePropertiesBuffer;
-		wgpu::Buffer& materialsBuffer;
+		wgpu::Buffer& materialBuffer;
 	};
 
 	struct GenerateGpuObjectsDescriptor {
@@ -29,7 +29,7 @@ namespace DawnEngine {
 
 	class InitialRender {
 	public:
-		InitialRender() = delete;
+		InitialRender() {};
 		InitialRender(wgpu::Device* device);
 		void generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor);
 		void doCommands(const DoInitialRenderCommandsDescriptor* descriptor);

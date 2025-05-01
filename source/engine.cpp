@@ -200,8 +200,16 @@ Engine::Engine() {
 	initGltf();
 	initDepthTexture();
 
-	DawnEngine::InitialRender* initialRender = new DawnEngine::InitialRender(&_device);
-	std::cout << initialRender->baseColorAccumulatorTextureFormat << std::endl;
+	_initialRender = DawnEngine::InitialRender(&_device);
+	DawnEngine::GenerateGpuObjectsDescriptor generateGpuObjectsDescriptor = {
+		.initialRenderCreateBindGroupDescriptor = {
+			.cameraBuffer = _buffers.camera,
+			.transformBuffer = _buffers.transform,
+			.instancePropertiesBuffer = _buffers.instanceProperties,
+			.materialBuffer = _buffers.material,
+		},
+	};
+	_initialRender.generateGpuObjects(&generateGpuObjectsDescriptor);
 }
 
 void Engine::initGltf() {
@@ -537,70 +545,16 @@ void Engine::draw() {
 	};
 	wgpu::CommandEncoder commandEncoder = _device.CreateCommandEncoder(&commandEncoderDescriptor);
 
-	{ //Shadow Pass
-		const wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
-			.view = _textureViews.shadowMaps[0],
-			.depthLoadOp = wgpu::LoadOp::Clear,
-			.depthStoreOp = wgpu::StoreOp::Store,
-			.depthClearValue = 1.0f,
-		};
+	DawnEngine::DoInitialRenderCommandsDescriptor doInitialRenderCommandsDescriptor = {
+		.commandEncoder = commandEncoder,
+		.vertexBuffer = _buffers.vbo,
+		.indexBuffer = _buffers.index,
+	};
+	_initialRender.doCommands(&doInitialRenderCommandsDescriptor);
 
-		const wgpu::RenderPassDescriptor renderPassDescriptor = {
-			.label = "shadow render pass",
-			.depthStencilAttachment = &renderPassDepthStencilAttachment,
-		};
-		wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
-		renderPassEncoder.SetPipeline(_renderPipelines.shadow);
-		renderPassEncoder.SetBindGroup(0, _bindGroups.lights);
-		renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
-		renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
-
-		for (auto& dc : _drawCalls) {
-			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
-		}
-		renderPassEncoder.End();
-
-	}
-	
-	{ //Output Pass
-		const wgpu::RenderPassColorAttachment renderPassColorAttachment = {
-			.view = surfaceTextureView,
-			.loadOp = wgpu::LoadOp::Clear,
-			.storeOp = wgpu::StoreOp::Store,
-			.clearValue = wgpu::Color{ 0.3, 0.4, 1.0, 1.0 },
-		};
-
-		const wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
-			.view = _textureViews.cameraDepth,
-			.depthLoadOp = wgpu::LoadOp::Clear,
-			.depthStoreOp = wgpu::StoreOp::Store,
-			.depthClearValue = 1.0f,
-		};
-
-		const wgpu::RenderPassDescriptor renderPassDescriptor = {
-			.label = "output render pass",
-			.colorAttachmentCount = 1,
-			.colorAttachments = &renderPassColorAttachment,
-			.depthStencilAttachment = &renderPassDepthStencilAttachment,
-		};
-
-
-		wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDescriptor);
-		renderPassEncoder.SetPipeline(_renderPipelines.geometry);
-		renderPassEncoder.SetBindGroup(0, _bindGroups.fixed);
-		renderPassEncoder.SetVertexBuffer(0, _buffers.vbo, 0, _buffers.vbo.GetSize());
-		renderPassEncoder.SetIndexBuffer(_buffers.index, wgpu::IndexFormat::Uint16, 0, _buffers.index.GetSize());
-
-		for (const auto& dc : _drawCalls) {
-			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
-		}
-		//renderPassEncoder.DrawIndexed(static_cast<uint32_t>(_buffers.index.GetSize()) / sizeof(uint16_t)); //todo
-		renderPassEncoder.End();
-	}
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
 		.label = "Command Buffer",
 	};
-
 	wgpu::CommandBuffer commandBuffer = commandEncoder.Finish(&commandBufferDescriptor);
 
 	_queue.Submit(1, &commandBuffer);
