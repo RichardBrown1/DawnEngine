@@ -205,7 +205,7 @@ Engine::Engine() {
 			.instancePropertiesBuffer = _buffers.instanceProperties,
 			.materialBuffer = _buffers.material,
 		},
-		.screenDimensions = _screenDimensions,
+		.screenDimensions = wgpu::Extent2D{_surfaceConfiguration.width, _surfaceConfiguration.height},
 	};
 	_initialRender->generateGpuObjects(&generateGpuObjectsDescriptor);
 }
@@ -481,7 +481,7 @@ void Engine::initDepthTexture() {
 			.label = "camera depth texture",
 			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
 			.dimension = wgpu::TextureDimension::e2D,
-			.size = wgpu::Extent3D{_screenDimensions},
+			.size = wgpu::Extent3D(_surfaceConfiguration.width, _surfaceConfiguration.height),
 			.format = DawnEngine::DEPTH_FORMAT,
 		};
 		wgpu::Texture depthTexture = _device.CreateTexture(&depthTextureDescriptor);

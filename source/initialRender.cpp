@@ -57,23 +57,41 @@ namespace DawnEngine {
 			.format = baseColorAccumulatorTextureFormat,
 			.dimension = wgpu::TextureViewDimension::e2D,
 			.mipLevelCount = 1,
-			.arrayLayerCount = 1,
 			.aspect = wgpu::TextureAspect::All,
 			.usage = baseColorAccumulatorTextureDescriptor.usage,
 		};
-		_baseColorAccumulatorTextureView = masterInfoTexture.CreateView(&baseColorAccumulatorTextureViewDescriptor);
+		_baseColorAccumulatorTextureView = baseColorAccumulatorTexture.CreateView(&baseColorAccumulatorTextureViewDescriptor);
+
+		const wgpu::TextureDescriptor depthTextureDescriptor = {
+			.label = "base color accumulator texture",
+			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
+			.dimension = wgpu::TextureDimension::e2D,
+			.size = {
+				.width = descriptor->screenDimensions.width,
+				.height = descriptor->screenDimensions.height,
+			},
+			.format = depthTextureFormat,
+		};
+		wgpu::Texture depthTexture = _device->CreateTexture(&depthTextureDescriptor);
+		const wgpu::TextureViewDescriptor depthTextureViewDescriptor = {
+			.label = "base color accumulator texture view descriptor",
+			.format = depthTextureFormat,
+			.dimension = wgpu::TextureViewDimension::e2D,
+			.mipLevelCount = 1,
+			.aspect = wgpu::TextureAspect::All,
+			.usage = depthTextureDescriptor.usage,
+		};
+		_depthTextureView = depthTexture.CreateView(&depthTextureViewDescriptor);
 
 		_renderPassColorAttachments = {
 			wgpu::RenderPassColorAttachment {
 				.view = _masterInfoTextureView,
-				.depthSlice = 0,
 				.loadOp = wgpu::LoadOp::Clear,
 				.storeOp = wgpu::StoreOp::Store,
 				.clearValue = wgpu::Color{0.0f, 0.0f, UINT32_MAX, 0.0f},
 			},
 			wgpu::RenderPassColorAttachment {
 				.view = _baseColorAccumulatorTextureView,
-				.depthSlice = 0,
 				.loadOp = wgpu::LoadOp::Clear,
 				.storeOp = wgpu::StoreOp::Store,
 				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
@@ -82,10 +100,19 @@ namespace DawnEngine {
 	};
 
 	void InitialRender::doCommands(const DoInitialRenderCommandsDescriptor* descriptor) {
+		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+			.view = _depthTextureView,
+			.depthLoadOp = wgpu::LoadOp::Clear,
+			.depthStoreOp = wgpu::StoreOp::Store,
+			.depthClearValue = 1.0f,
+		};
+
+		//TODO move this to generated gpu objects
 		wgpu::RenderPassDescriptor renderPassDescriptor = {
 			.label = "initial render pass",
 			.colorAttachmentCount = _renderPassColorAttachments.size(),
 			.colorAttachments = _renderPassColorAttachments.data(),
+			.depthStencilAttachment = &renderPassDepthStencilAttachment,
 		};
 		wgpu::RenderPassEncoder renderPassEncoder = descriptor->commandEncoder.BeginRenderPass(&renderPassDescriptor);
 		renderPassEncoder.SetPipeline(_renderPipeline);

@@ -37,6 +37,7 @@ namespace DawnEngine {
 
 		const wgpu::TextureFormat masterInfoTextureFormat = wgpu::TextureFormat::RGBA32Float;
 		const wgpu::TextureFormat baseColorAccumulatorTextureFormat = wgpu::TextureFormat::BGRA8Unorm;
+		const wgpu::TextureFormat depthTextureFormat = wgpu::TextureFormat::Depth16Unorm;
 		//const wgpu::TextureFormat metallicRoughnessAccumulatorTextureFormat = wgpu::TextureFormat::RGBA32Float;
 
 	private:
@@ -56,6 +57,7 @@ namespace DawnEngine {
 
 		wgpu::TextureView _masterInfoTextureView;
 		wgpu::TextureView _baseColorAccumulatorTextureView;
+		wgpu::TextureView _depthTextureView;
 
 		std::array<wgpu::RenderPassColorAttachment, 2> _renderPassColorAttachments;
 
