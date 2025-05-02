@@ -195,7 +195,7 @@ namespace DawnEngine {
 			.vertex = vertexState,
 			.primitive = wgpu::PrimitiveState {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
-				.cullMode = wgpu::CullMode::Back,
+				.cullMode = wgpu::CullMode::None,
 			},
 			.depthStencil = &depthStencilState,
 			.multisample = wgpu::MultisampleState {

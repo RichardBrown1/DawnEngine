@@ -319,7 +319,7 @@ void Engine::addMeshData(fastgltf::Asset& asset, glm::f32mat4x4& transform, uint
 		//drawCall
 		const DawnEngine::DrawInfo drawCall = {
 			.indexCount = static_cast<uint32_t>(accessor.count),
-			.instanceCount = 1,
+			.instanceCount = 1, //TODO handle multiple instances
 			.firstIndex = static_cast<uint32_t>(indicesOffset),
 			.firstInstance = static_cast<uint32_t>(_drawCalls.size()),
 		};

@@ -28,15 +28,23 @@ struct TextureInfo
     uint texCoord;
 };
 
-struct Material
+struct PBRMetallicRoughness
 {
     float4 baseColor;
     float metallicFactor;
     float roughnessFactor;
     TextureInfo baseColorTextureInfo;
     TextureInfo metallicRoughnessTextureInfo;
-    uint textureOptions;
+    uint PAD0;
     uint PAD1;
+};
+struct Material
+{
+    PBRMetallicRoughness pbrMetallicRoughness;
+    uint textureOptions;
+    uint PAD0;
+    uint PAD1;
+    uint PAD2;
 };
 
 struct Light

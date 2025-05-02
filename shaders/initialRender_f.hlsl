@@ -23,7 +23,7 @@ FSOutput fs_main(VSOutput input)
     );
 
     const Material material = materials[ip.materialIndex];
-    output.baseColor = material.baseColor;
+    output.baseColor = material.pbrMetallicRoughness.baseColor;
 
     return output;
 }
