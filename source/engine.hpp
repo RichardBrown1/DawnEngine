@@ -20,10 +20,11 @@ public:
 	void destroy();
 
 private:
+	const wgpu::Extent2D _screenDimensions = { 1280, 720 };
 	const std::string _gltfDirectory = "models/cornellBox/";
 	const std::string _gltfFile = "cornellBox.gltf";
-	fastgltf::Parser _gltfParser;
 
+	fastgltf::Parser _gltfParser;
 	wgpu::Instance _instance;
 	wgpu::Device _device;
 	wgpu::Surface _surface;

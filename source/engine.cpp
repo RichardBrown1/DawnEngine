@@ -23,9 +23,6 @@
 
 static Engine* loadedEngine = nullptr;
 
-const uint32_t WIDTH = 1024;
-const uint32_t HEIGHT = 720;
-
 Engine::Engine() {
 	//Only 1 engine allowed
 	assert(loadedEngine == nullptr);
@@ -33,7 +30,7 @@ Engine::Engine() {
 
 	// Initialise SDL
 	SDL_Init(SDL_INIT_VIDEO);
-	SDL_Window* p_sdl_window = SDL_CreateWindow("DAWN WebGPU Engine", static_cast<int>(WIDTH), static_cast<int>(HEIGHT), 0);
+	SDL_Window* p_sdl_window = SDL_CreateWindow("DAWN WebGPU Engine", static_cast<int>(_screenDimensions.width), static_cast<int>(_screenDimensions.height), 0);
 
 	if (!p_sdl_window) {
 		SDL_Quit();
@@ -181,8 +178,8 @@ Engine::Engine() {
 			std::cout << loggingType << message << std::endl;
 		});
 
-	_surfaceConfiguration.width = WIDTH;
-	_surfaceConfiguration.height = HEIGHT;
+	_surfaceConfiguration.width = _screenDimensions.width;
+	_surfaceConfiguration.height = _screenDimensions.height;
 	_surfaceConfiguration.device = _device;
 	_surfaceConfiguration.alphaMode = wgpu::CompositeAlphaMode::Auto;
 	_surfaceConfiguration.presentMode = wgpu::PresentMode::Immediate;
@@ -208,6 +205,7 @@ Engine::Engine() {
 			.instancePropertiesBuffer = _buffers.instanceProperties,
 			.materialBuffer = _buffers.material,
 		},
+		.screenDimensions = _screenDimensions,
 	};
 	_initialRender->generateGpuObjects(&generateGpuObjectsDescriptor);
 }
@@ -483,7 +481,7 @@ void Engine::initDepthTexture() {
 			.label = "camera depth texture",
 			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
 			.dimension = wgpu::TextureDimension::e2D,
-			.size = wgpu::Extent3D(_surfaceConfiguration.width, _surfaceConfiguration.height),
+			.size = wgpu::Extent3D{_screenDimensions},
 			.format = DawnEngine::DEPTH_FORMAT,
 		};
 		wgpu::Texture depthTexture = _device.CreateTexture(&depthTextureDescriptor);
@@ -549,6 +547,7 @@ void Engine::draw() {
 		.commandEncoder = commandEncoder,
 		.vertexBuffer = _buffers.vbo,
 		.indexBuffer = _buffers.index,
+		.drawCalls = _drawCalls,
 	};
 	_initialRender->doCommands(&doInitialRenderCommandsDescriptor);
 

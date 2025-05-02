@@ -9,18 +9,83 @@ namespace DawnEngine {
 	};
 
 	void InitialRender::generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor) {
+		assert(descriptor->screenDimensions.width > 1);
+		
 		_vertexShaderModule = Utilities::createShaderModule(*_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
-		_fragmentShaderModule =  Utilities::createShaderModule(*_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
+		_fragmentShaderModule = Utilities::createShaderModule(*_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 
 		createBindGroupLayout();
 		createPipeline();
 		createBindGroup(&descriptor->initialRenderCreateBindGroupDescriptor);
 
+		const wgpu::TextureDescriptor masterInfoTextureDescriptor = {
+			.label = "master info texture",
+			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
+			.dimension = wgpu::TextureDimension::e2D,
+			.size = {
+				.width = descriptor->screenDimensions.width,
+				.height = descriptor->screenDimensions.height,
+			},
+			.format = masterInfoTextureFormat,
+		};
+		wgpu::Texture masterInfoTexture = _device->CreateTexture(&masterInfoTextureDescriptor);
+		const wgpu::TextureViewDescriptor masterInfoTextureViewDescriptor = {
+			.label = "master info texture view descriptor",
+			.format = masterInfoTextureFormat,
+			.dimension = wgpu::TextureViewDimension::e2D,
+			.mipLevelCount = 1,
+			.arrayLayerCount = 1,
+			.aspect = wgpu::TextureAspect::All,
+			.usage = masterInfoTextureDescriptor.usage,
+		};
+		_masterInfoTextureView = masterInfoTexture.CreateView(&masterInfoTextureViewDescriptor);
+
+
+		const wgpu::TextureDescriptor baseColorAccumulatorTextureDescriptor = {
+			.label = "base color accumulator texture",
+			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
+			.dimension = wgpu::TextureDimension::e2D,
+			.size = {
+				.width = descriptor->screenDimensions.width,
+				.height = descriptor->screenDimensions.height,
+			},
+			.format = baseColorAccumulatorTextureFormat,
+		};
+		wgpu::Texture baseColorAccumulatorTexture = _device->CreateTexture(&baseColorAccumulatorTextureDescriptor);
+		const wgpu::TextureViewDescriptor baseColorAccumulatorTextureViewDescriptor = {
+			.label = "base color accumulator texture view descriptor",
+			.format = baseColorAccumulatorTextureFormat,
+			.dimension = wgpu::TextureViewDimension::e2D,
+			.mipLevelCount = 1,
+			.arrayLayerCount = 1,
+			.aspect = wgpu::TextureAspect::All,
+			.usage = baseColorAccumulatorTextureDescriptor.usage,
+		};
+		_baseColorAccumulatorTextureView = masterInfoTexture.CreateView(&baseColorAccumulatorTextureViewDescriptor);
+
+		_renderPassColorAttachments = {
+			wgpu::RenderPassColorAttachment {
+				.view = _masterInfoTextureView,
+				.depthSlice = 0,
+				.loadOp = wgpu::LoadOp::Clear,
+				.storeOp = wgpu::StoreOp::Store,
+				.clearValue = wgpu::Color{0.0f, 0.0f, UINT32_MAX, 0.0f},
+			},
+			wgpu::RenderPassColorAttachment {
+				.view = _baseColorAccumulatorTextureView,
+				.depthSlice = 0,
+				.loadOp = wgpu::LoadOp::Clear,
+				.storeOp = wgpu::StoreOp::Store,
+				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
+			},
+		};
 	};
 
 	void InitialRender::doCommands(const DoInitialRenderCommandsDescriptor* descriptor) {
 		wgpu::RenderPassDescriptor renderPassDescriptor = {
-			.label = "initial render pass"
+			.label = "initial render pass",
+			.colorAttachmentCount = _renderPassColorAttachments.size(),
+			.colorAttachments = _renderPassColorAttachments.data(),
 		};
 		wgpu::RenderPassEncoder renderPassEncoder = descriptor->commandEncoder.BeginRenderPass(&renderPassDescriptor);
 		renderPassEncoder.SetPipeline(_renderPipeline);
@@ -32,6 +97,11 @@ namespace DawnEngine {
 			descriptor->indexBuffer.GetSize()
 		);
 		renderPassEncoder.SetBindGroup(0, _bindGroup);
+		
+		for (const auto& dc : descriptor->drawCalls) {
+			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+		}
+		renderPassEncoder.End();
 	}
 
 	void InitialRender::createPipeline() {
@@ -76,14 +146,14 @@ namespace DawnEngine {
 			.depthCompare = wgpu::CompareFunction::Less,
 		};
 
-		const	wgpu::ColorTargetState textureMasterInfoColorTargetState = {
-			.format = wgpu::TextureFormat::RGBA32Uint,
+		const	wgpu::ColorTargetState masterInfoColorTargetState = {
+			.format = masterInfoTextureFormat,
 		};
 		const wgpu::ColorTargetState baseColorColorTargetState = {
-			.format = wgpu::TextureFormat::RGBA16Unorm,
+			.format = baseColorAccumulatorTextureFormat,
 		};
 		const std::array<wgpu::ColorTargetState, 2> colorTargetStates = {
-			textureMasterInfoColorTargetState,
+			masterInfoColorTargetState,
 			baseColorColorTargetState,
 		};
 		const wgpu::FragmentState fragmentState = {
@@ -166,7 +236,7 @@ namespace DawnEngine {
 		};
 		const wgpu::BindGroupLayoutEntry instancePropertiesBindGroupLayoutEntry = {
 			.binding = 2,
-			.visibility = wgpu::ShaderStage::Vertex,
+			.visibility = wgpu::ShaderStage::Fragment,
 			.buffer = {
 				.type = wgpu::BufferBindingType::ReadOnlyStorage,
 				.minBindingSize = sizeof(InstanceProperty),
@@ -174,7 +244,7 @@ namespace DawnEngine {
 		};
 		const wgpu::BindGroupLayoutEntry materialsBindGroupLayoutEntry = {
 			.binding = 3,
-			.visibility = wgpu::ShaderStage::Vertex,
+			.visibility = wgpu::ShaderStage::Fragment,
 			.buffer = {
 				.type = wgpu::BufferBindingType::ReadOnlyStorage,
 				.minBindingSize = sizeof(Material),

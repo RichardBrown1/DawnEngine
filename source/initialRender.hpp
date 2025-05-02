@@ -19,12 +19,14 @@ namespace DawnEngine {
 
 	struct GenerateGpuObjectsDescriptor {
 		InitialRenderCreateBindGroupDescriptor initialRenderCreateBindGroupDescriptor;
+		wgpu::Extent2D screenDimensions;
 	};
 
 	struct DoInitialRenderCommandsDescriptor {
-		wgpu::CommandEncoder commandEncoder;
-		wgpu::Buffer vertexBuffer;
-		wgpu::Buffer indexBuffer;
+		wgpu::CommandEncoder& commandEncoder;
+		wgpu::Buffer& vertexBuffer;
+		wgpu::Buffer& indexBuffer;
+		std::vector<DawnEngine::DrawInfo>& drawCalls;
 	};
 
 	class InitialRender {
@@ -33,8 +35,8 @@ namespace DawnEngine {
 		void generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor);
 		void doCommands(const DoInitialRenderCommandsDescriptor* descriptor);
 
-		//TODO Other Texture Formats for other texture accumulators
-		const wgpu::TextureFormat baseColorAccumulatorTextureFormat = wgpu::TextureFormat::RGBA32Float;
+		const wgpu::TextureFormat masterInfoTextureFormat = wgpu::TextureFormat::RGBA32Float;
+		const wgpu::TextureFormat baseColorAccumulatorTextureFormat = wgpu::TextureFormat::BGRA8Unorm;
 		//const wgpu::TextureFormat metallicRoughnessAccumulatorTextureFormat = wgpu::TextureFormat::RGBA32Float;
 
 	private:
@@ -51,6 +53,11 @@ namespace DawnEngine {
 
 		wgpu::ShaderModule _vertexShaderModule;
 		wgpu::ShaderModule _fragmentShaderModule;
+
+		wgpu::TextureView _masterInfoTextureView;
+		wgpu::TextureView _baseColorAccumulatorTextureView;
+
+		std::array<wgpu::RenderPassColorAttachment, 2> _renderPassColorAttachments;
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createBindGroupLayout();
