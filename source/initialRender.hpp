@@ -29,6 +29,12 @@ namespace DawnEngine {
 		std::vector<DawnEngine::DrawInfo>& drawCalls;
 	};
 
+	struct CreateTextureViewDescriptor {
+		std::string label;
+		wgpu::TextureView& outputTextureView;
+		wgpu::TextureFormat textureFormat;
+	};
+
 	class InitialRender {
 	public:
 		InitialRender(wgpu::Device* device);
@@ -48,6 +54,8 @@ namespace DawnEngine {
 		const std::string FRAGMENT_SHADER_PATH = "shaders/initialRender_f.spv";
 
 		wgpu::Device *_device;
+		wgpu::Extent2D _screenDimensions;
+
 		wgpu::RenderPipeline _renderPipeline;
 		wgpu::BindGroupLayout _bindGroupLayout;
 		wgpu::BindGroup _bindGroup;
@@ -55,8 +63,13 @@ namespace DawnEngine {
 		wgpu::ShaderModule _vertexShaderModule;
 		wgpu::ShaderModule _fragmentShaderModule;
 
+		const std::string _masterInfoLabel = std::string("master info");
 		wgpu::TextureView _masterInfoTextureView;
+
+		const std::string _baseColorLabel = std::string("base color");
 		wgpu::TextureView _baseColorAccumulatorTextureView;
+
+		const std::string _depthTextureLabel = std::string("depth texture");
 		wgpu::TextureView _depthTextureView;
 
 		std::array<wgpu::RenderPassColorAttachment, 2> _renderPassColorAttachments;
@@ -65,5 +78,6 @@ namespace DawnEngine {
 		void createBindGroupLayout();
 		void createPipeline();
 		void createBindGroup(const InitialRenderCreateBindGroupDescriptor* descriptor);
+		void createTextureView(const CreateTextureViewDescriptor* descriptor);
 	};
 }

@@ -6,10 +6,12 @@
 namespace DawnEngine {
 	InitialRender::InitialRender(wgpu::Device* device) {
 			_device = device;
+			_screenDimensions = wgpu::Extent2D(0,0);
 	};
 
 	void InitialRender::generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor) {
 		assert(descriptor->screenDimensions.width > 1);
+		_screenDimensions = descriptor->screenDimensions;
 		
 		_vertexShaderModule = Utilities::createShaderModule(*_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
 		_fragmentShaderModule = Utilities::createShaderModule(*_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
@@ -17,71 +19,27 @@ namespace DawnEngine {
 		createBindGroupLayout();
 		createPipeline();
 		createBindGroup(&descriptor->initialRenderCreateBindGroupDescriptor);
+		
+		CreateTextureViewDescriptor masterInfoTextureViewDescriptor = {
+			.label = _masterInfoLabel,
+			.outputTextureView = _masterInfoTextureView,
+			.textureFormat = masterInfoTextureFormat,
+		};
+		createTextureView(&masterInfoTextureViewDescriptor);
 
-		const wgpu::TextureDescriptor masterInfoTextureDescriptor = {
-			.label = "master info texture",
-			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
-			.dimension = wgpu::TextureDimension::e2D,
-			.size = {
-				.width = descriptor->screenDimensions.width,
-				.height = descriptor->screenDimensions.height,
-			},
-			.format = masterInfoTextureFormat,
+		CreateTextureViewDescriptor baseColorAccumulatorTextureViewDescriptor = {
+			.label = _baseColorLabel,
+			.outputTextureView = _baseColorAccumulatorTextureView,
+			.textureFormat = baseColorAccumulatorTextureFormat,
 		};
-		wgpu::Texture masterInfoTexture = _device->CreateTexture(&masterInfoTextureDescriptor);
-		const wgpu::TextureViewDescriptor masterInfoTextureViewDescriptor = {
-			.label = "master info texture view descriptor",
-			.format = masterInfoTextureFormat,
-			.dimension = wgpu::TextureViewDimension::e2D,
-			.mipLevelCount = 1,
-			.arrayLayerCount = 1,
-			.aspect = wgpu::TextureAspect::All,
-			.usage = masterInfoTextureDescriptor.usage,
-		};
-		_masterInfoTextureView = masterInfoTexture.CreateView(&masterInfoTextureViewDescriptor);
+		createTextureView(&baseColorAccumulatorTextureViewDescriptor);
 
-
-		const wgpu::TextureDescriptor baseColorAccumulatorTextureDescriptor = {
-			.label = "base color accumulator texture",
-			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
-			.dimension = wgpu::TextureDimension::e2D,
-			.size = {
-				.width = descriptor->screenDimensions.width,
-				.height = descriptor->screenDimensions.height,
-			},
-			.format = baseColorAccumulatorTextureFormat,
+		CreateTextureViewDescriptor depthTextureViewDescriptor = {
+			.label = _depthTextureLabel,
+			.outputTextureView = _depthTextureView,
+			.textureFormat = depthTextureFormat,
 		};
-		wgpu::Texture baseColorAccumulatorTexture = _device->CreateTexture(&baseColorAccumulatorTextureDescriptor);
-		const wgpu::TextureViewDescriptor baseColorAccumulatorTextureViewDescriptor = {
-			.label = "base color accumulator texture view descriptor",
-			.format = baseColorAccumulatorTextureFormat,
-			.dimension = wgpu::TextureViewDimension::e2D,
-			.mipLevelCount = 1,
-			.aspect = wgpu::TextureAspect::All,
-			.usage = baseColorAccumulatorTextureDescriptor.usage,
-		};
-		_baseColorAccumulatorTextureView = baseColorAccumulatorTexture.CreateView(&baseColorAccumulatorTextureViewDescriptor);
-
-		const wgpu::TextureDescriptor depthTextureDescriptor = {
-			.label = "base color accumulator texture",
-			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
-			.dimension = wgpu::TextureDimension::e2D,
-			.size = {
-				.width = descriptor->screenDimensions.width,
-				.height = descriptor->screenDimensions.height,
-			},
-			.format = depthTextureFormat,
-		};
-		wgpu::Texture depthTexture = _device->CreateTexture(&depthTextureDescriptor);
-		const wgpu::TextureViewDescriptor depthTextureViewDescriptor = {
-			.label = "base color accumulator texture view descriptor",
-			.format = depthTextureFormat,
-			.dimension = wgpu::TextureViewDimension::e2D,
-			.mipLevelCount = 1,
-			.aspect = wgpu::TextureAspect::All,
-			.usage = depthTextureDescriptor.usage,
-		};
-		_depthTextureView = depthTexture.CreateView(&depthTextureViewDescriptor);
+		createTextureView(&depthTextureViewDescriptor);
 
 		_renderPassColorAttachments = {
 			wgpu::RenderPassColorAttachment {
@@ -302,4 +260,28 @@ namespace DawnEngine {
 		return _device->CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};
 
+	void InitialRender::createTextureView(const CreateTextureViewDescriptor* descriptor) {
+		assert(descriptor->textureFormat != wgpu::TextureFormat::Undefined);
+		const wgpu::TextureDescriptor textureDescriptor = {
+					.label = wgpu::StringView(descriptor->label + std::string(" texture")),
+					.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
+					.dimension = wgpu::TextureDimension::e2D,
+					.size = {
+						.width = _screenDimensions.width,
+						.height = _screenDimensions.height,
+					},
+					.format = descriptor->textureFormat,
+		};
+		wgpu::Texture texture = _device->CreateTexture(&textureDescriptor);
+		const wgpu::TextureViewDescriptor textureViewDescriptor = {
+			.label = wgpu::StringView(descriptor->label + std::string(" texture view")),
+			.format = textureDescriptor.format,
+			.dimension = wgpu::TextureViewDimension::e2D,
+			.mipLevelCount = 1,
+			.arrayLayerCount = 1,
+			.aspect = wgpu::TextureAspect::All,
+			.usage = textureDescriptor.usage,
+		};
+		descriptor->outputTextureView = texture.CreateView(&textureViewDescriptor);
+	}
 }
