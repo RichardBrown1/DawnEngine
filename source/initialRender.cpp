@@ -6,7 +6,7 @@
 namespace DawnEngine {
 	InitialRender::InitialRender(wgpu::Device* device) {
 			_device = device;
-			_screenDimensions = wgpu::Extent2D(0,0);
+			_screenDimensions = wgpu::Extent2D(0,0); //generateGpuObjects() will handle this
 	};
 
 	void InitialRender::generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor) {
