@@ -8,7 +8,7 @@
 namespace DawnEngine {
 
 	struct TextureSamplerManagerDescriptor {
-		wgpu::Device device;
+		wgpu::Device *device;
 		wgpu::Extent2D accumulatorTextureDimensions;
 		uint32_t invocationSize;
 		std::unordered_map<uint32_t, DawnEngine::TextureType>& textureIndicesMap;
@@ -51,8 +51,9 @@ namespace DawnEngine {
 		wgpu::ShaderModule _baseColorAccumulatorShaderModule;
 		wgpu::TextureFormat baseColorAccumulatorTextureFormat;
 
-		wgpu::Device _device;
-		wgpu::Queue _queue;
+		wgpu::Device* _device;
+		wgpu::Queue* _queue;
+
 		wgpu::ComputePipeline _computePipeline;
 		wgpu::BindGroup _accumulatorAndInfoBindGroup;
 		std::vector<wgpu::BindGroup> _inputTextureBindGroups;

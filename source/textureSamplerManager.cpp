@@ -22,14 +22,14 @@ namespace {
 namespace DawnEngine {
 	TextureSamplerManager::TextureSamplerManager(const TextureSamplerManagerDescriptor* descriptor) {
 		_device = descriptor->device;
+		_queue = &descriptor->device->GetQueue();
+
 		_accumulatorTextureDimensions = descriptor->accumulatorTextureDimensions;
 		_invocationSize = descriptor->invocationSize;
 		_textureIndicesMap = descriptor->textureIndicesMap;
 
-		_queue = _device.GetQueue();
-
 		_baseColorAccumulatorShaderModule = Utilities::createShaderModule(
-			_device,
+			*_device,
 			BASE_COLOR_ACCUMULATOR_SHADER_LABEL,
 			BASE_COLOR_ACCUMULATOR_SHADER_PATH
 		);
@@ -72,8 +72,8 @@ namespace DawnEngine {
 			.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst,
 			.size = sizeof(TextureInputInfo),
 		};
-		wgpu::Buffer textureInputInfoBuffer = _device.CreateBuffer(&textureInputInfoBufferDescriptor);
-		_queue.WriteBuffer(textureInputInfoBuffer, 0, &textureInputInfo, textureInputInfoBufferDescriptor.size);
+		wgpu::Buffer textureInputInfoBuffer = _device->CreateBuffer(&textureInputInfoBufferDescriptor);
+		_queue->WriteBuffer(textureInputInfoBuffer, 0, &textureInputInfo, textureInputInfoBufferDescriptor.size);
 		_textureInputInfoBuffers.push_back(textureInputInfoBuffer);
 	}
 
@@ -106,7 +106,7 @@ namespace DawnEngine {
 		std::cout << "numComponents: " << numComponents << " componentByteLength: " << componentByteLength << std::endl;
 		if (needsTranscoding) {
 			khr_df_model_e colorModel = ktxTexture2_GetColorModel_e(sp_ktxTexture2.get());
-			std::cout << transcodeFormat << _device.HasFeature(wgpu::FeatureName::TextureCompressionASTC);
+			std::cout << transcodeFormat << _device->HasFeature(wgpu::FeatureName::TextureCompressionASTC);
 			std::cout << colorModel << std::endl;
 			//throw std::runtime_error("ktx format unsupported");
 			ktxTexture2_GetComponentInfo(sp_ktxTexture2.get(), &numComponents, &componentByteLength);
@@ -151,7 +151,7 @@ namespace DawnEngine {
 			.format = wgpu::TextureFormat::BC7RGBAUnormSrgb,
 			.mipLevelCount = 1,
 		};
-		wgpu::Texture texture = _device.CreateTexture(&textureDescriptor);
+		wgpu::Texture texture = _device->CreateTexture(&textureDescriptor);
 		_textures.push_back(texture);
 
 		const wgpu::TexelCopyTextureInfo texelCopyTextureInfo = {
@@ -163,7 +163,7 @@ namespace DawnEngine {
 				.rowsPerImage = textureDescriptor.size.height,
 		};
 
-		_queue.WriteTexture(
+		_queue->WriteTexture(
 			&texelCopyTextureInfo,
 			p8_textureData,
 			sizeof(float) * sp_ktxTexture->baseWidth * sp_ktxTexture->baseHeight,
@@ -191,7 +191,7 @@ namespace DawnEngine {
 				.minFilter = Utilities::convertFilter(sampler.minFilter.value_or(fastgltf::Filter::Linear)),
 				.mipmapFilter = Utilities::convertMipMapFilter(sampler.minFilter.value_or(fastgltf::Filter::Linear)),
 		};
-		_samplers.push_back(_device.CreateSampler(&samplerDescriptor));
+		_samplers.push_back(_device->CreateSampler(&samplerDescriptor));
 	}
 
 	void TextureSamplerManager::generateGpuObjects(const GenerateGpuObjectsDescriptor *descriptor) {
@@ -236,13 +236,13 @@ namespace DawnEngine {
 			.bindGroupLayoutCount = bindGroupLayouts.size(),
 			.bindGroupLayouts = bindGroupLayouts.data(),
 		};
-		const wgpu::PipelineLayout computePipelineLayout = _device.CreatePipelineLayout(&computePipelineLayoutDescriptor);
+		const wgpu::PipelineLayout computePipelineLayout = _device->CreatePipelineLayout(&computePipelineLayoutDescriptor);
 		const wgpu::ComputePipelineDescriptor computePipelineDescriptor = {
 			.label = "compute pipeline",
 			.layout = computePipelineLayout,
 			.compute = computeState,
 		};
-		_computePipeline = _device.CreateComputePipeline(&computePipelineDescriptor);
+		_computePipeline = _device->CreateComputePipeline(&computePipelineDescriptor);
 	}
 
 	wgpu::BindGroupLayout TextureSamplerManager::getAccumulatorAndInfoBindGroupLayout(wgpu::TextureFormat accumulatorTextureFormat) {
@@ -271,7 +271,7 @@ namespace DawnEngine {
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		return _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+		return _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	}
 
 	wgpu::BindGroupLayout TextureSamplerManager::getInputBindGroupLayout() {
@@ -305,7 +305,7 @@ namespace DawnEngine {
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		return _device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+		return _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	}
 
 	void TextureSamplerManager::createAccumulatorAndInfoBindGroup(const CreateAccumulatorAndInfoBindGroupDescriptor* descriptor) {
@@ -324,7 +324,7 @@ namespace DawnEngine {
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		_accumulatorAndInfoBindGroup = _device.CreateBindGroup(&bindGroupDescriptor);
+		_accumulatorAndInfoBindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
 	}
 
 	void TextureSamplerManager::createInputTextureBindGroups(const CreateInputTextureBindGroupsDescriptor* descriptor) {
@@ -348,7 +348,7 @@ namespace DawnEngine {
 				.entryCount = bindGroupEntries.size(),
 				.entries = bindGroupEntries.data(),
 			};
-			_inputTextureBindGroups.push_back(_device.CreateBindGroup(&bindGroupDescriptor));
+			_inputTextureBindGroups.push_back(_device->CreateBindGroup(&bindGroupDescriptor));
 		}
 	}
 }
