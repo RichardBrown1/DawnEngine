@@ -8,6 +8,7 @@ struct FSOutput
 {
     float4 masterInfoTexture : SV_Target0;
     float4 baseColor : SV_Target1;
+    float4 normal : SV_Target2;
 };
 
 FSOutput fs_main(VSOutput input)
@@ -24,6 +25,8 @@ FSOutput fs_main(VSOutput input)
 
     const Material material = materials[ip.materialIndex];
     output.baseColor = material.pbrMetallicRoughness.baseColor;
+    
+    output.normal = float4(input.normal, 0);
 
     return output;
 }

@@ -34,12 +34,12 @@ namespace DawnEngine {
 		};
 		createTextureView(&baseColorAccumulatorTextureViewDescriptor);
 
-		CreateTextureViewDescriptor depthTextureViewDescriptor = {
-			.label = _depthTextureLabel,
-			.outputTextureView = _depthTextureView,
-			.textureFormat = depthTextureFormat,
+		CreateTextureViewDescriptor normalAccumulatorTextureViewDescriptor = {
+			.label = _normalLabel,
+			.outputTextureView = _normalAccumulatorTextureView,
+			.textureFormat = normalTextureFormat,
 		};
-		createTextureView(&depthTextureViewDescriptor);
+		createTextureView(&normalAccumulatorTextureViewDescriptor);
 
 		_renderPassColorAttachments = {
 			wgpu::RenderPassColorAttachment {
@@ -54,7 +54,21 @@ namespace DawnEngine {
 				.storeOp = wgpu::StoreOp::Store,
 				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
 			},
+			wgpu::RenderPassColorAttachment {
+				.view = _normalAccumulatorTextureView,
+				.loadOp = wgpu::LoadOp::Clear,
+				.storeOp = wgpu::StoreOp::Store,
+				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
+			},
 		};
+
+		CreateTextureViewDescriptor depthTextureViewDescriptor = {
+			.label = _depthTextureLabel,
+			.outputTextureView = _depthTextureView,
+			.textureFormat = depthTextureFormat,
+		};
+		createTextureView(&depthTextureViewDescriptor);
+
 	};
 
 	void InitialRender::doCommands(const DoInitialRenderCommandsDescriptor* descriptor) {
@@ -125,8 +139,8 @@ namespace DawnEngine {
 			.buffers = &vertexBufferLayout,
 		};
 		
-		constexpr wgpu::DepthStencilState depthStencilState = {
-			.format = DawnEngine::DEPTH_FORMAT,
+		const wgpu::DepthStencilState depthStencilState = {
+			.format = depthTextureFormat,
 			.depthWriteEnabled = true,
 			.depthCompare = wgpu::CompareFunction::Less,
 		};
@@ -137,9 +151,13 @@ namespace DawnEngine {
 		const wgpu::ColorTargetState baseColorColorTargetState = {
 			.format = baseColorAccumulatorTextureFormat,
 		};
-		const std::array<wgpu::ColorTargetState, 2> colorTargetStates = {
+		const wgpu::ColorTargetState normalColorTargetState = {
+			.format = normalTextureFormat,
+		};
+		const std::array<wgpu::ColorTargetState, 3> colorTargetStates = {
 			masterInfoColorTargetState,
 			baseColorColorTargetState,
+			normalColorTargetState,
 		};
 		const wgpu::FragmentState fragmentState = {
 			.module = _fragmentShaderModule,

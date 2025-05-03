@@ -43,7 +43,9 @@ namespace DawnEngine {
 
 		const wgpu::TextureFormat masterInfoTextureFormat = wgpu::TextureFormat::RGBA32Float;
 		const wgpu::TextureFormat baseColorAccumulatorTextureFormat = wgpu::TextureFormat::BGRA8Unorm;
-		const wgpu::TextureFormat depthTextureFormat = wgpu::TextureFormat::Depth16Unorm;
+		//TODO normal texture can be a RG format or bitpacked even. You can derive 3 coordinates from 2.
+		const wgpu::TextureFormat normalTextureFormat = wgpu::TextureFormat::RGBA16Float;
+		const wgpu::TextureFormat depthTextureFormat = wgpu::TextureFormat::Depth32Float;
 		//const wgpu::TextureFormat metallicRoughnessAccumulatorTextureFormat = wgpu::TextureFormat::RGBA32Float;
 
 	private:
@@ -69,10 +71,13 @@ namespace DawnEngine {
 		const std::string _baseColorLabel = std::string("base color");
 		wgpu::TextureView _baseColorAccumulatorTextureView;
 
+		const std::string _normalLabel = std::string("normals ");
+		wgpu::TextureView _normalAccumulatorTextureView;
+
 		const std::string _depthTextureLabel = std::string("depth texture");
 		wgpu::TextureView _depthTextureView;
 
-		std::array<wgpu::RenderPassColorAttachment, 2> _renderPassColorAttachments;
+		std::array<wgpu::RenderPassColorAttachment, 3> _renderPassColorAttachments;
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createBindGroupLayout();
