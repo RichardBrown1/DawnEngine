@@ -9,7 +9,7 @@ namespace DawnEngine {
 			_screenDimensions = wgpu::Extent2D(0,0); //generateGpuObjects() will handle this
 	};
 
-	void InitialRender::generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor) {
+	void InitialRender::generateGpuObjects(const Descriptors::InitialRender::GenerateGpuObjects* descriptor) {
 		assert(descriptor->screenDimensions.width > 1);
 		_screenDimensions = descriptor->screenDimensions;
 		
@@ -18,7 +18,7 @@ namespace DawnEngine {
 
 		createBindGroupLayout();
 		createPipeline();
-		createBindGroup(&descriptor->initialRenderCreateBindGroupDescriptor);
+		createBindGroup(&descriptor->buffers);
 		
 		CreateTextureViewDescriptor masterInfoTextureViewDescriptor = {
 			.label = _masterInfoLabel,
@@ -71,7 +71,7 @@ namespace DawnEngine {
 
 	};
 
-	void InitialRender::doCommands(const DoInitialRenderCommandsDescriptor* descriptor) {
+	void InitialRender::doCommands(const DawnEngine::Descriptors::InitialRender::DoCommands* descriptor) {
 		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
 			.view = _depthTextureView,
 			.depthLoadOp = wgpu::LoadOp::Clear,
@@ -184,7 +184,7 @@ namespace DawnEngine {
 		_renderPipeline = _device->CreateRenderPipeline(&renderPipelineDescriptor);
 	}
 
-	void InitialRender::createBindGroup(const InitialRenderCreateBindGroupDescriptor* descriptor) {
+	void InitialRender::createBindGroup(const DawnEngine::Descriptors::InitialRender::Buffers* descriptor) {
 		const wgpu::BindGroupEntry cameraBindGroupEntry = {
 			.binding = 0,
 			.buffer = descriptor->cameraBuffer,

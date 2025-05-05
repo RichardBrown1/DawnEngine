@@ -8,38 +8,43 @@
 #include "structs.hpp"
 #include "utilities.hpp"
 
-namespace DawnEngine {
-
-	struct InitialRenderCreateBindGroupDescriptor {
-		wgpu::Buffer& cameraBuffer;
-		wgpu::Buffer& transformBuffer;
-		wgpu::Buffer& instancePropertiesBuffer;
-		wgpu::Buffer& materialBuffer;
-	};
-
-	struct GenerateGpuObjectsDescriptor {
-		InitialRenderCreateBindGroupDescriptor initialRenderCreateBindGroupDescriptor;
-		wgpu::Extent2D screenDimensions;
-	};
-
-	struct DoInitialRenderCommandsDescriptor {
-		wgpu::CommandEncoder& commandEncoder;
-		wgpu::Buffer& vertexBuffer;
-		wgpu::Buffer& indexBuffer;
-		std::vector<DawnEngine::DrawInfo>& drawCalls;
-	};
-
+namespace {
 	struct CreateTextureViewDescriptor {
 		std::string label;
 		wgpu::TextureView& outputTextureView;
 		wgpu::TextureFormat textureFormat;
 	};
+}
+
+namespace DawnEngine {
+	namespace Descriptors {
+		namespace InitialRender {
+			struct Buffers {
+				wgpu::Buffer& cameraBuffer;
+				wgpu::Buffer& transformBuffer;
+				wgpu::Buffer& instancePropertiesBuffer;
+				wgpu::Buffer& materialBuffer;
+			};
+
+			struct GenerateGpuObjects {
+				Buffers buffers;
+				wgpu::Extent2D screenDimensions;
+			};
+
+			struct DoCommands{
+				wgpu::CommandEncoder& commandEncoder;
+				wgpu::Buffer& vertexBuffer;
+				wgpu::Buffer& indexBuffer;
+				std::vector<DawnEngine::DrawInfo>& drawCalls;
+			};
+		}
+	}
 
 	class InitialRender {
 	public:
 		InitialRender(wgpu::Device* device);
-		void generateGpuObjects(const GenerateGpuObjectsDescriptor* descriptor);
-		void doCommands(const DoInitialRenderCommandsDescriptor* descriptor);
+		void generateGpuObjects(const Descriptors::InitialRender::GenerateGpuObjects* descriptor);
+		void doCommands(const Descriptors::InitialRender::DoCommands* descriptor);
 
 		const wgpu::TextureFormat masterInfoTextureFormat = wgpu::TextureFormat::RGBA32Float;
 		const wgpu::TextureFormat baseColorTextureFormat = wgpu::TextureFormat::BGRA8Unorm;
@@ -82,7 +87,7 @@ namespace DawnEngine {
 		wgpu::PipelineLayout getPipelineLayout();
 		void createBindGroupLayout();
 		void createPipeline();
-		void createBindGroup(const InitialRenderCreateBindGroupDescriptor* descriptor);
+		void createBindGroup(const DawnEngine::Descriptors::InitialRender::Buffers* descriptor);
 		void createTextureView(const CreateTextureViewDescriptor* descriptor);
 	};
 }

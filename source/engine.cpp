@@ -197,8 +197,8 @@ Engine::Engine() {
 	initDepthTexture();
 
 	_initialRender = new DawnEngine::InitialRender(&_device);
-	DawnEngine::GenerateGpuObjectsDescriptor generateGpuObjectsDescriptor = {
-		.initialRenderCreateBindGroupDescriptor = {
+	DawnEngine::Descriptors::InitialRender::GenerateGpuObjects generateGpuObjectsDescriptor = {
+		.buffers = {
 			.cameraBuffer = _buffers.camera,
 			.transformBuffer = _buffers.transform,
 			.instancePropertiesBuffer = _buffers.instanceProperties,
@@ -549,7 +549,7 @@ void Engine::draw() {
 	};
 	wgpu::CommandEncoder commandEncoder = _device.CreateCommandEncoder(&commandEncoderDescriptor);
 
-	DawnEngine::DoInitialRenderCommandsDescriptor doInitialRenderCommandsDescriptor = {
+	DawnEngine::Descriptors::InitialRender::DoCommands doInitialRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,
 		.vertexBuffer = _buffers.vbo,
 		.indexBuffer = _buffers.index,
