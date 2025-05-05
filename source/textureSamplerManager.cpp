@@ -20,32 +20,27 @@ namespace {
 }
 
 namespace DawnEngine {
-	TextureSamplerManager::TextureSamplerManager(const TextureSamplerManagerDescriptor* descriptor) {
+	TextureSamplerManager::TextureSamplerManager(const DawnEngine::Descriptors::TextureSamplerManager::Constructor* descriptor) {
 		_device = descriptor->device;
-		_queue = &descriptor->device->GetQueue();
-
-		_accumulatorTextureDimensions = descriptor->accumulatorTextureDimensions;
-		_invocationSize = descriptor->invocationSize;
-		_textureIndicesMap = descriptor->textureIndicesMap;
+		_queue = descriptor->device->GetQueue();
 
 		_baseColorAccumulatorShaderModule = Utilities::createShaderModule(
 			*_device,
 			BASE_COLOR_ACCUMULATOR_SHADER_LABEL,
 			BASE_COLOR_ACCUMULATOR_SHADER_PATH
 		);
-		baseColorAccumulatorTextureFormat = descriptor->baseColorAccumulatorTextureFormat;
 	};
 
-	void TextureSamplerManager::addAsset(fastgltf::Asset& asset, std::string gltfDirectory) {
-		for (uint32_t i = 0; auto & t : asset.textures) {
-			addSamplerTexturePair(t, _textureIndicesMap.at(i));
+	void TextureSamplerManager::addAsset(const DawnEngine::Descriptors::TextureSamplerManager::AddAsset* descriptor) {
+		for (uint32_t i = 0; auto & t : descriptor->asset.textures) {
+			addSamplerTexturePair(t, descriptor->textureIndicesMap.at(i));
 			addTextureInputInfoBuffer(i);
 			++i;
 		}
-		for (auto& i : asset.images) {
-			addTexture(i.data, gltfDirectory);
+		for (auto& i : descriptor->asset.images) {
+			addTexture(i.data, descriptor->gltfDirectory);
 		}
-		for (auto& s : asset.samplers) {
+		for (auto& s : descriptor->asset.samplers) {
 			addSampler(s);
 		}
 	}
@@ -64,7 +59,7 @@ namespace DawnEngine {
 
 	void TextureSamplerManager::addTextureInputInfoBuffer(uint32_t samplerTexturePairIndex) {
 		const TextureInputInfo textureInputInfo = {
-			.dimensions = _accumulatorTextureDimensions,
+			.dimensions = _screenDimensions,
 			.textureSamplerPairId = samplerTexturePairIndex,
 		};
 		wgpu::BufferDescriptor textureInputInfoBufferDescriptor = {
@@ -73,7 +68,7 @@ namespace DawnEngine {
 			.size = sizeof(TextureInputInfo),
 		};
 		wgpu::Buffer textureInputInfoBuffer = _device->CreateBuffer(&textureInputInfoBufferDescriptor);
-		_queue->WriteBuffer(textureInputInfoBuffer, 0, &textureInputInfo, textureInputInfoBufferDescriptor.size);
+		_queue.WriteBuffer(textureInputInfoBuffer, 0, &textureInputInfo, textureInputInfoBufferDescriptor.size);
 		_textureInputInfoBuffers.push_back(textureInputInfoBuffer);
 	}
 
@@ -163,7 +158,7 @@ namespace DawnEngine {
 				.rowsPerImage = textureDescriptor.size.height,
 		};
 
-		_queue->WriteTexture(
+		_queue.WriteTexture(
 			&texelCopyTextureInfo,
 			p8_textureData,
 			sizeof(float) * sp_ktxTexture->baseWidth * sp_ktxTexture->baseHeight,
@@ -194,14 +189,14 @@ namespace DawnEngine {
 		_samplers.push_back(_device->CreateSampler(&samplerDescriptor));
 	}
 
-	void TextureSamplerManager::generateGpuObjects(const GenerateGpuObjectsDescriptor *descriptor) {
+	void TextureSamplerManager::generateGpuObjects(const DawnEngine::Descriptors::TextureSamplerManager::GenerateGpuObjects* descriptor) {
 		createTexturePipeline(&descriptor->texturePipelineDescriptor);
 		createAccumulatorAndInfoBindGroup(&descriptor->accumulatorAndInfoBindGroupDescriptor);
 		createInputTextureBindGroups(&descriptor->inputTextureBindGroupsDescriptor);
 	}
 
 	//create Texture Pipeline before this
-	void TextureSamplerManager::doCommands(const DoTextureSamplerCommandsDescriptor* descriptor) {
+	void TextureSamplerManager::doCommands(const DawnEngine::Descriptors::TextureSamplerManager::DoCommands* descriptor) {
 		wgpu::ComputePassDescriptor computePassDescriptor = {
 			.label = "texture compute pass",
 		};
@@ -215,7 +210,7 @@ namespace DawnEngine {
 
 		for (auto& inputTextureBindGroup : _inputTextureBindGroups) {
 			computePassEncoder.SetBindGroup(1, inputTextureBindGroup);
-			computePassEncoder.DispatchWorkgroups(_accumulatorTextureDimensions.width, _accumulatorTextureDimensions.height);
+			computePassEncoder.DispatchWorkgroups(_screenDimensions.width, _screenDimensions.height);
 		}
 		computePassEncoder.End();
 	}

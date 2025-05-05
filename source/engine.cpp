@@ -19,7 +19,6 @@
 #include "utilities.hpp"
 #include "renderPipelineHelper.hpp"
 #include "samplers.hpp"
-#include "initialRender.hpp"
 
 static Engine* loadedEngine = nullptr;
 
@@ -98,7 +97,7 @@ Engine::Engine() {
 	std::cout << "Max Texture Dimension 2D Limit: " << limits.maxTextureDimension2D << std::endl;
 	std::cout << "Max Texture Array Layers Limit: " << limits.maxTextureArrayLayers << std::endl;
 	std::cout << "Max Compute Workgroups Per Dimension: " << limits.maxComputeWorkgroupsPerDimension << std::endl;
-	
+
 	std::array<wgpu::FeatureName, 2> requiredFeatures = { 
 		wgpu::FeatureName::IndirectFirstInstance,
 		wgpu::FeatureName::TextureCompressionBC,
@@ -205,9 +204,16 @@ Engine::Engine() {
 			.instancePropertiesBuffer = _buffers.instanceProperties,
 			.materialBuffer = _buffers.material,
 		},
-		.screenDimensions = wgpu::Extent2D{_surfaceConfiguration.width, _surfaceConfiguration.height},
+		.screenDimensions = _screenDimensions, // wgpu::Extent2D{_surfaceConfiguration.width, _surfaceConfiguration.height},
 	};
 	_initialRender->generateGpuObjects(&generateGpuObjectsDescriptor);
+
+
+	const DawnEngine::Descriptors::TextureSamplerManager::Constructor textureSamplerManagerDescriptor = {
+		.device = &_device,
+	};
+	_textureSamplerManager = new DawnEngine::TextureSamplerManager(&textureSamplerManagerDescriptor);
+
 }
 
 void Engine::initGltf() {
@@ -444,11 +450,11 @@ void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
 		memcpy(&materials[i].pbrMetallicRoughness, &m.pbrData, sizeof(glm::f32vec4) + sizeof(float) * 2);
 
 		if (m.pbrData.baseColorTexture.has_value()) {
-			materials[i].textureOptions[DawnEngine::TextureOptionsIndex::HAS_BASE_COLOR_TEXTURE] = 1;
 			materials[i].pbrMetallicRoughness.baseColorTextureInfo = DawnEngine::convertType(m.pbrData.baseColorTexture.value());
-			
+			_stpIndexToTextureTypeMap[materials[i].pbrMetallicRoughness.baseColorTextureInfo.index] = DawnEngine::TextureType::COLOR;
+
 			//DawnEngine::convertType(m.pbrData.metallicRoughnessTexture, materials[i].pbrMetallicRoughness.metallicRoughnessTextureInfo);
-		}
+		};
 		//DawnEngine::convertType(material.pbrData.baseColorTexture, materials[i].pbrMetallicRoughness.baseColorTextureInfo);
 
 		i++;

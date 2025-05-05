@@ -30,7 +30,7 @@ namespace DawnEngine {
 		CreateTextureViewDescriptor baseColorAccumulatorTextureViewDescriptor = {
 			.label = _baseColorLabel,
 			.outputTextureView = _baseColorAccumulatorTextureView,
-			.textureFormat = baseColorAccumulatorTextureFormat,
+			.textureFormat = baseColorTextureFormat,
 		};
 		createTextureView(&baseColorAccumulatorTextureViewDescriptor);
 
@@ -149,7 +149,7 @@ namespace DawnEngine {
 			.format = masterInfoTextureFormat,
 		};
 		const wgpu::ColorTargetState baseColorColorTargetState = {
-			.format = baseColorAccumulatorTextureFormat,
+			.format = baseColorTextureFormat,
 		};
 		const wgpu::ColorTargetState normalColorTargetState = {
 			.format = normalTextureFormat,

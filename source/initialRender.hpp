@@ -42,7 +42,7 @@ namespace DawnEngine {
 		void doCommands(const DoInitialRenderCommandsDescriptor* descriptor);
 
 		const wgpu::TextureFormat masterInfoTextureFormat = wgpu::TextureFormat::RGBA32Float;
-		const wgpu::TextureFormat baseColorAccumulatorTextureFormat = wgpu::TextureFormat::BGRA8Unorm;
+		const wgpu::TextureFormat baseColorTextureFormat = wgpu::TextureFormat::BGRA8Unorm;
 		//TODO normal texture can be a RG format or bitpacked even. You can derive 3 coordinates from 2.
 		const wgpu::TextureFormat normalTextureFormat = wgpu::TextureFormat::RGBA16Float;
 		const wgpu::TextureFormat depthTextureFormat = wgpu::TextureFormat::Depth32Float;

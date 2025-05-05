@@ -11,6 +11,7 @@
 
 #include "structs.hpp"
 #include "initialRender.hpp"
+#include "textureSamplerManager.hpp"
 
 class Engine {
 
@@ -46,7 +47,9 @@ private:
 	DawnEngine::BindGroups _bindGroups;
 	DawnEngine::Samplers _samplers;
 
+	std::unordered_map<uint32_t, DawnEngine::TextureType> _stpIndexToTextureTypeMap;
 	DawnEngine::InitialRender *_initialRender = nullptr;
+	DawnEngine::TextureSamplerManager *_textureSamplerManager = nullptr;
 
 	void initGltf();
 	void initNodes(fastgltf::Asset& asset);
