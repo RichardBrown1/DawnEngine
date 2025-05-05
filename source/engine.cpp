@@ -216,6 +216,8 @@ Engine::Engine() {
 
 }
 
+//TODO move gltf -> host_memory conversion to its own namespace / class
+//	There should be an object that owns host memory 
 void Engine::initGltf() {
 	_gltfParser = fastgltf::Parser::Parser( fastgltf::Extensions::KHR_lights_punctual | fastgltf::Extensions::KHR_texture_basisu);
 	auto gltfFile = fastgltf::GltfDataBuffer::FromPath(_gltfDirectory + _gltfFile);
