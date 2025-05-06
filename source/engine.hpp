@@ -10,6 +10,7 @@ class Engine {
 	wgpu::Instance instance;
 	wgpu::Adapter adapter;
 	wgpu::Device device;
+	wgpu::Queue queue;
 	wgpu::Surface surface;
 	
 	wgpu::Extent2D screenDimensions = { 1280, 720 };

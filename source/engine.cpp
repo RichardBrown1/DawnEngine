@@ -68,6 +68,7 @@ Engine::Engine() {
 
 	device = adapter.CreateDevice(&deviceDescriptor);
 	device.SetLoggingCallback(device::callback::logging);
+	queue = device.GetQueue();
 
 	surfaceConfiguration::init(this->device, this->screenDimensions);
 	surface.Configure(&surfaceConfiguration::self);
