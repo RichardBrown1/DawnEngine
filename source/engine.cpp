@@ -15,7 +15,7 @@
 #include "device.hpp"
 
 
-void Engine::initEngine() {
+Engine::Engine() {
 	absl::SetStderrThreshold(LOG_LEVEL);
 	absl::InitializeLog();
 
