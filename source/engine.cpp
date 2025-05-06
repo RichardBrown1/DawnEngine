@@ -59,7 +59,6 @@ void Engine::initEngine() {
 		wgpu::FeatureName::IndirectFirstInstance,
 		wgpu::FeatureName::TextureCompressionBC,
 	};
-	//wgpu::FeatureName requiredFeatures = wgpu::FeatureName::IndirectFirstInstance;
 	wgpu::DeviceDescriptor deviceDescriptor = {};
 	deviceDescriptor.label = "device";
 	deviceDescriptor.requiredFeatures = requiredFeatures.data();
@@ -70,11 +69,6 @@ void Engine::initEngine() {
 	device = adapter.CreateDevice(&deviceDescriptor);
 	device.SetLoggingCallback(device::callback::logging);
 
-	wgpu::SurfaceCapabilities surfaceCapabilities;
-	wgpu::ConvertibleStatus getCapabilitiesStatus = this->surface.GetCapabilities(adapter, &surfaceCapabilities);
-	if (getCapabilitiesStatus == wgpu::Status::Error) {
-		throw std::runtime_error("failed to get surface capabilities");
-	}
 	const wgpu::SurfaceConfiguration surfaceConfiguration = surfaceConfiguration::get(this->device, this->screenDimensions);
 	surface.Configure(&surfaceConfiguration);
 }
