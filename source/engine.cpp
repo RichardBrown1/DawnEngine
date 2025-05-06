@@ -69,6 +69,6 @@ void Engine::initEngine() {
 	device = adapter.CreateDevice(&deviceDescriptor);
 	device.SetLoggingCallback(device::callback::logging);
 
-	const wgpu::SurfaceConfiguration surfaceConfiguration = surfaceConfiguration::get(this->device, this->screenDimensions);
-	surface.Configure(&surfaceConfiguration);
+	surfaceConfiguration::init(this->device, this->screenDimensions);
+	surface.Configure(&surfaceConfiguration::self);
 }
