@@ -67,10 +67,3 @@ struct SamplerTexturePair
     uint samplerIndex;
     uint textureIndex;
 };
-
-struct TextureMasterInfo //struct DawnEngine::InfoBufferLayout
-{
-    float2 texcoord;
-    uint samplerTexturePairId;
-    uint PAD0;
-};

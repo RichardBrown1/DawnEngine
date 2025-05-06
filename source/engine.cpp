@@ -193,26 +193,36 @@ Engine::Engine() {
 	_surface.Configure(&_surfaceConfiguration);
 	_queue = _device.GetQueue();
 	
-	initGltf();
-	initDepthTexture();
-
-	_initialRender = new DawnEngine::InitialRender(&_device);
-	DawnEngine::Descriptors::InitialRender::GenerateGpuObjects generateGpuObjectsDescriptor = {
-		.buffers = {
-			.cameraBuffer = _buffers.camera,
-			.transformBuffer = _buffers.transform,
-			.instancePropertiesBuffer = _buffers.instanceProperties,
-			.materialBuffer = _buffers.material,
-		},
-		.screenDimensions = _screenDimensions, // wgpu::Extent2D{_surfaceConfiguration.width, _surfaceConfiguration.height},
-	};
-	_initialRender->generateGpuObjects(&generateGpuObjectsDescriptor);
-
-
 	const DawnEngine::Descriptors::TextureSamplerManager::Constructor textureSamplerManagerDescriptor = {
 		.device = &_device,
 	};
 	_textureSamplerManager = new DawnEngine::TextureSamplerManager(&textureSamplerManagerDescriptor);
+
+	initGltf();
+	initDepthTexture();
+
+	_initialRender = new DawnEngine::InitialRender(&_device);
+	{
+		const DawnEngine::Descriptors::InitialRender::GenerateGpuObjects generateGpuObjectsDescriptor = {
+			.buffers = {
+				.cameraBuffer = _buffers.camera,
+				.transformBuffer = _buffers.transform,
+				.instancePropertiesBuffer = _buffers.instanceProperties,
+				.materialBuffer = _buffers.material,
+			},
+			.screenDimensions = _screenDimensions, // wgpu::Extent2D{_surfaceConfiguration.width, _surfaceConfiguration.height},
+		};
+		_initialRender->generateGpuObjects(&generateGpuObjectsDescriptor);
+	}
+
+	//{
+	//	const DawnEngine::Descriptors::TextureSamplerManager::GenerateGpuObjects generateGpuObjects = {
+//			.accumulatorAndInfoBindGroupDescriptor = {
+//				.accumulatorTextureView = _initialRender.
+//}
+//		}
+//			_textureSamplerManager->generateGpuObjects()
+//	}
 
 }
 
@@ -231,6 +241,13 @@ void Engine::initGltf() {
 	initNodes(asset);
 	initSceneBuffers();
 	initMaterialBuffer(asset);
+
+	const DawnEngine::Descriptors::TextureSamplerManager::AddAsset addAssetDescriptor = {
+		.asset = asset,
+		.gltfDirectory = _gltfDirectory,
+		.stpIndexToTextureTypeMap = _stpIndexToTextureTypeMap,
+	};
+	_textureSamplerManager->addAsset(&addAssetDescriptor);
 }
 
 
@@ -445,31 +462,6 @@ void Engine::initSceneBuffers() {
 
 }
 
-void Engine::initMaterialBuffer(fastgltf::Asset& asset) {
-	auto materials = std::vector<DawnEngine::Material>(asset.materials.size());
-	
-	for (int i = 0; auto &m : asset.materials) {
-		memcpy(&materials[i].pbrMetallicRoughness, &m.pbrData, sizeof(glm::f32vec4) + sizeof(float) * 2);
-
-		if (m.pbrData.baseColorTexture.has_value()) {
-			materials[i].pbrMetallicRoughness.baseColorTextureInfo = DawnEngine::convertType(m.pbrData.baseColorTexture.value());
-			_stpIndexToTextureTypeMap[materials[i].pbrMetallicRoughness.baseColorTextureInfo.index] = DawnEngine::TextureType::COLOR;
-
-			//DawnEngine::convertType(m.pbrData.metallicRoughnessTexture, materials[i].pbrMetallicRoughness.metallicRoughnessTextureInfo);
-		};
-		//DawnEngine::convertType(material.pbrData.baseColorTexture, materials[i].pbrMetallicRoughness.baseColorTextureInfo);
-
-		i++;
-	}
-
-	const wgpu::BufferDescriptor materialBufferDescriptor = {
-		.label = "material buffer",
-		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
-		.size = sizeof(DawnEngine::Material) * materials.size(),
-	};
-	_buffers.material = _device.CreateBuffer(&materialBufferDescriptor);
-	_queue.WriteBuffer(_buffers.material, 0, materials.data(), materialBufferDescriptor.size);
-}
 
 void Engine::initDepthTexture() {
 	{

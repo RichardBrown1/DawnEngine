@@ -1,9 +1,11 @@
 #pragma once
 #include <vector>
+#include <unordered_map>
 #include <webgpu/webgpu_cpp.h>
 #include <fastgltf/types.hpp>
 #include "constants.hpp"
 #include "structs.hpp"
+
 
 
 namespace {
@@ -31,12 +33,9 @@ namespace DawnEngine {
 			struct AddAsset {
 				fastgltf::Asset& asset;
 				std::string gltfDirectory;
-				std::unordered_map<uint32_t, DawnEngine::TextureType>& textureIndicesMap;
 			};
 
 			struct GenerateGpuObjects {
-				wgpu::Extent2D screenDimensions;
-				wgpu::TextureFormat baseColorAccumulatorTextureFormat;
 				CreateTexturePipelineDescriptor texturePipelineDescriptor;
 				CreateAccumulatorAndInfoBindGroupDescriptor accumulatorAndInfoBindGroupDescriptor;
 				CreateInputTextureBindGroupsDescriptor inputTextureBindGroupsDescriptor;
@@ -68,21 +67,26 @@ namespace DawnEngine {
 		wgpu::BindGroup _accumulatorAndInfoBindGroup;
 		std::vector<wgpu::BindGroup> _inputTextureBindGroups;
 		wgpu::Extent2D _screenDimensions;
-		std::unordered_map<uint32_t, DawnEngine::TextureType> _stpIndexToTextureTypeMap;
 		std::vector<DawnEngine::SamplerTexturePair> _samplerTexturePairs;
+		std::vector<DawnEngine::Material> _materials;
+		std::unordered_map<uint32_t, uint32_t> _stpToMaterialIndex;
+
 		std::vector<wgpu::Buffer> _textureInputInfoBuffers;
 		std::vector<wgpu::Texture> _textures;
 		std::vector<wgpu::TextureView> _textureViews;
 		std::vector<wgpu::Sampler> _samplers;
+		wgpu::Buffer _materialBuffer;
 
 		void createTexturePipeline(const CreateTexturePipelineDescriptor* descriptor);
 		wgpu::BindGroupLayout getAccumulatorAndInfoBindGroupLayout(wgpu::TextureFormat accumulatorTextureFormat);
 		wgpu::BindGroupLayout getInputBindGroupLayout();
 		void createAccumulatorAndInfoBindGroup(const CreateAccumulatorAndInfoBindGroupDescriptor* descriptor);
 		void createInputTextureBindGroups(const CreateInputTextureBindGroupsDescriptor* descriptor);
-		void addSamplerTexturePair(fastgltf::Texture texture, DawnEngine::TextureType textureType);
-		void addTextureInputInfoBuffer(uint32_t samplerTexturePairIndex);
+		void addSamplerTexturePair(fastgltf::Texture texture);
+		void addTextureInputInfoBuffer(uint32_t materialIndex);
 		void addTexture(fastgltf::DataSource dataSource, std::string gltfDirectory);
 		void addSampler(fastgltf::Sampler sampler);
+		void addMaterial(const fastgltf::Material& inputMaterial, const uint32_t materialIndex);
+		void sendMaterialBufferToDevice();
 	};
 }

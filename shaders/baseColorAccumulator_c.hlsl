@@ -1,11 +1,17 @@
 #include "_definitions.hlsli"
 
+struct TextureMasterInfo //struct DawnEngine::InfoBufferLayout
+{
+    float2 texcoord;
+    uint materialId;
+    uint PAD0;
+};
+
 struct TextureInputInfo
 {
-    uint samplerTexturePairId;
+    uint2 dimensions;
+    uint materialId;
     uint PAD0;
-    uint PAD1;
-    uint PAD2;
 };
 
 RWTexture2D<float4> accumulatorTexture : register(u0, space0);
@@ -22,7 +28,7 @@ void cs_main(uint2 dispatchThreadID: SV_DispatchThreadID)
     accumulatorTexture.GetDimensions(textureWidth, textureHeight);
     TextureMasterInfo info = textureMasterBuffer.Load(textureWidth * dispatchThreadID.y + dispatchThreadID.x);
     float4 inputTextureColor = inputTexture.Sample(inputSamplerState, info.texcoord);
-    if (info.samplerTexturePairId == textureInputInfoBuffer.samplerTexturePairId)
+    if (info.materialId == textureInputInfoBuffer.materialId)
     {
         accumulatorTexture[dispatchThreadID.xy] = inputTextureColor;
     }

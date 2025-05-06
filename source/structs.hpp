@@ -103,10 +103,6 @@ namespace DawnEngine {
 
 	struct Material {
 		PBRMetallicRoughness pbrMetallicRoughness;
-		std::bitset<1> textureOptions;
-		uint32_t PAD0;
-		uint32_t PAD1;
-		uint32_t PAD2;
 	};
 
 };

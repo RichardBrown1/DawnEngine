@@ -13,7 +13,7 @@ namespace {
 
 	struct TextureInputInfo {
 		wgpu::Extent2D dimensions;
-		uint32_t textureSamplerPairId;
+		uint32_t materialId;
 		uint32_t PAD0;
 	};
 
@@ -23,6 +23,7 @@ namespace DawnEngine {
 	TextureSamplerManager::TextureSamplerManager(const DawnEngine::Descriptors::TextureSamplerManager::Constructor* descriptor) {
 		_device = descriptor->device;
 		_queue = descriptor->device->GetQueue();
+		_screenDimensions = wgpu::Extent2D{ 0, 0 };
 
 		_baseColorAccumulatorShaderModule = Utilities::createShaderModule(
 			*_device,
@@ -32,10 +33,12 @@ namespace DawnEngine {
 	};
 
 	void TextureSamplerManager::addAsset(const DawnEngine::Descriptors::TextureSamplerManager::AddAsset* descriptor) {
-		for (uint32_t i = 0; auto & t : descriptor->asset.textures) {
-			addSamplerTexturePair(t, descriptor->textureIndicesMap.at(i));
-			addTextureInputInfoBuffer(i);
+		for (uint32_t i = 0; auto &m : descriptor->asset.materials) {
+			addMaterial(m, i);
 			++i;
+		}
+		for (auto &t : descriptor->asset.textures) {
+			addSamplerTexturePair(t);
 		}
 		for (auto& i : descriptor->asset.images) {
 			addTexture(i.data, descriptor->gltfDirectory);
@@ -43,150 +46,6 @@ namespace DawnEngine {
 		for (auto& s : descriptor->asset.samplers) {
 			addSampler(s);
 		}
-	}
-
-	void TextureSamplerManager::addSamplerTexturePair(fastgltf::Texture texture, DawnEngine::TextureType textureType) {
-		if (!texture.basisuImageIndex.has_value()) {
-			throw std::runtime_error("only KTX files are able to be used as textures");
-		}
-		const DawnEngine::SamplerTexturePair samplerTexturePair = {
-			.samplerIndex = static_cast<uint32_t>(texture.samplerIndex.has_value()),
-			.textureIndex = static_cast<uint32_t>(texture.basisuImageIndex.has_value()),
-			.textureType = textureType,
-		};
-		_samplerTexturePairs.push_back(samplerTexturePair);
-	}
-
-	void TextureSamplerManager::addTextureInputInfoBuffer(uint32_t samplerTexturePairIndex) {
-		const TextureInputInfo textureInputInfo = {
-			.dimensions = _screenDimensions,
-			.textureSamplerPairId = samplerTexturePairIndex,
-		};
-		wgpu::BufferDescriptor textureInputInfoBufferDescriptor = {
-			.label = "texture input buffer descriptor",
-			.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst,
-			.size = sizeof(TextureInputInfo),
-		};
-		wgpu::Buffer textureInputInfoBuffer = _device->CreateBuffer(&textureInputInfoBufferDescriptor);
-		_queue.WriteBuffer(textureInputInfoBuffer, 0, &textureInputInfo, textureInputInfoBufferDescriptor.size);
-		_textureInputInfoBuffers.push_back(textureInputInfoBuffer);
-	}
-
-	void TextureSamplerManager::addTexture(fastgltf::DataSource dataSource, std::string gltfDirectory)
-	{
-		if (!std::holds_alternative<fastgltf::sources::URI>(dataSource)) {
-			throw std::runtime_error("Cannot get fastgltf::DataSource Texture, unsupported type");
-		}
-		fastgltf::sources::URI* p_uri = std::get_if<fastgltf::sources::URI>(&dataSource);
-		if (p_uri->mimeType != fastgltf::MimeType::KTX2) {
-			throw std::runtime_error("Only KTX2 Textures are supported");
-		}
-
-		ktxTexture2* p_ktxTexture;
-		std::string filePath = gltfDirectory.append(p_uri->uri.c_str());
-		std::cout << "Loading Texture: " << filePath << std::endl;
-		checkKtxError(ktxTexture2_CreateFromNamedFile(filePath.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktxTexture));
-		std::shared_ptr<ktxTexture2> sp_ktxTexture2(p_ktxTexture, [](ktxTexture2* k2) {auto k = reinterpret_cast<ktxTexture*>(k2); ktxTexture_Destroy(k); });
-		std::shared_ptr<ktxTexture> sp_ktxTexture = std::reinterpret_pointer_cast<ktxTexture, ktxTexture2>(sp_ktxTexture2);
-		std::cout << "sp_ktxTexture2 Use Count: " << sp_ktxTexture2.use_count() << std::endl;
-
-		ktx_bool_t needsTranscoding = ktxTexture2_NeedsTranscoding(sp_ktxTexture2.get());
-		std::cout << "needs transcoding: " << needsTranscoding << std::endl;
-
-		ktx_transcode_fmt_e transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_NOSELECTION;
-		ktx_uint32_t numComponents = 0;
-		ktx_uint32_t componentByteLength = 0;
-		ktxTexture2_GetComponentInfo(sp_ktxTexture2.get(), &numComponents, &componentByteLength);
-		ktx_uint32_t numChannels = 4; //magic number to replace
-		std::cout << "numComponents: " << numComponents << " componentByteLength: " << componentByteLength << std::endl;
-		if (needsTranscoding) {
-			khr_df_model_e colorModel = ktxTexture2_GetColorModel_e(sp_ktxTexture2.get());
-			std::cout << transcodeFormat << _device->HasFeature(wgpu::FeatureName::TextureCompressionASTC);
-			std::cout << colorModel << std::endl;
-			//throw std::runtime_error("ktx format unsupported");
-			ktxTexture2_GetComponentInfo(sp_ktxTexture2.get(), &numComponents, &componentByteLength);
-			std::cout << "numComponents: " << numComponents << " componentByteLength: " << componentByteLength << std::endl;
-			//TODO Implement other BC Formats.
-			//5 and 6H seem interesting
-			switch (numChannels) {
-			case 1:
-				transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_BC4_R;
-				break;
-			case 2:
-				transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_BC5_RG;
-				break;
-			case 3:
-			case 4:
-				transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_BC7_RGBA;
-				break;
-			default:
-				throw std::runtime_error("unexpected numComponents() count");
-			}
-			checkKtxError(ktxTexture2_TranscodeBasis(sp_ktxTexture2.get(), transcodeFormat, 0));
-		}
-
-		needsTranscoding = ktxTexture2_NeedsTranscoding(sp_ktxTexture2.get());
-		std::cout << "needs transcoding: " << needsTranscoding << std::endl;
-
-		ktx_size_t imageOffset;
-		ktxTexture_GetImageOffset(sp_ktxTexture.get(), 0, 0, 0, &imageOffset);
-		ktx_size_t imageSize = ktxTexture_GetImageSize(sp_ktxTexture.get(), 0);
-		std::cout << "image size of level 0: " << imageSize << std::endl;
-		//sp_ktxTexture2->createMipmaps
-		ktx_uint8_t* p8_textureData = ktxTexture_GetData(sp_ktxTexture.get());
-
-		wgpu::TextureDescriptor textureDescriptor = {
-			.label = wgpu::StringView(filePath),
-			.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst,
-			.dimension = wgpu::TextureDimension::e2D,
-			.size = wgpu::Extent3D {
-				.width = sp_ktxTexture->baseWidth,
-				.height = sp_ktxTexture->baseHeight,
-			},
-			.format = wgpu::TextureFormat::BC7RGBAUnormSrgb,
-			.mipLevelCount = 1,
-		};
-		wgpu::Texture texture = _device->CreateTexture(&textureDescriptor);
-		_textures.push_back(texture);
-
-		const wgpu::TexelCopyTextureInfo texelCopyTextureInfo = {
-			.texture = texture,
-			.mipLevel = 0,
-		};
-		const wgpu::TexelCopyBufferLayout texelCopyBufferLayout = {
-				.bytesPerRow = textureDescriptor.size.width * 4, //1 pixel = 4 bytes. Careful this will change with different formats
-				.rowsPerImage = textureDescriptor.size.height,
-		};
-
-		_queue.WriteTexture(
-			&texelCopyTextureInfo,
-			p8_textureData,
-			sizeof(float) * sp_ktxTexture->baseWidth * sp_ktxTexture->baseHeight,
-			&texelCopyBufferLayout,
-			&textureDescriptor.size
-		);
-
-		const wgpu::TextureViewDescriptor textureViewDescriptor = {
-			.label = "Textures",
-			.format = textureDescriptor.format,
-			.dimension = wgpu::TextureViewDimension::e2D,
-			.mipLevelCount = textureDescriptor.mipLevelCount,
-			.arrayLayerCount = textureDescriptor.size.depthOrArrayLayers,
-			.usage = textureDescriptor.usage,
-		};
-		_textureViews.push_back(texture.CreateView(&textureViewDescriptor));
-	}
-
-	void TextureSamplerManager::addSampler(fastgltf::Sampler sampler) {
-		wgpu::SamplerDescriptor	samplerDescriptor = {
-				.label = sampler.name.c_str(),
-				.addressModeU = Utilities::convertType(sampler.wrapS),
-				.addressModeV = Utilities::convertType(sampler.wrapT),
-				.magFilter = Utilities::convertFilter(sampler.magFilter.value_or(fastgltf::Filter::Linear)),
-				.minFilter = Utilities::convertFilter(sampler.minFilter.value_or(fastgltf::Filter::Linear)),
-				.mipmapFilter = Utilities::convertMipMapFilter(sampler.minFilter.value_or(fastgltf::Filter::Linear)),
-		};
-		_samplers.push_back(_device->CreateSampler(&samplerDescriptor));
 	}
 
 	void TextureSamplerManager::generateGpuObjects(const DawnEngine::Descriptors::TextureSamplerManager::GenerateGpuObjects* descriptor) {
@@ -202,6 +61,17 @@ namespace DawnEngine {
 		};
 		wgpu::ComputePassEncoder computePassEncoder = descriptor->commandEncoder.BeginComputePass(&computePassDescriptor);
 		computePassEncoder.SetPipeline(_computePipeline);
+
+		std::array<DawnEngine::TextureType, 3> TextureTypes = {
+			DawnEngine::TextureType::COLOR,
+			DawnEngine::TextureType::NORMAL,
+			DawnEngine::TextureType::METALLIC_ROUGHNESS,
+		};
+//		std::unordered_map<DawnEngine::TextureType, wgpu::TextureView accumulatorTextureView> textureTypeToAccumulatorTextureView = {
+//			{DawnEngine::TextureType::Color, }
+//		};
+		
+
 		CreateAccumulatorAndInfoBindGroupDescriptor createAccumulatorAndInfoBindGroupDescriptor = {
 			.accumulatorTextureView = descriptor->accumulatorTextureView,
 			.masterTextureInfoTextureView = descriptor->masterTextureInfoTextureView,
@@ -214,6 +84,46 @@ namespace DawnEngine {
 		}
 		computePassEncoder.End();
 	}
+
+	void TextureSamplerManager::addSamplerTexturePair(fastgltf::Texture texture) {
+		if (!texture.basisuImageIndex.has_value()) {
+			throw std::runtime_error("only KTX files are able to be used as textures");
+		}
+		const DawnEngine::SamplerTexturePair samplerTexturePair = {
+			.samplerIndex = static_cast<uint32_t>(texture.samplerIndex.has_value()),
+			.textureIndex = static_cast<uint32_t>(texture.basisuImageIndex.has_value()),
+		};
+		_samplerTexturePairs.push_back(samplerTexturePair);
+	}
+
+	void TextureSamplerManager::addTextureInputInfoBuffer(uint32_t materialId) {
+		const TextureInputInfo textureInputInfo = {
+			.dimensions = _screenDimensions,
+			.materialId = materialId,
+		};
+		wgpu::BufferDescriptor textureInputInfoBufferDescriptor = {
+			.label = "texture input buffer descriptor",
+			.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst,
+			.size = sizeof(TextureInputInfo),
+		};
+		wgpu::Buffer textureInputInfoBuffer = _device->CreateBuffer(&textureInputInfoBufferDescriptor);
+		_queue.WriteBuffer(textureInputInfoBuffer, 0, &textureInputInfo, textureInputInfoBufferDescriptor.size);
+		_textureInputInfoBuffers.push_back(textureInputInfoBuffer);
+	}
+
+
+	void TextureSamplerManager::addSampler(fastgltf::Sampler sampler) {
+		wgpu::SamplerDescriptor	samplerDescriptor = {
+				.label = sampler.name.c_str(),
+				.addressModeU = Utilities::convertType(sampler.wrapS),
+				.addressModeV = Utilities::convertType(sampler.wrapT),
+				.magFilter = Utilities::convertFilter(sampler.magFilter.value_or(fastgltf::Filter::Linear)),
+				.minFilter = Utilities::convertFilter(sampler.minFilter.value_or(fastgltf::Filter::Linear)),
+				.mipmapFilter = Utilities::convertMipMapFilter(sampler.minFilter.value_or(fastgltf::Filter::Linear)),
+		};
+		_samplers.push_back(_device->CreateSampler(&samplerDescriptor));
+	}
+
 
 
 	void TextureSamplerManager::createTexturePipeline(const CreateTexturePipelineDescriptor* descriptor) {
@@ -324,8 +234,9 @@ namespace DawnEngine {
 
 	void TextureSamplerManager::createInputTextureBindGroups(const CreateInputTextureBindGroupsDescriptor* descriptor) {
 		for (int i = 0; auto & stp : descriptor->samplerTexturePairs) {
+			const uint32_t materialIndex = _stpToMaterialIndex[i];
 			const wgpu::BindGroupEntry textureInputInfoBuffer = {
-				.buffer = _textureInputInfoBuffers[i],
+				.buffer = _textureInputInfoBuffers[materialIndex],
 			};
 			const wgpu::BindGroupEntry inputTexture = {
 				.textureView = _textureViews[stp.textureIndex],
@@ -346,4 +257,132 @@ namespace DawnEngine {
 			_inputTextureBindGroups.push_back(_device->CreateBindGroup(&bindGroupDescriptor));
 		}
 	}
+
+	void TextureSamplerManager::addMaterial(const fastgltf::Material& inputMaterial, const uint32_t materialIndex) {
+		DawnEngine::Material outputMaterial = {};
+		memcpy(&outputMaterial.pbrMetallicRoughness, &inputMaterial.pbrData, sizeof(glm::f32vec4) + sizeof(float) * 2);
+		outputMaterial.pbrMetallicRoughness.baseColorTextureInfo = DawnEngine::convertType(inputMaterial.pbrData.baseColorTexture.value());
+
+		_materials.push_back(outputMaterial);
+		
+		_stpMaterialIndex[outputMaterial.pbrMetallicRoughness.baseColorTextureInfo.index] = 
+	}
+	
+
+	void TextureSamplerManager::sendMaterialBufferToDevice() {
+		const wgpu::BufferDescriptor materialBufferDescriptor = {
+			.label = "material buffer",
+			.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage,
+			.size = sizeof(DawnEngine::Material) * _materials.size(),
+		};
+		_materialBuffer = _device->CreateBuffer(&materialBufferDescriptor);
+		_queue.WriteBuffer(_materialBuffer, 0, _materials.data(), materialBufferDescriptor.size);
+
+	}
+
+	void TextureSamplerManager::addTexture(fastgltf::DataSource dataSource, std::string gltfDirectory)
+	{
+		if (!std::holds_alternative<fastgltf::sources::URI>(dataSource)) {
+			throw std::runtime_error("Cannot get fastgltf::DataSource Texture, unsupported type");
+		}
+		fastgltf::sources::URI* p_uri = std::get_if<fastgltf::sources::URI>(&dataSource);
+		if (p_uri->mimeType != fastgltf::MimeType::KTX2) {
+			throw std::runtime_error("Only KTX2 Textures are supported");
+		}
+
+		ktxTexture2* p_ktxTexture;
+		std::string filePath = gltfDirectory.append(p_uri->uri.c_str());
+		std::cout << "Loading Texture: " << filePath << std::endl;
+		checkKtxError(ktxTexture2_CreateFromNamedFile(filePath.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktxTexture));
+		std::shared_ptr<ktxTexture2> sp_ktxTexture2(p_ktxTexture, [](ktxTexture2* k2) {auto k = reinterpret_cast<ktxTexture*>(k2); ktxTexture_Destroy(k); });
+		std::shared_ptr<ktxTexture> sp_ktxTexture = std::reinterpret_pointer_cast<ktxTexture, ktxTexture2>(sp_ktxTexture2);
+		std::cout << "sp_ktxTexture2 Use Count: " << sp_ktxTexture2.use_count() << std::endl;
+
+		ktx_bool_t needsTranscoding = ktxTexture2_NeedsTranscoding(sp_ktxTexture2.get());
+		std::cout << "needs transcoding: " << needsTranscoding << std::endl;
+
+		ktx_transcode_fmt_e transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_NOSELECTION;
+		ktx_uint32_t numComponents = 0;
+		ktx_uint32_t componentByteLength = 0;
+		ktxTexture2_GetComponentInfo(sp_ktxTexture2.get(), &numComponents, &componentByteLength);
+		ktx_uint32_t numChannels = 4; //magic number to replace
+		std::cout << "numComponents: " << numComponents << " componentByteLength: " << componentByteLength << std::endl;
+		if (needsTranscoding) {
+			khr_df_model_e colorModel = ktxTexture2_GetColorModel_e(sp_ktxTexture2.get());
+			std::cout << transcodeFormat << _device->HasFeature(wgpu::FeatureName::TextureCompressionASTC);
+			std::cout << colorModel << std::endl;
+			//throw std::runtime_error("ktx format unsupported");
+			ktxTexture2_GetComponentInfo(sp_ktxTexture2.get(), &numComponents, &componentByteLength);
+			std::cout << "numComponents: " << numComponents << " componentByteLength: " << componentByteLength << std::endl;
+			//TODO Implement other BC Formats.
+			//5 and 6H seem interesting
+			switch (numChannels) {
+			case 1:
+				transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_BC4_R;
+				break;
+			case 2:
+				transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_BC5_RG;
+				break;
+			case 3:
+			case 4:
+				transcodeFormat = ktx_transcode_fmt_e::KTX_TTF_BC7_RGBA;
+				break;
+			default:
+				throw std::runtime_error("unexpected numComponents() count");
+			}
+			checkKtxError(ktxTexture2_TranscodeBasis(sp_ktxTexture2.get(), transcodeFormat, 0));
+		}
+
+		needsTranscoding = ktxTexture2_NeedsTranscoding(sp_ktxTexture2.get());
+		std::cout << "needs transcoding: " << needsTranscoding << std::endl;
+
+		ktx_size_t imageOffset;
+		ktxTexture_GetImageOffset(sp_ktxTexture.get(), 0, 0, 0, &imageOffset);
+		ktx_size_t imageSize = ktxTexture_GetImageSize(sp_ktxTexture.get(), 0);
+		std::cout << "image size of level 0: " << imageSize << std::endl;
+		//sp_ktxTexture2->createMipmaps
+		ktx_uint8_t* p8_textureData = ktxTexture_GetData(sp_ktxTexture.get());
+
+		wgpu::TextureDescriptor textureDescriptor = {
+			.label = wgpu::StringView(filePath),
+			.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst,
+			.dimension = wgpu::TextureDimension::e2D,
+			.size = wgpu::Extent3D {
+				.width = sp_ktxTexture->baseWidth,
+				.height = sp_ktxTexture->baseHeight,
+			},
+			.format = wgpu::TextureFormat::BC7RGBAUnormSrgb,
+			.mipLevelCount = 1,
+		};
+		wgpu::Texture texture = _device->CreateTexture(&textureDescriptor);
+		_textures.push_back(texture);
+
+		const wgpu::TexelCopyTextureInfo texelCopyTextureInfo = {
+			.texture = texture,
+			.mipLevel = 0,
+		};
+		const wgpu::TexelCopyBufferLayout texelCopyBufferLayout = {
+				.bytesPerRow = textureDescriptor.size.width * 4, //1 pixel = 4 bytes. Careful this will change with different formats
+				.rowsPerImage = textureDescriptor.size.height,
+		};
+
+		_queue.WriteTexture(
+			&texelCopyTextureInfo,
+			p8_textureData,
+			sizeof(float) * sp_ktxTexture->baseWidth * sp_ktxTexture->baseHeight,
+			&texelCopyBufferLayout,
+			&textureDescriptor.size
+		);
+
+		const wgpu::TextureViewDescriptor textureViewDescriptor = {
+			.label = "Textures",
+			.format = textureDescriptor.format,
+			.dimension = wgpu::TextureViewDimension::e2D,
+			.mipLevelCount = textureDescriptor.mipLevelCount,
+			.arrayLayerCount = textureDescriptor.size.depthOrArrayLayers,
+			.usage = textureDescriptor.usage,
+		};
+		_textureViews.push_back(texture.CreateView(&textureViewDescriptor));
+	}
+
 }
