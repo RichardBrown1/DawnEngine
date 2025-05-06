@@ -3,6 +3,7 @@
 
 namespace {
 	constexpr absl::LogSeverityAtLeast LOG_LEVEL = absl::LogSeverityAtLeast::kInfo;
+	const std::string WINDOW_TITLE = "Dawn WebGPU Engine";
 }
 
 struct Engine {

@@ -19,7 +19,7 @@ void Engine::initEngine() {
 	absl::InitializeLog();
 
 	SDL_Init(SDL_INIT_VIDEO);
-	SDL_Window* p_sdl_window = SDL_CreateWindow("DAWN WebGPU Engine", static_cast<int>(this->screenDimensions.width), static_cast<int>(this->screenDimensions.height), 0);
+	SDL_Window* p_sdl_window = SDL_CreateWindow(WINDOW_TITLE.c_str(), static_cast<int>(this->screenDimensions.width), static_cast<int>(this->screenDimensions.height), 0);
 
 	CHECK(p_sdl_window);
 
