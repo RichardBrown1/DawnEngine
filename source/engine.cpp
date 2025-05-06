@@ -12,6 +12,7 @@
 #include "absl/log/globals.h"
 #include "print.hpp"
 #include "surfaceConfiguration.hpp"
+#include "device.hpp"
 
 
 void Engine::initEngine() {
@@ -63,75 +64,11 @@ void Engine::initEngine() {
 	deviceDescriptor.label = "device";
 	deviceDescriptor.requiredFeatures = requiredFeatures.data();
 	deviceDescriptor.requiredFeatureCount = requiredFeatures.size();
-	deviceDescriptor.SetUncapturedErrorCallback(
-		[](const wgpu::Device&, wgpu::ErrorType type, wgpu::StringView message) {
-			const char* errorTypeName = "";
-			switch (type) {
-			case wgpu::ErrorType::Validation:
-				errorTypeName = "Validation";
-				break;
-			case wgpu::ErrorType::OutOfMemory:
-				errorTypeName = "Out of memory";
-				break;
-			case wgpu::ErrorType::Internal:
-				errorTypeName = "Internal";
-				break;
-			case wgpu::ErrorType::Unknown:
-				errorTypeName = "Unknown";
-				break;
-			default:
-				LOG(FATAL) << "Unknown wgpu::Error Type";
-			}
-			LOG(ERROR) << errorTypeName << " error: " << message;
-		}
-	);
+	deviceDescriptor.SetUncapturedErrorCallback(device::callback::uncapturedError);
+	deviceDescriptor.SetDeviceLostCallback(wgpu::CallbackMode::AllowSpontaneous, device::callback::deviceLost);
 
-	deviceDescriptor.SetDeviceLostCallback(
-		wgpu::CallbackMode::AllowSpontaneous,
-		[](const wgpu::Device&, wgpu::DeviceLostReason reason, wgpu::StringView message) {
-			std::string reasonName = "";
-			switch (reason) {
-			case wgpu::DeviceLostReason::Unknown:
-				reasonName = "Unknown";
-				break;
-			case wgpu::DeviceLostReason::Destroyed:
-				reasonName = "Destroyed";
-				break;
-			case wgpu::DeviceLostReason::CallbackCancelled:
-				reasonName = "CallbackCancelled";
-				break;
-			case wgpu::DeviceLostReason::FailedCreation:
-				reasonName = "FailedCreation";
-				break;
-			default:
-				LOG(FATAL) << "Unknown wgpu::DeviceLostReason";
-			}
-			LOG(ERROR) << "Device lost because of " << reasonName << ": " << message;
-		}
-	);
 	device = adapter.CreateDevice(&deviceDescriptor);
-
-	device.SetLoggingCallback(
-		[](wgpu::LoggingType type, wgpu::StringView message) {
-			std::string loggingType;
-			switch (type) {
-			case wgpu::LoggingType::Verbose:
-				loggingType = "Verbose";
-				break;
-			case wgpu::LoggingType::Info:
-				loggingType = "Info";
-				break;
-			case wgpu::LoggingType::Warning:
-				loggingType = "Warning";
-				break;
-			case wgpu::LoggingType::Error:
-				loggingType = "Error";
-				break;
-			default:
-				LOG(FATAL) << "Unknown wgpu::LoggingType";
-			};
-			LOG(ERROR) << loggingType << message << std::endl;
-		});
+	device.SetLoggingCallback(device::callback::logging);
 
 	wgpu::SurfaceCapabilities surfaceCapabilities;
 	wgpu::ConvertibleStatus getCapabilitiesStatus = this->surface.GetCapabilities(adapter, &surfaceCapabilities);
