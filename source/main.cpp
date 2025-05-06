@@ -5,8 +5,8 @@
 int main()
 {
 	try {
-		Engine dawnEngine = Engine();
-		dawnEngine.run();
+		Engine dawnEngine;
+		dawnEngine.initEngine();
 	}
 	catch (std::exception& err) {
 		std::cout << "std::Exception: " << err.what() << std::endl;

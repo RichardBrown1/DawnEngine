@@ -4,7 +4,8 @@
     "glm",
     "ktx",
     "sdl3",
-    "directx-dxc"
+    "directx-dxc",
+    "abseil"
   ],
   "overrides": [
     {
