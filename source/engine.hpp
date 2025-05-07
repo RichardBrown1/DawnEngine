@@ -1,3 +1,4 @@
+#pragma once
 #include "absl/log/globals.h"
 #include <webgpu/webgpu_cpp.h>
 

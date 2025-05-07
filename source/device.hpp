@@ -1,5 +1,7 @@
+#pragma once
 #include <webgpu/webgpu_cpp.h>
 #include "absl/log/log.h"
+
 namespace device {
 	namespace callback {
 		const auto uncapturedError = [](const wgpu::Device&, wgpu::ErrorType type, wgpu::StringView message) {

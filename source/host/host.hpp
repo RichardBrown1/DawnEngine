@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include <glm/glm.hpp>
 #include "structs.hpp"
@@ -7,7 +8,15 @@
 
 namespace host {
 	struct Objects {
+		//Mesh data
 		std::vector<structs::VBO> vbos;
+		std::vector<glm::f32mat4x4> transforms;
+		std::vector<uint16_t> indices;
+		std::vector<structs::InstanceProperty> instanceProperties;
+		std::vector<structs::DrawCall> drawCalls;
+
+		//Light data
+		std::vector<structs::Light> lights;
 	};
 
 }

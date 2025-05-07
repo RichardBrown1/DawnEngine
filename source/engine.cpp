@@ -1,6 +1,7 @@
 #pragma once
 #include "engine.hpp"
 #include <iostream>
+#pragma once
 #include <stdexcept>
 #include <string>
 #define SDL_MAIN_HANDLED

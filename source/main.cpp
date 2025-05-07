@@ -4,6 +4,7 @@
 #include "engine.hpp"
 #include "gltf.hpp"
 #include <fastgltf/types.hpp>
+#include "host/host.hpp"
 
 namespace {
 	std::string gltfFilePath = "models/cornellBox/cornellbox.gltf";
@@ -13,9 +14,8 @@ int main()
 {
 	try {
 		Engine dawnEngine = Engine();
-		fastgltf::Asset* asset = gltf::getAsset(gltfFilePath);
-		host::Objects* objects = gltf::processAsset(asset);
-		std::cout << objects->vbos.size();
+		auto up_asset = std::unique_ptr<fastgltf::Asset>(gltf::getAsset(gltfFilePath));
+		auto up_objects = std::unique_ptr<host::Objects>(gltf::processAsset(up_asset.get()));
 		
 	}
 	catch (std::exception& err) {
