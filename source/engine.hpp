@@ -7,6 +7,7 @@ namespace {
 }
 
 class Engine {
+public:
 	wgpu::Instance instance;
 	wgpu::Adapter adapter;
 	wgpu::Device device;
