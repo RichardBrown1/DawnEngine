@@ -2,11 +2,13 @@
 #include "gltf.hpp"
 #include "glm/glm.hpp"
 #include "glm/ext.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/matrix_decompose.hpp>
+
 #include "fastgltf/core.hpp"
 #include "fastgltf/tools.hpp"
 #include "fastgltf/types.hpp"
 #include "absl/log/log.h"
-#include <glm/gtx/matrix_decompose.hpp>
 
 namespace {
 	void addMeshData(host::Objects& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
@@ -105,9 +107,32 @@ namespace {
 		objects.lights.push_back(l);
 	}
 
+	void addCameraData(
+		host::Objects& objects,
+		fastgltf::Asset& asset,
+		glm::f32mat4x4& transform,
+		uint32_t cameraIndex,
+		const std::array<uint32_t, 2> screenDimensions) {
+		//	if (_buffers.camera.GetSize() > 0) {
+		//TODO what if there is 0 cameras or more than 1 cameras
+//		return;
+//	}
+	const glm::f32mat4x4 view = glm::inverse(transform);
+	fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera );
+	fastgltf::Camera::Orthographic* orthographicCamera = std::get_if<fastgltf::Camera::Orthographic>(&asset.cameras[cameraIndex].camera );
+	if (orthographicCamera != nullptr) {
+		throw std::runtime_error("orthographic camera not supported");
+	}
+	
+	host::structs::H_Camera h_camera = {
+		.projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, screenDimensions[0] / (float)screenDimensions[1], perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f)),
+		.position = glm::f32vec3(transform[3]),
+		.forward = -glm::normalize(glm::f32vec3(view[2])),
+	};
 
-
-	void processNodes(host::Objects& object, fastgltf::Asset& asset) {
+	objects.cameras.push_back(h_camera);
+}
+	void processNodes(host::Objects& object, fastgltf::Asset& asset, const std::array<uint32_t, 2> screenDimensions) {
 		const size_t sceneIndex = asset.defaultScene.value_or(0);
 		fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 			[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
@@ -129,7 +154,7 @@ namespace {
 					return;
 				}
 				else if (node.cameraIndex.has_value()) {
-					addCameraData(object, asset, matrix, static_cast<uint32_t>(node.cameraIndex.value()));
+					addCameraData(object, asset, matrix, static_cast<uint32_t>(node.cameraIndex.value()), screenDimensions );
 					return;
 				}
 				LOG(WARNING) << "unknown node type: " << node.name << std::endl;
@@ -154,9 +179,9 @@ namespace gltf {
 		return &wholeGltf.get();
 	}
 
-	host::Objects gltf::processAsset(fastgltf::Asset& asset) {
+	host::Objects gltf::processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions) {
 		host::Objects hostObjects;
-		processNodes(hostObjects, asset);
+		processNodes(hostObjects, asset, screenDimensions);
 
 		return hostObjects;
 	}

@@ -17,6 +17,9 @@ namespace host {
 
 		//Light data
 		std::vector<structs::Light> lights;
+
+		//Camera data
+		std::vector<structs::H_Camera> cameras;
 	};
 
 }

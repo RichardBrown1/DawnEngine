@@ -9,5 +9,5 @@
 
 namespace gltf {
 	fastgltf::Asset* getAsset(std::string& gltfFilePath);
-	host::Objects processAsset(fastgltf::Asset& asset);
+	host::Objects processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions);
 };

@@ -3,26 +3,26 @@
 	
 namespace host {
 	namespace structs {
-		struct TextureViews {
-			std::vector<wgpu::TextureView> shadowMaps;
-			wgpu::TextureView cameraDepth;
-			wgpu::TextureView textures;
-		};
-
-		struct Samplers {
-			wgpu::Sampler depth;
-			wgpu::Sampler texture;
-		};
-
-		struct BindGroups {
-			wgpu::BindGroup fixed;
-			wgpu::BindGroup lights;
-		};
-
-		struct RenderPipelines {
-			wgpu::RenderPipeline shadow;
-			wgpu::RenderPipeline geometry;
-		};
+//		struct TextureViews {
+//			std::vector<wgpu::TextureView> shadowMaps;
+//			wgpu::TextureView cameraDepth;
+//			wgpu::TextureView textures;
+//		};
+//
+//		struct Samplers {
+//			wgpu::Sampler depth;
+//			wgpu::Sampler texture;
+//		};
+//
+//		struct BindGroups {
+//			wgpu::BindGroup fixed;
+//			wgpu::BindGroup lights;
+//		};
+//
+//		struct RenderPipelines {
+//			wgpu::RenderPipeline shadow;
+//			wgpu::RenderPipeline geometry;
+//		};
 
 		//Host Camera - This will be a f32mat4x4 projectionView at device
 		struct H_Camera {
@@ -69,7 +69,7 @@ namespace host {
 		struct SamplerTexturePair {
 			uint32_t samplerIndex;
 			uint32_t textureIndex;
-			DawnEngine::TextureType textureType;
+		//	DawnEngine::TextureType textureType;
 		};
 
 		struct TextureInfo {
