@@ -3,6 +3,7 @@
 #include "fastgltf/tools.hpp"
 #include "fastgltf/types.hpp"
 #include "absl/log/log.h"
+#include "host/host.hpp"
 
 namespace gltf {
 	fastgltf::Asset* getAsset(std::string gltfFilePath) {
@@ -20,4 +21,7 @@ namespace gltf {
 		
 		return &wholeGltf.get();
 	}
+
+	host::Objects* processAsset(fastgltf::Asset* asset);
+
 };

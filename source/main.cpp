@@ -14,8 +14,8 @@ int main()
 	try {
 		Engine dawnEngine = Engine();
 		fastgltf::Asset* asset = gltf::getAsset(gltfFilePath);
-		
-		//gltf::processSceneNodes(asset);
+		host::Objects* objects = gltf::processAsset(asset);
+		std::cout << objects->vbos.size();
 		
 	}
 	catch (std::exception& err) {
