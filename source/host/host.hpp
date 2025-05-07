@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 #include "structs.hpp"
 
 //Objects for the wgpu::Device but in RAM waiting to be processed

@@ -1,5 +1,5 @@
 #pragma once
-#include "absl/log/globals.h"
+#include <absl/base/log_severity.h>
 #include <webgpu/webgpu_cpp.h>
 
 namespace {

@@ -1,15 +1,12 @@
 #pragma once
 #include "engine.hpp"
-#include <iostream>
 #pragma once
-#include <stdexcept>
 #include <string>
 #define SDL_MAIN_HANDLED
 #include "sdl3webgpu.hpp"
 #include "SDL3/SDL.h"
 #include "absl/log/check.h"
 #include "absl/log/initialize.h"
-#include "absl/log/flags.h"
 #include "absl/log/globals.h"
 #include "print.hpp"
 #include "surfaceConfiguration.hpp"
