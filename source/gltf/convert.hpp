@@ -1,3 +1,4 @@
+#pragma once
 #include "fastgltf/types.hpp"
 #include "../host/structs.hpp"
 #include <webgpu/webgpu_cpp.h>

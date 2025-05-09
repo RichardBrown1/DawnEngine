@@ -120,21 +120,21 @@ namespace {
 		//TODO what if there is 0 cameras or more than 1 cameras
 //		return;
 //	}
-	const glm::f32mat4x4 view = glm::inverse(transform);
-	fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera );
-	fastgltf::Camera::Orthographic* orthographicCamera = std::get_if<fastgltf::Camera::Orthographic>(&asset.cameras[cameraIndex].camera );
-	if (orthographicCamera != nullptr) {
-		throw std::runtime_error("orthographic camera not supported");
-	}
-	
-	host::structs::H_Camera h_camera = {
-		.projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, screenDimensions[0] / (float)screenDimensions[1], perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f)),
-		.position = glm::f32vec3(transform[3]),
-		.forward = -glm::normalize(glm::f32vec3(view[2])),
-	};
+		const glm::f32mat4x4 view = glm::inverse(transform);
+		fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera);
+		fastgltf::Camera::Orthographic* orthographicCamera = std::get_if<fastgltf::Camera::Orthographic>(&asset.cameras[cameraIndex].camera);
+		if (orthographicCamera != nullptr) {
+			throw std::runtime_error("orthographic camera not supported");
+		}
 
-	objects.cameras.push_back(h_camera);
-}
+		host::structs::H_Camera h_camera = {
+			.projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, screenDimensions[0] / (float)screenDimensions[1], perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f)),
+			.position = glm::f32vec3(transform[3]),
+			.forward = -glm::normalize(glm::f32vec3(view[2])),
+		};
+
+		objects.cameras.push_back(h_camera);
+	}
 
 	void processNodes(host::Objects& object, fastgltf::Asset& asset, const std::array<uint32_t, 2> screenDimensions) {
 		const size_t sceneIndex = asset.defaultScene.value_or(0);
@@ -158,7 +158,7 @@ namespace {
 					return;
 				}
 				else if (node.cameraIndex.has_value()) {
-					addCameraData(object, asset, matrix, static_cast<uint32_t>(node.cameraIndex.value()), screenDimensions );
+					addCameraData(object, asset, matrix, static_cast<uint32_t>(node.cameraIndex.value()), screenDimensions);
 					return;
 				}
 				LOG(WARNING) << "unknown node type: " << node.name << std::endl;
@@ -168,11 +168,11 @@ namespace {
 	void addMaterial(const fastgltf::Material& inputMaterial, host::structs::Material& outputMaterial) {
 		memcpy(&outputMaterial.pbrMetallicRoughness, &inputMaterial.pbrData, sizeof(glm::f32vec4) + sizeof(float) * 2);
 		outputMaterial.pbrMetallicRoughness.baseColorTextureInfo = gltf::convert::textureInfo(inputMaterial.pbrData.baseColorTexture.value());
-		
+
 		//TODO _stpMaterialIndex[outputMaterial.pbrMetallicRoughness.baseColorTextureInfo.index];
-		
+
 	}
-	
+
 	//texture is gltf name - stp will be DawnEngine name.
 	void addSamplerTexturePair(const fastgltf::Texture& inputTexture, host::structs::SamplerTexturePair& outputStp) {
 		if (!inputTexture.basisuImageIndex.has_value()) {
@@ -199,17 +199,18 @@ namespace {
 
 	void addSampler(const fastgltf::Sampler& inputSampler, host::structs::Sampler& outputSampler) {
 		const host::structs::Sampler samplerDescriptor = {
-				.addressModeU = gltf::convert::convertType(inputSampler.wrapS),
-				.addressModeV = gltf::convert::convertType(inputSampler.wrapT),
-				.magFilter = gltf::convert::convertFilter(inputSampler.magFilter.value_or(fastgltf::Filter::Linear)),
-				.minFilter = gltf::convert::convertFilter(inputSampler.minFilter.value_or(fastgltf::Filter::Linear)),
-				.mipmapFilter = gltf::convert::convertMipMapFilter(inputSampler.minFilter.value_or(fastgltf::Filter::Linear)),
+		 .addressModeU = gltf::convert::convertType(inputSampler.wrapS),
+		 .addressModeV = gltf::convert::convertType(inputSampler.wrapT),
+		 .magFilter = gltf::convert::convertFilter(inputSampler.magFilter.value_or(fastgltf::Filter::Linear)),
+		 .minFilter = gltf::convert::convertFilter(inputSampler.minFilter.value_or(fastgltf::Filter::Linear)),
+		 .mipmapFilter = gltf::convert::convertMipMapFilter(inputSampler.minFilter.value_or(fastgltf::Filter::Linear)),
 		};
 		outputSampler = samplerDescriptor;
+	}
 }
 
 namespace gltf {
-	fastgltf::Asset* gltf::getAsset(const std::string& gltfDirectory, const std::string& gltfFileName) {
+	fastgltf::Asset* getAsset(const std::string& gltfDirectory, const std::string& gltfFileName) {
 		fastgltf::Parser parser = fastgltf::Parser::Parser(fastgltf::Extensions::KHR_lights_punctual);
 
 		std::string gltfFilePath = gltfDirectory + gltfFileName;
@@ -226,7 +227,7 @@ namespace gltf {
 		return &wholeGltf.get();
 	}
 
-	host::Objects gltf::processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
+	host::Objects processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
 		host::Objects hostObjects;
 
 		processNodes(hostObjects, asset, screenDimensions);
@@ -247,7 +248,6 @@ namespace gltf {
 		for (uint32_t i = 0; i < hostObjects.samplers.size(); ++i) {
 			addSampler(asset.samplers[i], hostObjects.samplers[i]);
 		}
-
 		return hostObjects;
 	}
 }
