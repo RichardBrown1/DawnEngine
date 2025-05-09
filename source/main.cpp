@@ -18,7 +18,9 @@ int main()
 		auto up_asset = std::unique_ptr<fastgltf::Asset>(gltf::getAsset(gltfDirectory, gltfFileName));
 		host::Objects objects = gltf::processAsset(
 			*up_asset.get(),
-			std::array<uint32_t, 2>{dawnEngine.screenDimensions.width, dawnEngine.screenDimensions.height});
+			std::array<uint32_t, 2>{dawnEngine.screenDimensions.width, dawnEngine.screenDimensions.height},
+			gltfDirectory
+		);
 	}
 	catch (std::exception& err) {
 		
