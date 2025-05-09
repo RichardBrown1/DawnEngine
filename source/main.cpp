@@ -7,14 +7,15 @@
 #include "host/host.hpp"
 
 namespace {
-	std::string gltfFilePath = "models/cornellBox/cornellbox.gltf";
+	const std::string gltfDirectory = "models/cornellBox/"; //must end with "/"
+	const std::string gltfFileName = "cornellbox.gltf";
 }
 
 int main()
 {
 	try {
 		Engine dawnEngine = Engine();
-		auto up_asset = std::unique_ptr<fastgltf::Asset>(gltf::getAsset(gltfFilePath));
+		auto up_asset = std::unique_ptr<fastgltf::Asset>(gltf::getAsset(gltfDirectory, gltfFilePath));
 		host::Objects objects = gltf::processAsset(
 			*up_asset.get(),
 			std::array<uint32_t, 2>{dawnEngine.screenDimensions.width, dawnEngine.screenDimensions.height});

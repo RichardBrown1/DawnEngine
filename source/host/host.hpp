@@ -19,6 +19,9 @@ namespace host {
 		std::vector<structs::Light> lights;
 		std::vector<structs::H_Camera> cameras;
 		std::vector<structs::Material> materials;
+		std::vector<structs::SamplerTexturePair> samplerTexturePairs;
+		std::vector<std::string> textureUris;
+		std::vector<structs::Sampler> samplers;
 	};
 
 }

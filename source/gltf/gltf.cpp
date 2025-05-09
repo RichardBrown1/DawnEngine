@@ -135,6 +135,7 @@ namespace {
 
 	objects.cameras.push_back(h_camera);
 }
+
 	void processNodes(host::Objects& object, fastgltf::Asset& asset, const std::array<uint32_t, 2> screenDimensions) {
 		const size_t sceneIndex = asset.defaultScene.value_or(0);
 		fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
@@ -171,18 +172,53 @@ namespace {
 		//TODO _stpMaterialIndex[outputMaterial.pbrMetallicRoughness.baseColorTextureInfo.index];
 		
 	}
+	
+	//texture is gltf name - stp will be DawnEngine name.
+	void addSamplerTexturePair(const fastgltf::Texture& inputTexture, host::structs::SamplerTexturePair& outputStp) {
+		if (!inputTexture.basisuImageIndex.has_value()) {
+			throw std::runtime_error("only KTX files are able to be used as textures");
+		}
+		const host::structs::SamplerTexturePair samplerTexturePair = {
+			.samplerIndex = static_cast<uint32_t>(inputTexture.samplerIndex.has_value()),
+			.textureIndex = static_cast<uint32_t>(inputTexture.basisuImageIndex.has_value()),
+		};
+		outputStp = samplerTexturePair;
+	}
+
+	void addTextureUri(fastgltf::DataSource& dataSource, const std::string& gltfDirectory, std::string& outputFilePath)
+	{
+		if (!std::holds_alternative<fastgltf::sources::URI>(dataSource)) {
+			LOG(ERROR) << "Cannot get fastgltf::DataSource Texture, unsupported type";
+		}
+		fastgltf::sources::URI* p_uri = std::get_if<fastgltf::sources::URI>(&dataSource);
+		if (p_uri->mimeType != fastgltf::MimeType::KTX2) {
+			LOG(ERROR) << "Only KTX2 Textures are supported";
+		}
+		outputFilePath = gltfDirectory + outputFilePath;
+	}
+
+	void addSampler(const fastgltf::Sampler& inputSampler, host::structs::Sampler& outputSampler) {
+		const host::structs::Sampler samplerDescriptor = {
+				.addressModeU = gltf::convert::convertType(inputSampler.wrapS),
+				.addressModeV = gltf::convert::convertType(inputSampler.wrapT),
+				.magFilter = gltf::convert::convertFilter(inputSampler.magFilter.value_or(fastgltf::Filter::Linear)),
+				.minFilter = gltf::convert::convertFilter(inputSampler.minFilter.value_or(fastgltf::Filter::Linear)),
+				.mipmapFilter = gltf::convert::convertMipMapFilter(inputSampler.minFilter.value_or(fastgltf::Filter::Linear)),
+		};
+		outputSampler = samplerDescriptor;
 }
 
 namespace gltf {
-	fastgltf::Asset* gltf::getAsset(std::string& gltfFilePath) {
+	fastgltf::Asset* gltf::getAsset(const std::string& gltfDirectory, const std::string& gltfFileName) {
 		fastgltf::Parser parser = fastgltf::Parser::Parser(fastgltf::Extensions::KHR_lights_punctual);
 
+		std::string gltfFilePath = gltfDirectory + gltfFileName;
 		auto gltfFile = fastgltf::GltfDataBuffer::FromPath(gltfFilePath);
 		if (gltfFile.error() != fastgltf::Error::None) {// "cube databuffer fromPath");
 			LOG(ERROR) << "can't load gltf file";
 		}
 
-		auto wholeGltf = parser.loadGltf(gltfFile.get(), "models/cornellBox", fastgltf::Options::LoadExternalBuffers);
+		auto wholeGltf = parser.loadGltf(gltfFile.get(), gltfDirectory, fastgltf::Options::LoadExternalBuffers);
 		if (wholeGltf.error() != fastgltf::Error::None) {
 			LOG(ERROR) << "can't load whole gltf";
 		}
@@ -190,22 +226,26 @@ namespace gltf {
 		return &wholeGltf.get();
 	}
 
-	host::Objects gltf::processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions) {
+	host::Objects gltf::processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
 		host::Objects hostObjects;
 
 		processNodes(hostObjects, asset, screenDimensions);
+
 		hostObjects.materials.resize(asset.materials.size());
-		for (uint32_t i = 0; i < asset.materials.size(); ++i) {
+		for (uint32_t i = 0; i < hostObjects.materials.size(); ++i) {
 			addMaterial(asset.materials[i], hostObjects.materials[i]);
 		}
-		for (fastgltf::Texture& t : asset.textures) {
-			addSamplerTexturePair(t);
+		hostObjects.samplerTexturePairs.resize(asset.textures.size());
+		for (uint32_t i = 0; i < hostObjects.samplerTexturePairs.size(); ++i) {
+			addSamplerTexturePair(asset.textures[i], hostObjects.samplerTexturePairs[i]);
 		}
-		for (fastgltf::Image& i : asset.images) {
-			addTexture(i.data, gltfDirectory);
+		hostObjects.textureUris.resize(asset.images.size());
+		for (uint32_t i = 0; i < hostObjects.textureUris.size(); ++i) {
+			addTextureUri(asset.images[i].data, gltfDirectory, hostObjects.textureUris[i]);
 		}
-		for (fastgltf::Sampler& s : asset.samplers) {
-			addSampler(s);
+		hostObjects.samplers.resize(asset.samplers.size());
+		for (uint32_t i = 0; i < hostObjects.samplers.size(); ++i) {
+			addSampler(asset.samplers[i], hostObjects.samplers[i]);
 		}
 
 		return hostObjects;

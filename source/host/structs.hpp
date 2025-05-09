@@ -90,5 +90,13 @@ namespace host {
 		struct Material {
 			PBRMetallicRoughness pbrMetallicRoughness;
 		};
+
+		struct Sampler {
+			wgpu::AddressMode addressModeU;
+			wgpu::AddressMode addressModeV;
+			wgpu::FilterMode magFilter;
+			wgpu::FilterMode minFilter;
+			wgpu::MipmapFilterMode mipmapFilter;
+		};
 	}
 }
