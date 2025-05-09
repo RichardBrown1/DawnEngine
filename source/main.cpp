@@ -2,7 +2,7 @@
 #include <string>
 #include <iostream>
 #include "engine.hpp"
-#include "gltf.hpp"
+#include "gltf/gltf.hpp"
 #include <fastgltf/types.hpp>
 #include "host/host.hpp"
 

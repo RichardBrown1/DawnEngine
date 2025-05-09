@@ -1,6 +1,6 @@
 #pragma once
 #include "fastgltf/types.hpp"
-#include "host/host.hpp"
+#include "../host/host.hpp"
 
 namespace gltf {
 	fastgltf::Asset* getAsset(std::string& gltfFilePath);

@@ -15,11 +15,10 @@ namespace host {
 		std::vector<structs::InstanceProperty> instanceProperties;
 		std::vector<structs::DrawCall> drawCalls;
 
-		//Light data
+		//Other data
 		std::vector<structs::Light> lights;
-
-		//Camera data
 		std::vector<structs::H_Camera> cameras;
+		std::vector<structs::Material> materials;
 	};
 
 }

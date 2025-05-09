@@ -9,6 +9,9 @@
 #include "fastgltf/tools.hpp"
 #include "fastgltf/types.hpp"
 #include "absl/log/log.h"
+#include "../host/structs.hpp"
+#include "../host/host.hpp"
+#include "convert.hpp"
 
 namespace {
 	void addMeshData(host::Objects& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
@@ -160,6 +163,14 @@ namespace {
 				LOG(WARNING) << "unknown node type: " << node.name << std::endl;
 			});
 	};
+
+	void addMaterial(const fastgltf::Material& inputMaterial, host::structs::Material& outputMaterial) {
+		memcpy(&outputMaterial.pbrMetallicRoughness, &inputMaterial.pbrData, sizeof(glm::f32vec4) + sizeof(float) * 2);
+		outputMaterial.pbrMetallicRoughness.baseColorTextureInfo = gltf::convert::textureInfo(inputMaterial.pbrData.baseColorTexture.value());
+		
+		//TODO _stpMaterialIndex[outputMaterial.pbrMetallicRoughness.baseColorTextureInfo.index];
+		
+	}
 }
 
 namespace gltf {
@@ -181,7 +192,21 @@ namespace gltf {
 
 	host::Objects gltf::processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions) {
 		host::Objects hostObjects;
+
 		processNodes(hostObjects, asset, screenDimensions);
+		hostObjects.materials.resize(asset.materials.size());
+		for (uint32_t i = 0; i < asset.materials.size(); ++i) {
+			addMaterial(asset.materials[i], hostObjects.materials[i]);
+		}
+		for (fastgltf::Texture& t : asset.textures) {
+			addSamplerTexturePair(t);
+		}
+		for (fastgltf::Image& i : asset.images) {
+			addTexture(i.data, gltfDirectory);
+		}
+		for (fastgltf::Sampler& s : asset.samplers) {
+			addSampler(s);
+		}
 
 		return hostObjects;
 	}
