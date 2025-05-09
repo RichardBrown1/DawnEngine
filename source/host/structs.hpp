@@ -1,5 +1,6 @@
 #pragma once
 #include "glm/glm.hpp"
+#include <webgpu/webgpu_cpp.h>
 	
 namespace host {
 	namespace structs {
