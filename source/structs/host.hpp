@@ -35,7 +35,7 @@ namespace structs {
 			std::vector<Material> materials;
 			std::vector<SamplerTexturePair> samplerTexturePairs;
 			std::vector<std::string> textureUris;
-			std::vector<Sampler> samplers;
+			std::vector<wgpu::SamplerDescriptor> samplers;
 		};
 
 	}

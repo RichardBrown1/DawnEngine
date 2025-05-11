@@ -24,6 +24,7 @@ namespace structs {
 //			wgpu::RenderPipeline geometry;
 //		};
 
+		//this is everything from the gltf file
 		struct Objects {
 			wgpu::Buffer vbo;
 			wgpu::Buffer transforms;
@@ -35,6 +36,9 @@ namespace structs {
 
 			wgpu::Buffer materials;
 			wgpu::Buffer samplerTexturePairs;
+
+			std::vector<wgpu::Sampler> samplers;
+			std::vector<wgpu::Texture> textures;
 		};
 
 	}

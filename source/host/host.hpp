@@ -48,6 +48,19 @@ namespace host {
 			"lights",
 			wgpu::BufferUsage::Storage
 		);
+		d_objects.materials = device::createBuffer<structs::Material>(
+			engine,
+			h_objects.materials,
+			"materials",
+			wgpu::BufferUsage::Storage
+		);
+		d_objects.samplerTexturePairs = device::createBuffer<structs::SamplerTexturePair>(
+			engine,
+			h_objects.samplerTexturePairs,
+			"sampler texture pairs",
+			wgpu::BufferUsage::Storage
+		);
+
 
 		std::vector<glm::f32mat4x4> cameras;
 		for (uint32_t i = 0; i < h_objects.cameras.size(); i++) {
@@ -65,18 +78,11 @@ namespace host {
 			wgpu::BufferUsage::Storage
 		);
 
-		d_objects.materials = device::createBuffer<structs::Material>(
-			engine,
-			h_objects.materials,
-			"materials",
-			wgpu::BufferUsage::Storage
-		);
-		d_objects.samplerTexturePairs = device::createBuffer<structs::SamplerTexturePair>(
-			engine,
-			h_objects.samplerTexturePairs,
-			"sampler texture pairs",
-			wgpu::BufferUsage::Storage
-		);
+		d_objects.samplers.resize(h_objects.samplers.size());
+		for (uint32_t i = 0; i < d_objects.samplers.size(); ++i) {
+			d_objects.samplers[i] = engine.device.CreateSampler(&h_objects.samplers[i]);
+		}
+
 	}
 
 }

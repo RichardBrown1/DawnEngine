@@ -15,6 +15,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <webgpu/webgpu_cpp.h>
 
 namespace {
 	void addMeshData(structs::host::Objects& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
@@ -200,8 +201,9 @@ namespace {
 		outputFilePath = gltfDirectory + outputFilePath;
 	}
 
-	void addSampler(const fastgltf::Sampler& inputSampler, structs::Sampler& outputSampler) {
-		const structs::Sampler samplerDescriptor = {
+	void addSampler(const fastgltf::Sampler& inputSampler, wgpu::SamplerDescriptor& outputSampler) {
+		const wgpu::SamplerDescriptor samplerDescriptor = {
+		 .label = wgpu::StringView(inputSampler.name),
 		 .addressModeU = gltf::convert::convertType(inputSampler.wrapS),
 		 .addressModeV = gltf::convert::convertType(inputSampler.wrapT),
 		 .magFilter = gltf::convert::convertFilter(inputSampler.magFilter.value_or(fastgltf::Filter::Linear)),
