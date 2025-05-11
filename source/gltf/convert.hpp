@@ -1,6 +1,6 @@
 #pragma once
 #include "fastgltf/types.hpp"
-#include "../host/structs.hpp"
+#include "../structs/host.hpp"
 #include <webgpu/webgpu_cpp.h>
 
 namespace gltf {
@@ -8,9 +8,9 @@ namespace gltf {
 	//Not used for processing 
 	namespace convert {
 
-		host::structs::TextureInfo textureInfo(const fastgltf::TextureInfo &textureInfo)
+		structs::TextureInfo textureInfo(const fastgltf::TextureInfo &textureInfo)
 		{
-			host::structs::TextureInfo dawnEngineTextureInfo = {
+			structs::TextureInfo dawnEngineTextureInfo = {
 				.index = static_cast<uint32_t>(textureInfo.textureIndex),
 				.texCoord = static_cast<uint32_t>(textureInfo.texCoordIndex),
 			};

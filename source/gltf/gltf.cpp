@@ -5,7 +5,7 @@
 #include <fastgltf/types.hpp>
 #include <fastgltf/core.hpp>
 #include "absl/log/log.h"
-#include "../host/structs.hpp"
+#include "../structs/host.hpp"
 #include "convert.hpp"
 #include <cstdint>
 #include <cstring>
@@ -17,7 +17,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 namespace {
-	void addMeshData(host::structs::Objects& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
+	void addMeshData(structs::host::Objects& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
 		//		if (_meshIndexToDrawInfoMap.count(meshIndex)) {
 		//			++_meshIndexToDrawInfoMap[meshIndex]->instanceCount;
 		//			return;
@@ -72,13 +72,13 @@ namespace {
 			);
 
 			//instanceProperty
-			const host::structs::InstanceProperty instanceProperty = {
+			const structs::InstanceProperty instanceProperty = {
 				.materialIndex = static_cast<uint32_t>(primitive.materialIndex.value_or(asset.materials.size())),
 			};
 			objects.instanceProperties.push_back(instanceProperty);
 
 			//drawCall
-			const host::structs::DrawCall drawCall = {
+			const structs::host::DrawCall drawCall = {
 				.indexCount = static_cast<uint32_t>(accessor.count),
 				.instanceCount = 1, //TODO handle multiple instances
 				.firstIndex = static_cast<uint32_t>(indicesOffset),
@@ -89,8 +89,8 @@ namespace {
 		}
 	}
 
-	void addLightData(host::structs::Objects& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
-		host::structs::Light l = {};
+	void addLightData(structs::host::Objects& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
+		structs::Light l = {};
 		glm::f32quat quaterion;
 		glm::f32vec3 scale, skew;
 		glm::f32vec4 perspective;
@@ -114,7 +114,7 @@ namespace {
 	}
 
 	void addCameraData(
-		host::structs::Objects& objects,
+		structs::host::Objects& objects,
 		fastgltf::Asset& asset,
 		glm::f32mat4x4& transform,
 		uint32_t cameraIndex,
@@ -130,7 +130,7 @@ namespace {
 			throw std::runtime_error("orthographic camera not supported");
 		}
 
-		host::structs::H_Camera h_camera = {
+		structs::host::H_Camera h_camera = {
 			.projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, screenDimensions[0] / (float)screenDimensions[1], perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f)),
 			.position = glm::f32vec3(transform[3]),
 			.forward = -glm::normalize(glm::f32vec3(view[2])),
@@ -139,7 +139,7 @@ namespace {
 		objects.cameras.push_back(h_camera);
 	}
 
-	void processNodes(host::structs::Objects& object, fastgltf::Asset& asset, const std::array<uint32_t, 2> screenDimensions) {
+	void processNodes(structs::host::Objects& object, fastgltf::Asset& asset, const std::array<uint32_t, 2> screenDimensions) {
 		const size_t sceneIndex = asset.defaultScene.value_or(0);
 		fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 			[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
@@ -168,7 +168,7 @@ namespace {
 			});
 	};
 
-	void addMaterial(const fastgltf::Material& inputMaterial, host::structs::Material& outputMaterial) {
+	void addMaterial(const fastgltf::Material& inputMaterial, structs::Material& outputMaterial) {
 		memcpy(&outputMaterial.pbrMetallicRoughness, &inputMaterial.pbrData, sizeof(glm::f32vec4) + sizeof(float) * 2);
 		outputMaterial.pbrMetallicRoughness.baseColorTextureInfo = gltf::convert::textureInfo(inputMaterial.pbrData.baseColorTexture.value());
 
@@ -177,11 +177,11 @@ namespace {
 	}
 
 	//texture is gltf name - stp will be DawnEngine name.
-	void addSamplerTexturePair(const fastgltf::Texture& inputTexture, host::structs::SamplerTexturePair& outputStp) {
+	void addSamplerTexturePair(const fastgltf::Texture& inputTexture, structs::SamplerTexturePair& outputStp) {
 		if (!inputTexture.basisuImageIndex.has_value()) {
 			throw std::runtime_error("only KTX files are able to be used as textures");
 		}
-		const host::structs::SamplerTexturePair samplerTexturePair = {
+		const structs::SamplerTexturePair samplerTexturePair = {
 			.samplerIndex = static_cast<uint32_t>(inputTexture.samplerIndex.has_value()),
 			.textureIndex = static_cast<uint32_t>(inputTexture.basisuImageIndex.has_value()),
 		};
@@ -200,8 +200,8 @@ namespace {
 		outputFilePath = gltfDirectory + outputFilePath;
 	}
 
-	void addSampler(const fastgltf::Sampler& inputSampler, host::structs::Sampler& outputSampler) {
-		const host::structs::Sampler samplerDescriptor = {
+	void addSampler(const fastgltf::Sampler& inputSampler, structs::Sampler& outputSampler) {
+		const structs::Sampler samplerDescriptor = {
 		 .addressModeU = gltf::convert::convertType(inputSampler.wrapS),
 		 .addressModeV = gltf::convert::convertType(inputSampler.wrapT),
 		 .magFilter = gltf::convert::convertFilter(inputSampler.magFilter.value_or(fastgltf::Filter::Linear)),
@@ -230,8 +230,8 @@ namespace gltf {
 		return &wholeGltf.get();
 	}
 
-	host::structs::Objects processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
-		host::structs::Objects hostObjects;
+	structs::host::Objects processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
+		structs::host::Objects hostObjects;
 
 		processNodes(hostObjects, asset, screenDimensions);
 
