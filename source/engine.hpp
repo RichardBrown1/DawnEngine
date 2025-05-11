@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <absl/base/log_severity.h>
 #include <webgpu/webgpu_cpp.h>
 

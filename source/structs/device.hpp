@@ -34,9 +34,7 @@ namespace structs {
 			wgpu::Buffer cameras;
 
 			wgpu::Buffer materials;
-			wgpu::Buffer samplerTexturePaths;
-			wgpu::Buffer textureUris;
-			wgpu::Buffer samplers;
+			wgpu::Buffer samplerTexturePairs;
 		};
 
 	}
