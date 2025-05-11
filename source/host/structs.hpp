@@ -4,6 +4,7 @@
 	
 namespace host {
 	namespace structs {
+
 //		struct TextureViews {
 //			std::vector<wgpu::TextureView> shadowMaps;
 //			wgpu::TextureView cameraDepth;
@@ -98,6 +99,25 @@ namespace host {
 			wgpu::FilterMode magFilter;
 			wgpu::FilterMode minFilter;
 			wgpu::MipmapFilterMode mipmapFilter;
+		};
+
+		struct Objects {
+			//Mesh data
+			std::vector<VBO> vbo;
+			std::vector<glm::f32mat4x4> transforms;
+			std::vector<uint16_t> indices;
+			std::vector<InstanceProperty> instanceProperties;
+			std::vector<DrawCall> drawCalls;
+
+			//Other data
+			std::vector<Light> lights;
+			std::vector<H_Camera> cameras;
+
+			//Material related data
+			std::vector<Material> materials;
+			std::vector<SamplerTexturePair> samplerTexturePairs;
+			std::vector<std::string> textureUris;
+			std::vector<Sampler> samplers;
 		};
 	}
 }
