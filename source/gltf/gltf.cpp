@@ -1,20 +1,23 @@
 #pragma once
-#include "gltf.hpp"
-#include "glm/glm.hpp"
-#include "glm/ext.hpp"
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/matrix_decompose.hpp>
 
-#include "fastgltf/core.hpp"
-#include "fastgltf/tools.hpp"
-#include "fastgltf/types.hpp"
+#include <fastgltf/tools.hpp>
+#include <fastgltf/types.hpp>
+#include <fastgltf/core.hpp>
 #include "absl/log/log.h"
 #include "../host/structs.hpp"
-#include "../host/host.hpp"
 #include "convert.hpp"
+#include <cstdint>
+#include <cstring>
+#include <stdexcept>
+#include <string>
+#include <variant>
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace {
-	void addMeshData(host::Objects& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
+	void addMeshData(host::structs::Objects& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
 		//		if (_meshIndexToDrawInfoMap.count(meshIndex)) {
 		//			++_meshIndexToDrawInfoMap[meshIndex]->instanceCount;
 		//			return;
@@ -23,17 +26,17 @@ namespace {
 		auto& mesh = asset.meshes[meshIndex];
 
 		for (auto& primitive : mesh.primitives) {
-			const size_t vbosOffset = objects.vbos.size();
+			const size_t vbosOffset = objects.vbo.size();
 
 			objects.transforms.push_back(transform);
 
 			//vertice
 			fastgltf::Attribute& positionAttribute = *primitive.findAttribute("POSITION");
 			fastgltf::Accessor& positionAccessor = asset.accessors[positionAttribute.accessorIndex];
-			objects.vbos.resize(objects.vbos.size() + positionAccessor.count);
+			objects.vbo.resize(objects.vbo.size() + positionAccessor.count);
 			fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
 				asset, positionAccessor, [&](fastgltf::math::f32vec3 vertex, size_t i) {
-					memcpy(&objects.vbos[i + vbosOffset].vertex, &vertex, sizeof(glm::f32vec3));
+					memcpy(&objects.vbo[i + vbosOffset].vertex, &vertex, sizeof(glm::f32vec3));
 				}
 			);
 
@@ -42,7 +45,7 @@ namespace {
 			fastgltf::Accessor& normalAccessor = asset.accessors[normalAttribute.accessorIndex];
 			fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec3>(
 				asset, normalAccessor, [&](fastgltf::math::f32vec3 normal, size_t i) {
-					memcpy(&objects.vbos[i + vbosOffset].normal, &normal, sizeof(glm::f32vec3));
+					memcpy(&objects.vbo[i + vbosOffset].normal, &normal, sizeof(glm::f32vec3));
 				}
 			);
 
@@ -51,7 +54,7 @@ namespace {
 			fastgltf::Accessor& texcoordAccessor = asset.accessors[texcoordAttribute.accessorIndex];
 			fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec2>(
 				asset, texcoordAccessor, [&](fastgltf::math::f32vec2 texcoord, size_t i) {
-					memcpy(&objects.vbos[i + vbosOffset].texcoord, &texcoord, sizeof(glm::f32vec2));
+					memcpy(&objects.vbo[i + vbosOffset].texcoord, &texcoord, sizeof(glm::f32vec2));
 				}
 			);
 
@@ -86,7 +89,7 @@ namespace {
 		}
 	}
 
-	void addLightData(host::Objects& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
+	void addLightData(host::structs::Objects& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
 		host::structs::Light l = {};
 		glm::f32quat quaterion;
 		glm::f32vec3 scale, skew;
@@ -111,7 +114,7 @@ namespace {
 	}
 
 	void addCameraData(
-		host::Objects& objects,
+		host::structs::Objects& objects,
 		fastgltf::Asset& asset,
 		glm::f32mat4x4& transform,
 		uint32_t cameraIndex,
@@ -136,7 +139,7 @@ namespace {
 		objects.cameras.push_back(h_camera);
 	}
 
-	void processNodes(host::Objects& object, fastgltf::Asset& asset, const std::array<uint32_t, 2> screenDimensions) {
+	void processNodes(host::structs::Objects& object, fastgltf::Asset& asset, const std::array<uint32_t, 2> screenDimensions) {
 		const size_t sceneIndex = asset.defaultScene.value_or(0);
 		fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 			[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
@@ -227,8 +230,8 @@ namespace gltf {
 		return &wholeGltf.get();
 	}
 
-	host::Objects processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
-		host::Objects hostObjects;
+	host::structs::Objects processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
+		host::structs::Objects hostObjects;
 
 		processNodes(hostObjects, asset, screenDimensions);
 

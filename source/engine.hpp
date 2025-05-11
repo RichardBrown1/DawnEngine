@@ -7,12 +7,12 @@ namespace {
 	const std::string WINDOW_TITLE = "Dawn WebGPU Engine";
 }
 
-class Engine {
-public:
-	wgpu::Instance instance;
-	wgpu::Adapter adapter;
+struct Engine {
 	wgpu::Device device;
 	wgpu::Queue queue;
+
+	wgpu::Instance instance;
+	wgpu::Adapter adapter;
 	wgpu::Surface surface;
 	
 	wgpu::Extent2D screenDimensions = { 1280, 720 };
