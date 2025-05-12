@@ -6,10 +6,10 @@
 #include "../texture/texture.hpp"
 #include "../constants.hpp"
 
-structs::device::Objects host::SceneResources::ToDeviceObjects(
+device::SceneResources host::SceneResources::ToDevice(
 	Engine& engine
 ) {
-	structs::device::Objects d_objects;
+	device::SceneResources d_objects;
 	d_objects.vbo = device::createBuffer<structs::VBO>(
 		engine,
 		this->vbo,

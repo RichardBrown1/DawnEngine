@@ -1,7 +1,28 @@
+#pragma once
 #include <webgpu/webgpu_cpp.h>
 #include "../host/host.hpp"
+#include <string>
+#include <vector>
+#include "../engine.hpp"
 
 namespace device {
+	struct SceneResources {
+		wgpu::Buffer vbo;
+		wgpu::Buffer transforms;
+		wgpu::Buffer indices;
+		wgpu::Buffer instanceProperties;
+
+		wgpu::Buffer lights;
+		wgpu::Buffer cameras;
+
+		wgpu::Buffer materials;
+		wgpu::Buffer samplerTexturePairs;
+
+		std::vector<wgpu::Sampler> samplers;
+		std::vector<wgpu::Texture> textures;
+		std::vector<wgpu::TextureView> textureViews;
+	};
+
 	template <typename T>
 	wgpu::Buffer createBuffer(
 		Engine& engine,

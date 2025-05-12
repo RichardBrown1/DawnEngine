@@ -4,7 +4,7 @@
 #include <dawn/webgpu_cpp.h>
 #include <glm/fwd.hpp>
 #include "../structs/host.hpp"
-#include "../structs/device.hpp"
+#include "../device/device.hpp"
 #include "../engine.hpp"
 
 //Objects for the wgpu::Device but in RAM waiting to be processed
@@ -28,6 +28,6 @@ namespace host {
 		std::vector<std::string> textureUris;
 		std::vector<wgpu::SamplerDescriptor> samplers;
 
-		structs::device::Objects ToDeviceObjects(Engine& engine);
+		device::SceneResources ToDevice(Engine& engine);
 	};
 }

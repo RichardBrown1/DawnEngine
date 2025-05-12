@@ -21,7 +21,7 @@ int main()
 			std::array<uint32_t, 2>{engine.screenDimensions.width, engine.screenDimensions.height},
 			gltfDirectory
 		);
-		structs::device::Objects d_objects = h_objects.ToDeviceObjects(engine);
+		device::SceneResources d_objects = h_objects.ToDevice(engine);
 	}
 	catch (std::exception& err) {
 		
