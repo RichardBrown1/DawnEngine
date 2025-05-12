@@ -1,9 +1,12 @@
 #pragma once
 #include "host.hpp"
-#include "../texture/texture.hpp"
+#include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include "../device/device.hpp"
+#include "../texture/texture.hpp"
+#include "../constants.hpp"
 
-structs::device::Objects SceneResources::ToDeviceObjects(
+structs::device::Objects host::SceneResources::ToDeviceObjects(
 	Engine& engine
 ) {
 	structs::device::Objects d_objects;
