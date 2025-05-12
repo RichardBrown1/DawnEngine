@@ -15,9 +15,9 @@ int main()
 {
 	try {
 		Engine engine = Engine();
-		auto up_asset = std::unique_ptr<fastgltf::Asset>(gltf::getAsset(gltfDirectory, gltfFileName));
+		fastgltf::Asset asset = gltf::getAsset(gltfDirectory, gltfFileName);
 		Host h_objects = gltf::processAsset(
-			*up_asset.get(),
+			asset,
 			std::array<uint32_t, 2>{engine.screenDimensions.width, engine.screenDimensions.height},
 			gltfDirectory
 		);

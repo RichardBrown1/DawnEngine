@@ -216,7 +216,7 @@ namespace {
 }
 
 namespace gltf {
-	fastgltf::Asset* getAsset(const std::string& gltfDirectory, const std::string& gltfFileName) {
+	fastgltf::Asset getAsset(const std::string& gltfDirectory, const std::string& gltfFileName) {
 		fastgltf::Parser parser = fastgltf::Parser::Parser(fastgltf::Extensions::KHR_lights_punctual);
 
 		std::string gltfFilePath = gltfDirectory + gltfFileName;
@@ -230,7 +230,7 @@ namespace gltf {
 			LOG(ERROR) << "can't load whole gltf";
 		}
 		
-		return &wholeGltf.get();
+		return std::move(wholeGltf.get());
 	}
 
 	Host processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
