@@ -1,13 +1,11 @@
 #pragma once
 #include <vector>
+#include <string>
 #include <dawn/webgpu_cpp.h>
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 #include "../structs/host.hpp"
 #include "../structs/device.hpp"
 #include "../engine.hpp"
-#include "../device/device.hpp"
-#pragma once
-#include "../constants.hpp"
 
 //Objects for the wgpu::Device but in RAM waiting to be processed
 //This data should be in a format that can be consumed by the shader if its written into the device as is
@@ -30,5 +28,4 @@ struct SceneResources {
 	std::vector<wgpu::SamplerDescriptor> samplers;
 
 	structs::device::Objects ToDeviceObjects(Engine& engine);
-
 };
