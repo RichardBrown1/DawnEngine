@@ -3,7 +3,7 @@
 #include "../texture/texture.hpp"
 #include <glm/ext/matrix_transform.hpp>
 
-structs::device::Objects Host::ToDeviceObjects(
+structs::device::Objects SceneResources::ToDeviceObjects(
 	Engine& engine
 ) {
 	structs::device::Objects d_objects;

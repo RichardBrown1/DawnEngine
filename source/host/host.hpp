@@ -11,7 +11,7 @@
 
 //Objects for the wgpu::Device but in RAM waiting to be processed
 //This data should be in a format that can be consumed by the shader if its written into the device as is
-struct Host {
+struct SceneResources {
 	//Mesh data
 	std::vector<structs::VBO> vbo;
 	std::vector<uint16_t> indices;
@@ -30,5 +30,5 @@ struct Host {
 	std::vector<wgpu::SamplerDescriptor> samplers;
 
 	structs::device::Objects ToDeviceObjects(Engine& engine);
-	
+
 };

@@ -16,7 +16,7 @@ int main()
 	try {
 		Engine engine = Engine();
 		fastgltf::Asset asset = gltf::getAsset(gltfDirectory, gltfFileName);
-		Host h_objects = gltf::processAsset(
+		SceneResources h_objects = gltf::processAsset(
 			asset,
 			std::array<uint32_t, 2>{engine.screenDimensions.width, engine.screenDimensions.height},
 			gltfDirectory
