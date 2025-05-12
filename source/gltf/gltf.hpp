@@ -4,5 +4,5 @@
 
 namespace gltf {
 	fastgltf::Asset* getAsset(const std::string& gltfDirectory, const std::string& gltfFilePath);
-	structs::host::Objects processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory);
+	Host processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory);
 };

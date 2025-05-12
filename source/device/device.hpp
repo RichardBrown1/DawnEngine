@@ -1,5 +1,5 @@
 #include <webgpu/webgpu_cpp.h>
-#include "host/host.hpp"
+#include "../host/host.hpp"
 
 namespace device {
 	template <typename T>

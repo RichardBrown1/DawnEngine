@@ -16,9 +16,10 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <webgpu/webgpu_cpp.h>
+#include "../host/host.hpp"
 
 namespace {
-	void addMeshData(structs::host::Objects& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
+	void addMeshData(Host& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
 		//		if (_meshIndexToDrawInfoMap.count(meshIndex)) {
 		//			++_meshIndexToDrawInfoMap[meshIndex]->instanceCount;
 		//			return;
@@ -90,14 +91,14 @@ namespace {
 		}
 	}
 
-	void addLightData(structs::host::Objects& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
+	void addLightData(Host& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
 		structs::Light l = {};
 		glm::f32quat quaterion;
 		glm::f32vec3 scale, skew;
 		glm::f32vec4 perspective;
 		bool success = glm::decompose(transform, scale, quaterion, l.position, skew, perspective);
 		if (!success) {
-			throw std::runtime_error("could not decompose matrix");
+			LOG(ERROR) << "could not decompose matrix ";
 		}
 
 		quaterion = glm::normalize(quaterion);
@@ -115,7 +116,7 @@ namespace {
 	}
 
 	void addCameraData(
-		structs::host::Objects& objects,
+		Host& objects,
 		fastgltf::Asset& asset,
 		glm::f32mat4x4& transform,
 		uint32_t cameraIndex,
@@ -140,7 +141,7 @@ namespace {
 		objects.cameras.push_back(h_camera);
 	}
 
-	void processNodes(structs::host::Objects& object, fastgltf::Asset& asset, const std::array<uint32_t, 2> screenDimensions) {
+	void processNodes(Host& object, fastgltf::Asset& asset, const std::array<uint32_t, 2> screenDimensions) {
 		const size_t sceneIndex = asset.defaultScene.value_or(0);
 		fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 			[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
@@ -198,7 +199,7 @@ namespace {
 		if (p_uri->mimeType != fastgltf::MimeType::KTX2) {
 			LOG(ERROR) << "Only KTX2 Textures are supported";
 		}
-		outputFilePath = gltfDirectory + outputFilePath;
+		outputFilePath = gltfDirectory + p_uri->uri.c_str();
 	}
 
 	void addSampler(const fastgltf::Sampler& inputSampler, wgpu::SamplerDescriptor& outputSampler) {
@@ -232,8 +233,8 @@ namespace gltf {
 		return &wholeGltf.get();
 	}
 
-	structs::host::Objects processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
-		structs::host::Objects hostObjects;
+	Host processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
+		Host hostObjects;
 
 		processNodes(hostObjects, asset, screenDimensions);
 

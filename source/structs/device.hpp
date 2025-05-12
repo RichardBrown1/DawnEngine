@@ -39,6 +39,7 @@ namespace structs {
 
 			std::vector<wgpu::Sampler> samplers;
 			std::vector<wgpu::Texture> textures;
+			std::vector<wgpu::TextureView> textureViews;
 		};
 
 	}

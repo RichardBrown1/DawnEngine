@@ -16,13 +16,12 @@ int main()
 	try {
 		Engine engine = Engine();
 		auto up_asset = std::unique_ptr<fastgltf::Asset>(gltf::getAsset(gltfDirectory, gltfFileName));
-		structs::host::Objects h_objects = gltf::processAsset(
+		Host h_objects = gltf::processAsset(
 			*up_asset.get(),
 			std::array<uint32_t, 2>{engine.screenDimensions.width, engine.screenDimensions.height},
 			gltfDirectory
 		);
-		structs::device::Objects d_objects;
-		host::ConvertHostObjects(engine, h_objects, d_objects);
+		structs::device::Objects d_objects = h_objects.ToDeviceObjects(engine);
 	}
 	catch (std::exception& err) {
 		
