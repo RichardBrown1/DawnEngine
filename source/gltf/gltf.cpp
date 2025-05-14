@@ -172,7 +172,9 @@ namespace {
 
 	void addMaterial(const fastgltf::Material& inputMaterial, structs::Material& outputMaterial) {
 		memcpy(&outputMaterial.pbrMetallicRoughness, &inputMaterial.pbrData, sizeof(glm::f32vec4) + sizeof(float) * 2);
-		outputMaterial.pbrMetallicRoughness.baseColorTextureInfo = gltf::convert::textureInfo(inputMaterial.pbrData.baseColorTexture.value());
+		outputMaterial.pbrMetallicRoughness.baseColorTextureInfo = gltf::convert::textureInfo(
+			inputMaterial.pbrData.baseColorTexture		
+		);
 
 		//TODO _stpMaterialIndex[outputMaterial.pbrMetallicRoughness.baseColorTextureInfo.index];
 

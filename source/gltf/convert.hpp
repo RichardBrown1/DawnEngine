@@ -8,13 +8,21 @@ namespace gltf {
 	//Not used for processing 
 	namespace convert {
 
-		structs::TextureInfo textureInfo(const fastgltf::TextureInfo &textureInfo)
+		structs::TextureInfo textureInfo(const std::optional<fastgltf::TextureInfo>& texInfo)
 		{
-			structs::TextureInfo dawnEngineTextureInfo = {
-				.index = static_cast<uint32_t>(textureInfo.textureIndex),
-				.texCoord = static_cast<uint32_t>(textureInfo.texCoordIndex),
-			};
-			return dawnEngineTextureInfo;
+			if (texInfo.has_value()) {
+				const fastgltf::TextureInfo& textureInfo = texInfo.value();
+				return {
+					.index = static_cast<uint32_t>(textureInfo.textureIndex),
+					.texCoord = static_cast<uint32_t>(textureInfo.texCoordIndex),
+				};
+			}
+			else {
+				return {
+					.index = UINT32_MAX,
+					.texCoord = UINT32_MAX,
+				};
+			}
 		}
 
 		wgpu::AddressMode convertType(fastgltf::Wrap wrap) {

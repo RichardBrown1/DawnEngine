@@ -6,6 +6,7 @@
 #include <fastgltf/types.hpp>
 #include "host/host.hpp"
 #include "render/initialRender.hpp"
+#include "absl/log/log.h"
 
 namespace {
 	std::string gltfDirectory = "models/cornellBox/"; //must end with "/"
@@ -36,11 +37,10 @@ int main()
 		initialRender.generateGpuObjects(&generateGpuObjectsDescriptor);
 	}
 	catch (std::exception& err) {
-		
-		std::cout << "std::Exception: " << err.what() << std::endl;
+		LOG(FATAL) << err.what();
 	}
 	catch (...) {
-		std::cout << "unknown error" << std::endl;
+		LOG(FATAL) << "unknown error";
 	}
 
 	return 0;
