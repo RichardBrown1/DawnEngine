@@ -1,6 +1,5 @@
 #pragma once
 #include <webgpu/webgpu_cpp.h>
-#include "../host/host.hpp"
 #include <string>
 #include <vector>
 #include "../engine.hpp"
@@ -23,6 +22,12 @@ namespace device {
 		std::vector<wgpu::TextureView> textureViews;
 	};
 
+	wgpu::ShaderModule createShaderModule(
+		wgpu::Device& device,
+		const wgpu::StringView& label,
+		const std::string& filename
+	);
+
 	template <typename T>
 	wgpu::Buffer createBuffer(
 		Engine& engine,
@@ -39,4 +44,5 @@ namespace device {
 		engine.queue.WriteBuffer(buffer, 0, vector.data(), bufferDescriptor.size);
 		return buffer;
 	}
+
 }
