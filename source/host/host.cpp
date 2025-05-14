@@ -67,7 +67,7 @@ device::SceneResources host::SceneResources::ToDevice(
 		engine,
 		projectionViews,
 		"cameras",
-		wgpu::BufferUsage::Storage
+		wgpu::BufferUsage::Uniform
 	);
 
 	d_objects.samplers.resize(this->samplers.size());
