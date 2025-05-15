@@ -7,47 +7,47 @@
 #include "../constants.hpp"
 
 device::SceneResources host::SceneResources::ToDevice(
-	Engine& engine
+	WGPUContext& wgpuContext
 ) {
 	device::SceneResources d_objects;
 	d_objects.vbo = device::createBuffer<structs::VBO>(
-		engine,
+		wgpuContext,
 		this->vbo,
 		"vbo",
 		wgpu::BufferUsage::Vertex
 	);
 	d_objects.indices = device::createBuffer<uint16_t>(
-		engine,
+		wgpuContext,
 		this->indices,
 		"indices",
 		wgpu::BufferUsage::Index
 	);
 	d_objects.transforms = device::createBuffer<glm::f32mat4x4>(
-		engine,
+		wgpuContext,
 		this->transforms,
 		"transforms",
 		wgpu::BufferUsage::Storage
 	);
 	d_objects.instanceProperties = device::createBuffer<structs::InstanceProperty>(
-		engine,
+		wgpuContext,
 		this->instanceProperties,
 		"instance properties",
 		wgpu::BufferUsage::Storage
 	);
 	d_objects.lights = device::createBuffer<structs::Light>(
-		engine,
+		wgpuContext,
 		this->lights,
 		"lights",
 		wgpu::BufferUsage::Storage
 	);
 	d_objects.materials = device::createBuffer<structs::Material>(
-		engine,
+		wgpuContext,
 		this->materials,
 		"materials",
 		wgpu::BufferUsage::Storage
 	);
 	d_objects.samplerTexturePairs = device::createBuffer<structs::SamplerTexturePair>(
-		engine,
+		wgpuContext,
 		this->samplerTexturePairs,
 		"sampler texture pairs",
 		wgpu::BufferUsage::Storage
@@ -64,7 +64,7 @@ device::SceneResources host::SceneResources::ToDevice(
 		projectionViews.push_back(this->cameras[0].projection * view);
 	}
 	d_objects.cameras = device::createBuffer<glm::f32mat4x4>(
-		engine,
+		wgpuContext,
 		projectionViews,
 		"cameras",
 		wgpu::BufferUsage::Uniform
@@ -72,12 +72,12 @@ device::SceneResources host::SceneResources::ToDevice(
 
 	d_objects.samplers.resize(this->samplers.size());
 	for (uint32_t i = 0; i < d_objects.samplers.size(); ++i) {
-		d_objects.samplers[i] = engine.device.CreateSampler(&this->samplers[i]);
+		d_objects.samplers[i] = wgpuContext.device.CreateSampler(&this->samplers[i]);
 	}
 
 	d_objects.textureViews.resize(this->textureUris.size());
 	for (uint32_t i = 0; i < d_objects.samplers.size(); ++i) {
-		texture::getTexture(engine, this->textureUris[i], d_objects.textures[i], d_objects.textureViews[i]);
+		texture::getTexture(wgpuContext, this->textureUris[i], d_objects.textures[i], d_objects.textureViews[i]);
 	}
 
 	return d_objects;

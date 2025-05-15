@@ -1,0 +1,144 @@
+#pragma once
+#define SDL_MAIN_HANDLED
+#include "../sdl3webgpu.hpp"
+#include "SDL3/SDL.h"
+#include "../gltf/gltf.hpp"
+#include <fastgltf/types.hpp>
+#include "../host/host.hpp"
+#include "../render/initialRender.hpp"
+#include "absl/log/log.h"
+#include "engine.hpp"
+#include "../wgpuContext/wgpuContext.hpp"
+
+namespace {
+	std::string gltfDirectory = "models/cornellBox/"; //must end with "/"
+	std::string gltfFileName = "cornellbox.gltf";
+
+	wgpu::TextureView getNextSurfaceTextureView(wgpu::Surface surface) {
+		wgpu::SurfaceTexture surfaceTexture;
+		surface.GetCurrentTexture(&surfaceTexture);
+		if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal) {
+			throw std::runtime_error("failed to wgpu::SurfaceTexture from getCurrentTexture()");
+		}
+
+		wgpu::Texture texture = wgpu::Texture(surfaceTexture.texture);
+
+		wgpu::TextureViewDescriptor textureViewDescriptor = {
+			.label = "surface TextureView",
+			.format = texture.GetFormat(),
+			.dimension = wgpu::TextureViewDimension::e2D,
+			.mipLevelCount = 1,
+			.arrayLayerCount = 1,
+			.aspect = wgpu::TextureAspect::All,
+		};
+
+		wgpu::TextureView textureView = texture.CreateView(&textureViewDescriptor);
+
+		return textureView;
+	}
+
+}
+
+Engine::Engine() {
+	fastgltf::Asset asset = gltf::getAsset(gltfDirectory, gltfFileName);
+	host::SceneResources h_objects = gltf::processAsset(
+		asset,
+		std::array<uint32_t, 2>{_wgpuContext.screenDimensions.width, _wgpuContext.screenDimensions.height},
+		gltfDirectory
+	);
+	_drawCalls = h_objects.drawCalls;
+	_deviceSceneResources = h_objects.ToDevice(_wgpuContext);
+
+	render::Initial* initialRender = new render::Initial(&_wgpuContext.device);
+	_initialRender = initialRender;
+	const render::initial::descriptor::GenerateGpuObjects generateGpuObjectsDescriptor = {
+		.buffers = {
+			.cameraBuffer = _deviceSceneResources.cameras,
+			.transformBuffer = _deviceSceneResources.transforms,
+			.instancePropertiesBuffer = _deviceSceneResources.instanceProperties,
+			.materialBuffer = _deviceSceneResources.materials,
+		},
+		.screenDimensions = _wgpuContext.screenDimensions,
+	};
+	_initialRender->generateGpuObjects(&generateGpuObjectsDescriptor);
+}
+
+void Engine::run() {
+	SDL_Event e;
+	bool bQuit = false;
+	bool stopRendering = false;
+
+	// main loop
+	while (!bQuit) {
+		// Handle events on queue
+		while (SDL_PollEvent(&e) != 0) {
+			// close the window when user alt-f4s or clicks the X button
+			if (e.type == SDL_EVENT_QUIT) {
+				bQuit = true;
+			}
+
+			if (e.window.type == SDL_EVENT_WINDOW_MINIMIZED) {
+				stopRendering = true;
+			}
+			if (e.window.type == SDL_EVENT_WINDOW_RESTORED) {
+				stopRendering = false;
+			}
+		}
+
+		// do not draw if we are minimized
+		//if (stopRendering) {
+		//    // throttle the speed to avoid the endless spinning
+		//    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		//    continue;
+		//}
+
+		this->draw();
+	}
+	this->destroy();
+}
+
+void Engine::draw() {
+
+	//Get next surface texture view
+	wgpu::TextureView surfaceTextureView = getNextSurfaceTextureView(_wgpuContext.surface);
+
+	wgpu::CommandEncoderDescriptor commandEncoderDescriptor = {
+		.label = "My command encoder"
+	};
+	wgpu::CommandEncoder commandEncoder = _wgpuContext.device.CreateCommandEncoder(&commandEncoderDescriptor);
+
+	render::initial::descriptor::DoCommands doInitialRenderCommandsDescriptor = {
+		.commandEncoder = commandEncoder,
+		.vertexBuffer = _deviceSceneResources.vbo,
+		.indexBuffer = _deviceSceneResources.indices,
+		.drawCalls = _drawCalls,
+	};
+	_initialRender->doCommands(&doInitialRenderCommandsDescriptor);
+
+	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
+		.label = "Command Buffer",
+	};
+	wgpu::CommandBuffer commandBuffer = commandEncoder.Finish(&commandBufferDescriptor);
+
+	_wgpuContext.queue.Submit(1, &commandBuffer);
+
+	_wgpuContext.device.Tick();
+
+	_wgpuContext.device.PopErrorScope(
+		wgpu::CallbackMode::AllowSpontaneous,
+		[](wgpu::PopErrorScopeStatus status, wgpu::ErrorType, wgpu::StringView message) {
+			if (wgpu::PopErrorScopeStatus(status) != wgpu::PopErrorScopeStatus::Success) {
+				return;
+			}
+			std::cerr << std::format("Error: {} \r\n", message.data);
+		});
+
+	_wgpuContext.surface.Present();
+
+}
+	
+void Engine::destroy() {
+	//device and gpu object destruction is done by dawn destructor
+	_wgpuContext.surface.Unconfigure();
+	SDL_Quit();
+}

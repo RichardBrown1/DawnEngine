@@ -4,6 +4,10 @@
 #include "../device/device.hpp"
 #include "../enums.hpp"
 
+namespace {
+
+}
+
 namespace render {
 	Initial::Initial(wgpu::Device* device) {
 			_device = device;

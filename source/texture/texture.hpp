@@ -3,7 +3,7 @@
 #include <ktx.h>
 #include <webgpu/webgpu_cpp.h>
 #include <absl/log/log.h>
-#include "../engine.hpp"	
+#include "../wgpuContext/wgpuContext.hpp"	
 
 namespace {
 	void checkKtxError(ktx_error_code_e errorCode) {
@@ -21,7 +21,7 @@ namespace {
 }
 
 namespace texture {
-	void getTexture(Engine& engine, const std::string& filePath, wgpu::Texture& outTexture, wgpu::TextureView& outTextureView)
+	void getTexture(WGPUContext& wgpuContext, const std::string& filePath, wgpu::Texture& outTexture, wgpu::TextureView& outTextureView)
 	{
 		ktxTexture2* p_ktxTexture;
 		LOG(INFO) << "Loading Texture: " << filePath;
@@ -41,7 +41,7 @@ namespace texture {
 		LOG(INFO) << "numComponents: " << numComponents << " componentByteLength: " << componentByteLength;
 		if (needsTranscoding) {
 			khr_df_model_e colorModel = ktxTexture2_GetColorModel_e(sp_ktxTexture2.get());
-			LOG(INFO) << transcodeFormat << engine.device.HasFeature(wgpu::FeatureName::TextureCompressionASTC);
+			LOG(INFO) << transcodeFormat << wgpuContext.device.HasFeature(wgpu::FeatureName::TextureCompressionASTC);
 			LOG(INFO) << colorModel;
 			//throw std::runtime_error("ktx format unsupported");
 			ktxTexture2_GetComponentInfo(sp_ktxTexture2.get(), &numComponents, &componentByteLength);
@@ -86,7 +86,7 @@ namespace texture {
 			.format = wgpu::TextureFormat::BC7RGBAUnormSrgb,
 			.mipLevelCount = 1,
 		};
-		outTexture = engine.device.CreateTexture(&textureDescriptor);
+		outTexture = wgpuContext.device.CreateTexture(&textureDescriptor);
 
 		const wgpu::TexelCopyTextureInfo texelCopyTextureInfo = {
 			.texture = outTexture,
@@ -97,7 +97,7 @@ namespace texture {
 				.rowsPerImage = textureDescriptor.size.height,
 		};
 
-		engine.queue.WriteTexture(
+		wgpuContext.queue.WriteTexture(
 			&texelCopyTextureInfo,
 			p8_textureData,
 			sizeof(float) * sp_ktxTexture->baseWidth * sp_ktxTexture->baseHeight,

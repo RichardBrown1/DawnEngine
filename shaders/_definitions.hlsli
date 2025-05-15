@@ -41,10 +41,6 @@ struct PBRMetallicRoughness
 struct Material
 {
     PBRMetallicRoughness pbrMetallicRoughness;
-    uint textureOptions;
-    uint PAD0;
-    uint PAD1;
-    uint PAD2;
 };
 
 struct Light

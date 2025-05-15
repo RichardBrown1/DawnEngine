@@ -2,7 +2,7 @@
 #include <webgpu/webgpu_cpp.h>
 #include <string>
 #include <vector>
-#include "../engine.hpp"
+#include "../wgpuContext/wgpuContext.hpp"
 
 namespace device {
 	struct SceneResources {
@@ -30,7 +30,7 @@ namespace device {
 
 	template <typename T>
 	wgpu::Buffer createBuffer(
-		Engine& engine,
+		WGPUContext& wgpuContext,
 		const std::vector<T> vector,
 		const std::string& label,
 		const wgpu::BufferUsage bufferUsage
@@ -40,8 +40,8 @@ namespace device {
 			.usage = wgpu::BufferUsage::CopyDst | bufferUsage,
 			.size = sizeof(T) * vector.size(),
 		};
-		wgpu::Buffer buffer = engine.device.CreateBuffer(&bufferDescriptor);
-		engine.queue.WriteBuffer(buffer, 0, vector.data(), bufferDescriptor.size);
+		wgpu::Buffer buffer = wgpuContext.device.CreateBuffer(&bufferDescriptor);
+		wgpuContext.queue.WriteBuffer(buffer, 0, vector.data(), bufferDescriptor.size);
 		return buffer;
 	}
 

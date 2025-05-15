@@ -5,7 +5,7 @@
 #include <glm/fwd.hpp>
 #include "../structs/host.hpp"
 #include "../device/device.hpp"
-#include "../engine.hpp"
+#include "../engine/engine.hpp"
 
 //Objects for the wgpu::Device but in RAM waiting to be processed
 //This data should be in a format that can be consumed by the shader if its written into the device as is
@@ -28,6 +28,6 @@ namespace host {
 		std::vector<std::string> textureUris;
 		std::vector<wgpu::SamplerDescriptor> samplers;
 
-		device::SceneResources ToDevice(Engine& engine);
+		device::SceneResources ToDevice(WGPUContext& wgpuContext);
 	};
 }

@@ -1,19 +1,17 @@
 #pragma once
-#include "engine.hpp"
-#pragma once
 #include <string>
 #define SDL_MAIN_HANDLED
-#include "sdl3webgpu.hpp"
+#include "../sdl3webgpu.hpp"
 #include "SDL3/SDL.h"
 #include "absl/log/check.h"
 #include "absl/log/initialize.h"
 #include "absl/log/globals.h"
-#include "print.hpp"
-#include "surfaceConfiguration.hpp"
-#include "device/callback.hpp"
+#include "../print.hpp"
+#include "../surfaceConfiguration.hpp"
+#include "../device/callback.hpp"
+#include "wgpuContext.hpp"
 
-
-Engine::Engine() {
+WGPUContext::WGPUContext() {
 	absl::SetStderrThreshold(LOG_LEVEL);
 	absl::InitializeLog();
 

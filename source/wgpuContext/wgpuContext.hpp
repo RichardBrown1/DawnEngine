@@ -1,5 +1,4 @@
 #pragma once
-#include <array>
 #include <absl/base/log_severity.h>
 #include <webgpu/webgpu_cpp.h>
 
@@ -8,7 +7,7 @@ namespace {
 	const std::string WINDOW_TITLE = "Dawn WebGPU Engine";
 }
 
-struct Engine {
+struct WGPUContext {
 	wgpu::Device device;
 	wgpu::Queue queue;
 
@@ -18,6 +17,6 @@ struct Engine {
 	
 	wgpu::Extent2D screenDimensions = { 1280, 720 };
 
-	Engine();
+	WGPUContext();
 };
 
