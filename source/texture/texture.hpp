@@ -21,7 +21,7 @@ namespace {
 }
 
 namespace texture {
-	void getTexture(WGPUContext& wgpuContext, const std::string& filePath, wgpu::Texture& outTexture, wgpu::TextureView& outTextureView)
+	void getTexture(WGPUContext& wgpuContext, std::string& filePath, wgpu::Texture& outTexture, wgpu::TextureView& outTextureView)
 	{
 		ktxTexture2* p_ktxTexture;
 		LOG(INFO) << "Loading Texture: " << filePath;

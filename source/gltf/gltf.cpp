@@ -219,7 +219,7 @@ namespace {
 
 namespace gltf {
 	fastgltf::Asset getAsset(const std::string& gltfDirectory, const std::string& gltfFileName) {
-		fastgltf::Parser parser = fastgltf::Parser::Parser(fastgltf::Extensions::KHR_lights_punctual);
+		fastgltf::Parser parser = fastgltf::Parser::Parser(fastgltf::Extensions::KHR_lights_punctual | fastgltf::Extensions::KHR_texture_basisu);
 
 		std::string gltfFilePath = gltfDirectory + gltfFileName;
 		auto gltfFile = fastgltf::GltfDataBuffer::FromPath(gltfFilePath);
