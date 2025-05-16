@@ -11,8 +11,11 @@
 #include "../wgpuContext/wgpuContext.hpp"
 
 namespace {
-	std::string gltfDirectory = "models/cornellBox/"; //must end with "/"
-	std::string gltfFileName = "cornellbox.gltf";
+//	std::string gltfDirectory = "models/cornellBox/"; //must end with "/"
+//	std::string gltfFileName = "cornellbox.gltf";
+
+	std::string gltfDirectory = "models/avocado/"; //must end with "/"
+	std::string gltfFileName = "AvocadoKtx.gltf";
 
 	wgpu::TextureView getNextSurfaceTextureView(wgpu::Surface surface) {
 		wgpu::SurfaceTexture surfaceTexture;
