@@ -135,7 +135,7 @@ namespace {
 		structs::host::H_Camera h_camera = {
 			.projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, screenDimensions[0] / (float)screenDimensions[1], perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f)),
 			.position = glm::f32vec3(transform[3]),
-			.forward = -glm::normalize(glm::f32vec3(view[2])),
+			.forward = glm::normalize(glm::f32vec3(view[2])) * 8.0f,
 		};
 
 		objects.cameras.push_back(h_camera);
@@ -256,6 +256,16 @@ namespace gltf {
 		for (uint32_t i = 0; i < hostObjects.samplers.size(); ++i) {
 			addSampler(asset.samplers[i], hostObjects.samplers[i]);
 		}
+
+		//defaults if none found
+		if (hostObjects.cameras.size() == 0) {
+			hostObjects.cameras.push_back(structs::host::H_Camera{
+				.projection = glm::perspectiveRH_ZO(45.0f, screenDimensions[0] / (float)screenDimensions[1], 0.00001f, 1024.0f),
+				.position = { 0.0f, 0.0f, -0.1f },
+				.forward = { 0.0f, 0.0f, 1.0f },
+				});
+		}
+
 		return hostObjects;
 	}
 }
