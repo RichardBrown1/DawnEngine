@@ -1,7 +1,7 @@
 #pragma once
 #include "../device/device.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
-#include "../render/initialRender.hpp"
+#include "../render/initial.hpp"
 
 class Engine {
 public:

@@ -5,7 +5,7 @@
 #include "../gltf/gltf.hpp"
 #include <fastgltf/types.hpp>
 #include "../host/host.hpp"
-#include "../render/initialRender.hpp"
+#include "../render/initial.hpp"
 #include "absl/log/log.h"
 #include "engine.hpp"
 #include "../wgpuContext/wgpuContext.hpp"

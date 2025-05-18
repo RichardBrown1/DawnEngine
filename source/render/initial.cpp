@@ -1,12 +1,8 @@
 #pragma once
-#include "initialRender.hpp"
+#include "initial.hpp"
 #include <array>
 #include "../device/device.hpp"
 #include "../enums.hpp"
-
-namespace {
-
-}
 
 namespace render {
 	Initial::Initial(wgpu::Device* device) {
