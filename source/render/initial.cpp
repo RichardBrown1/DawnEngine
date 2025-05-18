@@ -3,19 +3,20 @@
 #include <array>
 #include "../device/device.hpp"
 #include "../enums.hpp"
+#include "vertexBufferLayout.hpp"
 
 namespace render {
 	Initial::Initial(wgpu::Device* device) {
 			_device = device;
 			_screenDimensions = wgpu::Extent2D(0,0); //generateGpuObjects() will handle this
+		
+			_vertexShaderModule = device::createShaderModule(*_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
+			_fragmentShaderModule = device::createShaderModule(*_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	};
 
 	void Initial::generateGpuObjects(const render::initial::descriptor::GenerateGpuObjects* descriptor) {
 		assert(descriptor->screenDimensions.width > 1);
 		_screenDimensions = descriptor->screenDimensions;
-		
-		_vertexShaderModule = device::createShaderModule(*_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
-		_fragmentShaderModule = device::createShaderModule(*_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 
 		createBindGroupLayout();
 		createPipeline();
@@ -107,37 +108,11 @@ namespace render {
 	void Initial::createPipeline() {
 		const wgpu::PipelineLayout pipelineLayout = getPipelineLayout();
 
-		constexpr wgpu::VertexAttribute positionAttribute = {
-			.format = wgpu::VertexFormat::Float32x3,
-			.offset = 0,
-			.shaderLocation = 0,
-		};
-		constexpr wgpu::VertexAttribute normalAttribute = {
-			.format = wgpu::VertexFormat::Float32x3,
-			.offset = offsetof(structs::VBO, normal),
-			.shaderLocation = 1,
-		};
-		constexpr wgpu::VertexAttribute texcoordAttribute = {
-			.format = wgpu::VertexFormat::Float32x2,
-			.offset = offsetof(structs::VBO, texcoord),
-			.shaderLocation = 2,
-		};
-		const auto vertexAttributes = std::vector<wgpu::VertexAttribute>{ 
-			positionAttribute, 
-			normalAttribute, 
-			texcoordAttribute
-		};
-
-		const	wgpu::VertexBufferLayout vertexBufferLayout = {
-			.arrayStride = sizeof(structs::VBO),
-			.attributeCount = vertexAttributes.size(),
-			.attributes = vertexAttributes.data(),
-		};
 		const wgpu::VertexState vertexState = {
 			.module = _vertexShaderModule,
 			.entryPoint = enums::EntryPoint::VERTEX,
 			.bufferCount = 1,
-			.buffers = &vertexBufferLayout,
+			.buffers = &render::vertexBufferLayout,
 		};
 		
 		const wgpu::DepthStencilState depthStencilState = {
