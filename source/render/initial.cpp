@@ -166,7 +166,7 @@ namespace render {
 			.buffer = descriptor->cameraBuffer,
 			.size = descriptor->cameraBuffer.GetSize(),
 		};
-		const wgpu::BindGroupEntry transformsBindGroupEntry = {
+		const wgpu::BindGroupEntry transformBindGroupEntry = {
 			.binding = 1,
 			.buffer = descriptor->transformBuffer,
 			.size = descriptor->transformBuffer.GetSize(),
@@ -176,16 +176,16 @@ namespace render {
 			.buffer = descriptor->instancePropertiesBuffer,
 			.size = descriptor->instancePropertiesBuffer.GetSize(),
 		};
-		const wgpu::BindGroupEntry materialsBindGroupEntry = {
+		const wgpu::BindGroupEntry materialBindGroupEntry = {
 			.binding = 3,
 			.buffer = descriptor->materialBuffer,
 			.size = descriptor->materialBuffer.GetSize(),
 		};
 		std::array<wgpu::BindGroupEntry, 4> bindGroupEntries = {
 			cameraBindGroupEntry,
-			transformsBindGroupEntry,
+			transformBindGroupEntry,
 			instancePropertiesBindGroupEntry,
-			materialsBindGroupEntry,
+			materialBindGroupEntry,
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 			.label = "initial render group",
@@ -205,7 +205,7 @@ namespace render {
 				.minBindingSize = sizeof(glm::f32mat4x4),
 			},
 		};
-		const wgpu::BindGroupLayoutEntry transformsBindGroupLayoutEntry = {
+		const wgpu::BindGroupLayoutEntry transformBindGroupLayoutEntry = {
 			.binding = 1,
 			.visibility = wgpu::ShaderStage::Vertex,
 			.buffer = {
@@ -221,7 +221,7 @@ namespace render {
 				.minBindingSize = sizeof(structs::InstanceProperty),
 			}
 		};
-		const wgpu::BindGroupLayoutEntry materialsBindGroupLayoutEntry = {
+		const wgpu::BindGroupLayoutEntry materialBindGroupLayoutEntry = {
 			.binding = 3,
 			.visibility = wgpu::ShaderStage::Fragment,
 			.buffer = {
@@ -232,9 +232,9 @@ namespace render {
 
 		std::array<wgpu::BindGroupLayoutEntry, 4> bindGroupLayoutEntries = {
 			cameraBindGroupLayoutEntry,
-			transformsBindGroupLayoutEntry,
+			transformBindGroupLayoutEntry,
 			instancePropertiesBindGroupLayoutEntry,
-			materialsBindGroupLayoutEntry,
+			materialBindGroupLayoutEntry,
 		};
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
 			.label = "initial render bind group layout",

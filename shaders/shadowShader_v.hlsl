@@ -1,6 +1,6 @@
 #include "shadowShader.hlsli"
-StructuredBuffer<float4x4> transforms : register(t1, space0);
-StructuredBuffer<Light> lights : register(t2, space0);
+StructuredBuffer<float4x4> transforms : register(t0, space0);
+StructuredBuffer<Light> lights : register(t1, space0);
 
 struct VSInput
 {

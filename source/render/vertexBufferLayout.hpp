@@ -27,7 +27,7 @@ namespace {
 }
 
 namespace render {
-	constexpr	wgpu::VertexBufferLayout vertexBufferLayout = {
+	static constexpr	wgpu::VertexBufferLayout vertexBufferLayout = {
 		.arrayStride = sizeof(structs::VBO),
 		.attributeCount = vertexAttributes.size(),
 		.attributes = vertexAttributes.data(),

@@ -9,6 +9,7 @@ namespace render {
 		namespace descriptor {
 			struct GenerateGpuObjects {
 				wgpu::Extent2D screenDimensions;
+				wgpu::Buffer& transformBuffer;
 				wgpu::Buffer& lightBuffer;
 			};
 
@@ -47,7 +48,7 @@ namespace render {
 		wgpu::PipelineLayout getPipelineLayout();
 		void createBindGroupLayout();
 		void createPipeline();
-	//	void createBindGroup(const render::initial::descriptor::Buffers* descriptor);
+		void createBindGroup(wgpu::Buffer& transformBuffer, wgpu::Buffer& lightBuffer);
 
 	};
 }

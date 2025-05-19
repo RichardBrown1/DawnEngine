@@ -15,7 +15,9 @@ namespace render {
 	}
 
 	void Shadow::generateGpuObjects(const render::shadow::descriptor::GenerateGpuObjects* descriptor) {
+		createBindGroupLayout();
 		createPipeline();
+		createBindGroup(descriptor->transformBuffer, descriptor->lightBuffer);
 	}
 
 	void Shadow::doCommands(const render::shadow::descriptor::DoCommands* descriptor) {
@@ -23,10 +25,9 @@ namespace render {
 	}
 
 	void Shadow::createPipeline() {
-		{
 		const wgpu::VertexState vertexState = {
 			.module = _vertexShaderModule,
-			.entryPoint = "VS_main",
+			.entryPoint = enums::EntryPoint::VERTEX,
 			.bufferCount = 1,
 			.buffers = &render::vertexBufferLayout,
 		};
@@ -58,7 +59,7 @@ namespace render {
 
 		wgpu::RenderPipelineDescriptor renderPipelineDescriptor = {
 			.label = "shadow render pipeline descriptor",
-			.layout = initPipelineLayout(descriptor),
+			.layout = getPipelineLayout(),
 			.vertex = vertexState,
 			.primitive = wgpu::PrimitiveState {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
@@ -73,5 +74,69 @@ namespace render {
 			.fragment = &fragmentState,
 		};
 
+		_renderPipeline = _device->CreateRenderPipeline(&renderPipelineDescriptor);
+	}
+
+	wgpu::PipelineLayout Shadow::getPipelineLayout() {
+		const wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
+			.label = "shadow render pipeline layout",
+			.bindGroupLayoutCount = 1,
+			.bindGroupLayouts = &_bindGroupLayout,
+		};
+		return _device->CreatePipelineLayout(&pipelineLayoutDescriptor);
+	};
+
+	void Shadow::createBindGroupLayout() {
+		const wgpu::BindGroupLayoutEntry transformBindGroupLayoutEntry = {
+			.binding = 0,
+			.visibility = wgpu::ShaderStage::Vertex,
+			.buffer = {
+				.type = wgpu::BufferBindingType::ReadOnlyStorage,
+				.minBindingSize = sizeof(glm::f32mat4x4),
+			},
+		};
+		const wgpu::BindGroupLayoutEntry lightBindGroupLayoutEntry = {
+			.binding = 1,
+			.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
+			.buffer = {
+				.type = wgpu::BufferBindingType::ReadOnlyStorage,
+				.minBindingSize = sizeof(structs::InstanceProperty),
+			}
+		};
+
+		std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
+			transformBindGroupLayoutEntry,
+			lightBindGroupLayoutEntry,
+		};
+		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
+			.label = "shadow render bind group layout",
+			.entryCount = bindGroupLayoutEntries.size(),
+			.entries = bindGroupLayoutEntries.data(),
+		};
+		_bindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+	};
+
+	void Shadow::createBindGroup(wgpu::Buffer& transformBuffer, wgpu::Buffer& lightBuffer) {
+		const wgpu::BindGroupEntry transformBindGroupEntry = {
+			.binding = 0,
+			.buffer = transformBuffer,
+			.size = transformBuffer.GetSize(),
+		};
+		const wgpu::BindGroupEntry lightBindGroupEntry = {
+			.binding = 1,
+			.buffer = lightBuffer,
+			.size = lightBuffer.GetSize(),
+		};
+		std::array<wgpu::BindGroupEntry, 4> bindGroupEntries = {
+			transformBindGroupEntry,
+			lightBindGroupEntry,
+		};
+		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
+			.label = "shadow render group",
+			.layout = _bindGroupLayout,
+			.entryCount = bindGroupEntries.size(),
+			.entries = bindGroupEntries.data(),
+		};
+		_bindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
 	}
 }
