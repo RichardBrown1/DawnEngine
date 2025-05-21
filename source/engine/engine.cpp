@@ -6,6 +6,7 @@
 #include <fastgltf/types.hpp>
 #include "../host/host.hpp"
 #include "../render/initial.hpp"
+#include "../render/shadow.hpp"
 #include "absl/log/log.h"
 #include "engine.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
@@ -54,7 +55,7 @@ Engine::Engine() {
 
 	render::Initial* initialRender = new render::Initial(&_wgpuContext.device);
 	_initialRender = initialRender;
-	const render::initial::descriptor::GenerateGpuObjects generateGpuObjectsDescriptor = {
+	const render::initial::descriptor::GenerateGpuObjects initialGenerateGpuObjectsDescriptor = {
 		.buffers = {
 			.cameraBuffer = _deviceSceneResources.cameras,
 			.transformBuffer = _deviceSceneResources.transforms,
@@ -63,7 +64,16 @@ Engine::Engine() {
 		},
 		.screenDimensions = _wgpuContext.screenDimensions,
 	};
-	_initialRender->generateGpuObjects(&generateGpuObjectsDescriptor);
+	_initialRender->generateGpuObjects(&initialGenerateGpuObjectsDescriptor);
+
+	render::Shadow* shadowRender = new render::Shadow(&_wgpuContext.device);
+	_shadowRender = shadowRender;
+	const render::shadow::descriptor::GenerateGpuObjects shadowGenerateGpuObjectsDescriptor = {
+		.screenDimensions = _wgpuContext.screenDimensions,
+		.transformBuffer = _deviceSceneResources.transforms,
+		.lightBuffer = _deviceSceneResources.lights,
+	};
+	_shadowRender->generateGpuObjects(&shadowGenerateGpuObjectsDescriptor);
 }
 
 void Engine::run() {
@@ -110,13 +120,21 @@ void Engine::draw() {
 	};
 	wgpu::CommandEncoder commandEncoder = _wgpuContext.device.CreateCommandEncoder(&commandEncoderDescriptor);
 
-	render::initial::descriptor::DoCommands doInitialRenderCommandsDescriptor = {
+	const render::initial::descriptor::DoCommands doInitialRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,
 		.vertexBuffer = _deviceSceneResources.vbo,
 		.indexBuffer = _deviceSceneResources.indices,
 		.drawCalls = _drawCalls,
 	};
 	_initialRender->doCommands(&doInitialRenderCommandsDescriptor);
+
+	const render::shadow::descriptor::DoCommands doShadowRenderCommandsDescriptor = {
+		.commandEncoder = commandEncoder,
+		.vertexBuffer = _deviceSceneResources.vbo,
+		.indexBuffer = _deviceSceneResources.indices,
+		.drawCalls = _drawCalls,
+	};
+	_shadowRender->doCommands(&doShadowRenderCommandsDescriptor);
 
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
 		.label = "Command Buffer",

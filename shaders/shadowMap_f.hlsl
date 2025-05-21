@@ -1,6 +1,6 @@
-#include "shadowShader.hlsli"
+#include "shadowMap.hlsli"
 
-StructuredBuffer<Light> lights : register(t2, space0);
+StructuredBuffer<Light> lights : register(t1, space0);
 
 float4 fs_main(VSOutput input) : SV_Target
 {

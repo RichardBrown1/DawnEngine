@@ -5,6 +5,8 @@
 #include "../enums.hpp"
 #include "../constants.hpp"
 #include "../texture/texture.hpp"
+#include "../structs/structs.hpp"
+#include <array>
 
 namespace render {
 
@@ -123,7 +125,7 @@ namespace render {
 			.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
 			.buffer = {
 				.type = wgpu::BufferBindingType::ReadOnlyStorage,
-				.minBindingSize = sizeof(structs::InstanceProperty),
+				.minBindingSize = sizeof(structs::Light),
 			}
 		};
 
@@ -150,7 +152,7 @@ namespace render {
 			.buffer = lightBuffer,
 			.size = lightBuffer.GetSize(),
 		};
-		std::array<wgpu::BindGroupEntry, 4> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
 			transformBindGroupEntry,
 			lightBindGroupEntry,
 		};

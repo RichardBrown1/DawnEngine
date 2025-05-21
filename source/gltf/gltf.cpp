@@ -265,6 +265,14 @@ namespace gltf {
 				.forward = { 0.0f, 0.0f, 1.0f },
 				});
 		}
+		if (hostObjects.lights.size() == 0) {
+			hostObjects.lights.push_back(structs::Light{
+			.rotation = glm::f32vec3{2.755f, -0.286f, -1.269f}, //Points downwards and slightly in +X and +Z
+			.color = {1.0f, 1.0f, 0.9f},
+			.type = 0, //Directional
+			.intensity = 128.0f,
+			});
+		}
 
 		return hostObjects;
 	}

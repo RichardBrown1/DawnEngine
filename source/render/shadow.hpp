@@ -30,11 +30,11 @@ namespace render {
 
 		wgpu::TextureView shadowMapTextureView;
 	private:
-		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
-		const std::string VERTEX_SHADER_PATH = "shaders/initialRender_v.spv";
+		const wgpu::StringView VERTEX_SHADER_LABEL = "shadow render vertex shader";
+		const std::string VERTEX_SHADER_PATH = "shaders/shadowMap_v.spv";
 
-		const wgpu::StringView FRAGMENT_SHADER_LABEL = "initial render fragment shader";
-		const std::string FRAGMENT_SHADER_PATH = "shaders/initialRender_f.spv";
+		const wgpu::StringView FRAGMENT_SHADER_LABEL = "shadow render fragment shader";
+		const std::string FRAGMENT_SHADER_PATH = "shaders/shadowMap_f.spv";
 
 		wgpu::Device* _device;
 		wgpu::Extent2D _shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
