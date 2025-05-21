@@ -11,16 +11,44 @@ namespace {
 			LOG(FATAL) << ktxErrorString(errorCode);
 		}
 	}
-
-	struct TextureInputInfo {
-		wgpu::Extent2D dimensions;
-		uint32_t materialId;
-		uint32_t PAD0;
-	};
-
 }
 
 namespace texture {
+	namespace descriptor {
+		struct CreateTextureView {
+			std::string label;
+			wgpu::Device* device;
+			wgpu::Extent2D textureDimensions;
+			wgpu::TextureFormat textureFormat;
+			wgpu::TextureView& outputTextureView;
+		};
+	}
+
+	void createTextureView(const descriptor::CreateTextureView* descriptor) {
+		assert(descriptor->textureFormat != wgpu::TextureFormat::Undefined);
+		const wgpu::TextureDescriptor textureDescriptor = {
+					.label = wgpu::StringView(descriptor->label + std::string(" texture")),
+					.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
+					.dimension = wgpu::TextureDimension::e2D,
+					.size = {
+						.width = descriptor->textureDimensions.width,
+						.height = descriptor->textureDimensions.height,
+					},
+					.format = descriptor->textureFormat,
+		};
+		wgpu::Texture texture = descriptor->device->CreateTexture(&textureDescriptor);
+		const wgpu::TextureViewDescriptor textureViewDescriptor = {
+			.label = wgpu::StringView(descriptor->label + std::string(" texture view")),
+			.format = textureDescriptor.format,
+			.dimension = wgpu::TextureViewDimension::e2D,
+			.mipLevelCount = 1,
+			.arrayLayerCount = 1,
+			.aspect = wgpu::TextureAspect::All,
+			.usage = textureDescriptor.usage,
+		};
+		descriptor->outputTextureView = texture.CreateView(&textureViewDescriptor);
+	}
+
 	void getTexture(WGPUContext& wgpuContext, std::string& filePath, wgpu::Texture& outTexture, wgpu::TextureView& outTextureView)
 	{
 		ktxTexture2* p_ktxTexture;

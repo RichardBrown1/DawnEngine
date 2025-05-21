@@ -7,14 +7,6 @@
 #include "../constants.hpp"
 #include "../structs/host.hpp"
 
-namespace {
-	struct CreateTextureViewDescriptor {
-		std::string label;
-		wgpu::TextureView& outputTextureView;
-		wgpu::TextureFormat textureFormat;
-	};
-}
-
 namespace render {
 	namespace initial::descriptor {
 		struct Buffers {
@@ -37,7 +29,7 @@ namespace render {
 		};
 	}
 
-class Initial {
+	class Initial {
 	public:
 		Initial(wgpu::Device* device);
 		void generateGpuObjects(const render::initial::descriptor::GenerateGpuObjects* descriptor);
@@ -85,6 +77,5 @@ class Initial {
 		void createBindGroupLayout();
 		void createPipeline();
 		void createBindGroup(const render::initial::descriptor::Buffers* descriptor);
-		void createTextureView(const CreateTextureViewDescriptor* descriptor);
 	};
 }

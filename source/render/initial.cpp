@@ -4,6 +4,7 @@
 #include "../device/device.hpp"
 #include "../enums.hpp"
 #include "vertexBufferLayout.hpp"
+#include "../texture/texture.hpp"
 
 namespace render {
 	Initial::Initial(wgpu::Device* device) {
@@ -22,26 +23,32 @@ namespace render {
 		createPipeline();
 		createBindGroup(&descriptor->buffers);
 		
-		CreateTextureViewDescriptor masterInfoTextureViewDescriptor = {
+		texture::descriptor::CreateTextureView masterInfoTextureViewDescriptor = {
 			.label = _masterInfoLabel,
-			.outputTextureView = _masterInfoTextureView,
+			.device = _device,
+			.textureDimensions = descriptor->screenDimensions,
 			.textureFormat = masterInfoTextureFormat,
+			.outputTextureView = _masterInfoTextureView,
 		};
-		createTextureView(&masterInfoTextureViewDescriptor);
+		texture::createTextureView(&masterInfoTextureViewDescriptor);
 
-		CreateTextureViewDescriptor baseColorAccumulatorTextureViewDescriptor = {
+		texture::descriptor::CreateTextureView baseColorAccumulatorTextureViewDescriptor = {
 			.label = _baseColorLabel,
-			.outputTextureView = _baseColorAccumulatorTextureView,
+			.device = _device,
+			.textureDimensions = descriptor->screenDimensions,
 			.textureFormat = baseColorTextureFormat,
+			.outputTextureView = _baseColorAccumulatorTextureView,
 		};
-		createTextureView(&baseColorAccumulatorTextureViewDescriptor);
+		texture::createTextureView(&baseColorAccumulatorTextureViewDescriptor);
 
-		CreateTextureViewDescriptor normalAccumulatorTextureViewDescriptor = {
+		texture::descriptor::CreateTextureView normalAccumulatorTextureViewDescriptor = {
 			.label = _normalLabel,
-			.outputTextureView = _normalAccumulatorTextureView,
+			.device = _device,
+			.textureDimensions = descriptor->screenDimensions,
 			.textureFormat = normalTextureFormat,
+			.outputTextureView = _normalAccumulatorTextureView,
 		};
-		createTextureView(&normalAccumulatorTextureViewDescriptor);
+		texture::createTextureView(&normalAccumulatorTextureViewDescriptor);
 
 		_renderPassColorAttachments = {
 			wgpu::RenderPassColorAttachment {
@@ -64,12 +71,14 @@ namespace render {
 			},
 		};
 
-		CreateTextureViewDescriptor depthTextureViewDescriptor = {
+		texture::descriptor::CreateTextureView depthTextureViewDescriptor = {
 			.label = _depthTextureLabel,
-			.outputTextureView = _depthTextureView,
+			.device = _device,
+			.textureDimensions = descriptor->screenDimensions,
 			.textureFormat = depthTextureFormat,
+			.outputTextureView = _depthTextureView,
 		};
-		createTextureView(&depthTextureViewDescriptor);
+		texture::createTextureView(&depthTextureViewDescriptor);
 
 	};
 
@@ -254,28 +263,4 @@ namespace render {
 		return _device->CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};
 
-	void Initial::createTextureView(const CreateTextureViewDescriptor* descriptor) {
-		assert(descriptor->textureFormat != wgpu::TextureFormat::Undefined);
-		const wgpu::TextureDescriptor textureDescriptor = {
-					.label = wgpu::StringView(descriptor->label + std::string(" texture")),
-					.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
-					.dimension = wgpu::TextureDimension::e2D,
-					.size = {
-						.width = _screenDimensions.width,
-						.height = _screenDimensions.height,
-					},
-					.format = descriptor->textureFormat,
-		};
-		wgpu::Texture texture = _device->CreateTexture(&textureDescriptor);
-		const wgpu::TextureViewDescriptor textureViewDescriptor = {
-			.label = wgpu::StringView(descriptor->label + std::string(" texture view")),
-			.format = textureDescriptor.format,
-			.dimension = wgpu::TextureViewDimension::e2D,
-			.mipLevelCount = 1,
-			.arrayLayerCount = 1,
-			.aspect = wgpu::TextureAspect::All,
-			.usage = textureDescriptor.usage,
-		};
-		descriptor->outputTextureView = texture.CreateView(&textureViewDescriptor);
-	}
 }
