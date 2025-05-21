@@ -21,6 +21,7 @@ namespace render {
 			};
 		}
 	}
+
 	class Shadow {
 	public:
 		Shadow(wgpu::Device* device);
