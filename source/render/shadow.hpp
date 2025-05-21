@@ -27,7 +27,7 @@ namespace render {
 		void generateGpuObjects(const render::shadow::descriptor::GenerateGpuObjects* descriptor);
 		void doCommands(const render::shadow::descriptor::DoCommands* descriptor);
 
-
+		wgpu::TextureView shadowMapTextureView;
 	private:
 		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
 		const std::string VERTEX_SHADER_PATH = "shaders/initialRender_v.spv";
@@ -36,7 +36,7 @@ namespace render {
 		const std::string FRAGMENT_SHADER_PATH = "shaders/initialRender_f.spv";
 
 		wgpu::Device* _device;
-		wgpu::Extent2D _shadowDimensions;
+		wgpu::Extent2D _shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
 
 		wgpu::RenderPipeline _renderPipeline;
 		wgpu::BindGroupLayout _bindGroupLayout;
@@ -49,6 +49,6 @@ namespace render {
 		void createBindGroupLayout();
 		void createPipeline();
 		void createBindGroup(wgpu::Buffer& transformBuffer, wgpu::Buffer& lightBuffer);
-
+		void createShadowMapTextureView();
 	};
 }

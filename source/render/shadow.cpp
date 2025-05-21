@@ -4,11 +4,13 @@
 #include "../device/device.hpp"
 #include "../enums.hpp"
 #include "../constants.hpp"
+#include "../texture/texture.hpp"
 
 namespace render {
 
 	Shadow::Shadow(wgpu::Device* device) {
 		_device = device;
+		_shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
 
 		_vertexShaderModule = device::createShaderModule(*_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
 		_fragmentShaderModule = device::createShaderModule(*_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
@@ -18,10 +20,31 @@ namespace render {
 		createBindGroupLayout();
 		createPipeline();
 		createBindGroup(descriptor->transformBuffer, descriptor->lightBuffer);
+		createShadowMapTextureView();
 	}
 
 	void Shadow::doCommands(const render::shadow::descriptor::DoCommands* descriptor) {
+		const wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+			.view = shadowMapTextureView,
+			.depthLoadOp = wgpu::LoadOp::Clear,
+			.depthStoreOp = wgpu::StoreOp::Store,
+			.depthClearValue = 1.0f,
+		};
 
+		const wgpu::RenderPassDescriptor renderPassDescriptor = {
+			.label = "shadow render pass",
+			.depthStencilAttachment = &renderPassDepthStencilAttachment,
+		};
+		wgpu::RenderPassEncoder renderPassEncoder = descriptor->commandEncoder.BeginRenderPass(&renderPassDescriptor);
+		renderPassEncoder.SetPipeline(_renderPipeline);
+		renderPassEncoder.SetBindGroup(0, _bindGroup);
+		renderPassEncoder.SetVertexBuffer(0, descriptor->vertexBuffer, 0, descriptor->vertexBuffer.GetSize());
+		renderPassEncoder.SetIndexBuffer(descriptor->indexBuffer, wgpu::IndexFormat::Uint16, 0, descriptor->indexBuffer.GetSize());
+
+		for (auto& dc : descriptor->drawCalls) {
+			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+		}
+		renderPassEncoder.End();
 	}
 
 	void Shadow::createPipeline() {
@@ -138,5 +161,16 @@ namespace render {
 			.entries = bindGroupEntries.data(),
 		};
 		_bindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
+	}
+
+	void Shadow::createShadowMapTextureView() {
+		const texture::descriptor::CreateTextureView createTextureViewDescriptor = {
+			.label = "shadow texture view",
+			.device = _device,
+			.textureDimensions = _shadowDimensions,
+			.textureFormat = constants::DEPTH_FORMAT,
+			.outputTextureView = shadowMapTextureView,
+		};
+		texture::createTextureView(&createTextureViewDescriptor);
 	}
 }
