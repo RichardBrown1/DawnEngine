@@ -3,6 +3,7 @@
 #include "../wgpuContext/wgpuContext.hpp"
 #include "../render/initial.hpp"
 #include "../render/shadow.hpp"
+#include "../render/ultimate.hpp"
 
 class Engine {
 public:
@@ -13,6 +14,7 @@ private:
 	device::SceneResources _deviceSceneResources;
 	render::Initial* _initialRender;
 	render::Shadow* _shadowRender;
+	render::Ultimate* _ultimateRender;
 	std::vector<structs::host::DrawCall> _drawCalls;
 
 	void draw();

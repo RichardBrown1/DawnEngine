@@ -5,8 +5,6 @@
 #include "../gltf/gltf.hpp"
 #include <fastgltf/types.hpp>
 #include "../host/host.hpp"
-#include "../render/initial.hpp"
-#include "../render/shadow.hpp"
 #include "absl/log/log.h"
 #include "engine.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
@@ -74,6 +72,17 @@ Engine::Engine() {
 		.lightBuffer = _deviceSceneResources.lights,
 	};
 	_shadowRender->generateGpuObjects(&shadowGenerateGpuObjectsDescriptor);
+
+	
+	render::Ultimate* ultimateRender = new render::Ultimate(&_wgpuContext.device);
+	_ultimateRender = ultimateRender;
+	const render::ultimate::descriptor::GenerateGpuObjects ultimateGenerateGpuObjectsDescriptor = {
+		.screenDimensions = _wgpuContext.screenDimensions,
+		.surfaceTextureFormat = wgpu::TextureFormat::BGRA8Unorm,
+		.baseColorTextureView = initialRender->baseColorAccumulatorTextureView,
+		.shadowMapTextureView = shadowRender->shadowMapTextureView,
+	};
+	_ultimateRender->generateGpuObjects(&ultimateGenerateGpuObjectsDescriptor);
 }
 
 void Engine::run() {
@@ -135,6 +144,12 @@ void Engine::draw() {
 		.drawCalls = _drawCalls,
 	};
 	_shadowRender->doCommands(&doShadowRenderCommandsDescriptor);
+
+	const render::ultimate::descriptor::DoCommands doUltimateRenderCommandsDescriptor = {
+		.commandEncoder = commandEncoder,
+		.surfaceTextureView = surfaceTextureView,
+	};
+	_ultimateRender->doCommands(&doUltimateRenderCommandsDescriptor);
 
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
 		.label = "Command Buffer",
