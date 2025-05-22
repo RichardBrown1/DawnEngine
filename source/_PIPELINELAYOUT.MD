@@ -42,7 +42,7 @@ Ideally only shadows within the player's viewport will be calculated
 - out
     - depthmap
 
-## Output Pipeline
+## Final Pipeline
 - in
     - texture maps
     - light map
