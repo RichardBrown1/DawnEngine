@@ -51,9 +51,10 @@ WGPUContext::WGPUContext() {
 	print::adapter::GetInfo(this->adapter);
 	print::adapter::GetLimits(this->adapter);
 
-	std::array<wgpu::FeatureName, 2> requiredFeatures = {
+	std::array<wgpu::FeatureName, 3> requiredFeatures = {
 		wgpu::FeatureName::IndirectFirstInstance,
 		wgpu::FeatureName::TextureCompressionBC,
+		wgpu::FeatureName::BGRA8UnormStorage,
 	};
 	wgpu::DeviceDescriptor deviceDescriptor = {};
 	deviceDescriptor.label = "device";

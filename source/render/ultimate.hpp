@@ -47,7 +47,7 @@ namespace render {
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createInputBindGroupLayout();
-		void createOutputBindGroupLayout();
+		void createOutputBindGroupLayout(wgpu::TextureFormat surfaceTextureFormat);
 		void createPipeline();
 		void createInputBindGroup(
 			wgpu::TextureView& baseColorTextureView,

@@ -19,7 +19,7 @@ namespace render {
 		_screenDimensions = descriptor->screenDimensions;
 
 		createInputBindGroupLayout();
-		createOutputBindGroupLayout();
+		createOutputBindGroupLayout(descriptor->surfaceTextureFormat);
 		createPipeline();
 		createInputBindGroup(
 			descriptor->baseColorTextureView,
@@ -131,12 +131,13 @@ namespace render {
 		_inputBindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
-	void Ultimate::createOutputBindGroupLayout() {
+	void Ultimate::createOutputBindGroupLayout(wgpu::TextureFormat textureFormat) {
 		const wgpu::BindGroupLayoutEntry surfaceBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Compute,
-			.texture = {
-				.sampleType = wgpu::TextureSampleType::Float,
+			.storageTexture = {
+				.access = wgpu::StorageTextureAccess::WriteOnly, //this should be write only but I don't think I can do it on HLSL
+				.format = textureFormat,
 				.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
 		};

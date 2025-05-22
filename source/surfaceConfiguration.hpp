@@ -6,7 +6,7 @@ namespace surfaceConfiguration {
 	void init(wgpu::Device device, wgpu::Extent2D dimensions) {
 		self = wgpu::SurfaceConfiguration{
 		.device = device,
-		.format = wgpu::TextureFormat::BGRA8Unorm,
+		.format = wgpu::TextureFormat::RGBA8Unorm,
 		.usage = wgpu::TextureUsage::RenderAttachment,
 		.width = dimensions.width,
 		.height = dimensions.height,

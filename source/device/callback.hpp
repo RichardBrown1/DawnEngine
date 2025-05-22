@@ -23,6 +23,7 @@ namespace device {
 				LOG(FATAL) << "Unknown wgpu::Error Type";
 			}
 			LOG(ERROR) << errorTypeName << " error: " << message;
+			__debugbreak();
 			};
 
 		const auto deviceLost = [](const wgpu::Device&, wgpu::DeviceLostReason reason, wgpu::StringView message) {
