@@ -42,6 +42,11 @@ namespace render {
 		const wgpu::TextureFormat depthTextureFormat = constants::DEPTH_FORMAT;
 		//const wgpu::TextureFormat metallicRoughnessAccumulatorTextureFormat = wgpu::TextureFormat::RGBA32Float;
 
+		wgpu::TextureView masterInfoTextureView;
+		wgpu::TextureView baseColorAccumulatorTextureView;
+		wgpu::TextureView normalAccumulatorTextureView;
+		wgpu::TextureView depthTextureView;
+
 	private:
 		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
 		const std::string VERTEX_SHADER_PATH = "shaders/initialRender_v.spv";
@@ -60,16 +65,9 @@ namespace render {
 		wgpu::ShaderModule _fragmentShaderModule;
 
 		const std::string _masterInfoLabel = std::string("master info");
-		wgpu::TextureView _masterInfoTextureView;
-
 		const std::string _baseColorLabel = std::string("base color");
-		wgpu::TextureView _baseColorAccumulatorTextureView;
-
 		const std::string _normalLabel = std::string("normals ");
-		wgpu::TextureView _normalAccumulatorTextureView;
-
 		const std::string _depthTextureLabel = std::string("depth texture");
-		wgpu::TextureView _depthTextureView;
 
 		std::array<wgpu::RenderPassColorAttachment, 3> _renderPassColorAttachments;
 

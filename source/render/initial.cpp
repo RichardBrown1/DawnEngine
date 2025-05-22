@@ -5,6 +5,11 @@
 #include "../enums.hpp"
 #include "vertexBufferLayout.hpp"
 #include "../texture/texture.hpp"
+#include "../render/initial.hpp"
+#include "../render/shadow.hpp"
+#include "../render/ultimate.hpp"
+
+
 
 namespace render {
 	Initial::Initial(wgpu::Device* device) {
@@ -28,7 +33,7 @@ namespace render {
 			.device = _device,
 			.textureDimensions = descriptor->screenDimensions,
 			.textureFormat = masterInfoTextureFormat,
-			.outputTextureView = _masterInfoTextureView,
+			.outputTextureView = masterInfoTextureView,
 		};
 		texture::createTextureView(&masterInfoTextureViewDescriptor);
 
@@ -37,7 +42,7 @@ namespace render {
 			.device = _device,
 			.textureDimensions = descriptor->screenDimensions,
 			.textureFormat = baseColorTextureFormat,
-			.outputTextureView = _baseColorAccumulatorTextureView,
+			.outputTextureView = baseColorAccumulatorTextureView,
 		};
 		texture::createTextureView(&baseColorAccumulatorTextureViewDescriptor);
 
@@ -46,25 +51,25 @@ namespace render {
 			.device = _device,
 			.textureDimensions = descriptor->screenDimensions,
 			.textureFormat = normalTextureFormat,
-			.outputTextureView = _normalAccumulatorTextureView,
+			.outputTextureView = normalAccumulatorTextureView,
 		};
 		texture::createTextureView(&normalAccumulatorTextureViewDescriptor);
 
 		_renderPassColorAttachments = {
 			wgpu::RenderPassColorAttachment {
-				.view = _masterInfoTextureView,
+				.view = masterInfoTextureView,
 				.loadOp = wgpu::LoadOp::Clear,
 				.storeOp = wgpu::StoreOp::Store,
 				.clearValue = wgpu::Color{0.0f, 0.0f, UINT32_MAX, 0.0f},
 			},
 			wgpu::RenderPassColorAttachment {
-				.view = _baseColorAccumulatorTextureView,
+				.view = baseColorAccumulatorTextureView,
 				.loadOp = wgpu::LoadOp::Clear,
 				.storeOp = wgpu::StoreOp::Store,
 				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
 			},
 			wgpu::RenderPassColorAttachment {
-				.view = _normalAccumulatorTextureView,
+				.view = normalAccumulatorTextureView,
 				.loadOp = wgpu::LoadOp::Clear,
 				.storeOp = wgpu::StoreOp::Store,
 				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
@@ -76,7 +81,7 @@ namespace render {
 			.device = _device,
 			.textureDimensions = descriptor->screenDimensions,
 			.textureFormat = depthTextureFormat,
-			.outputTextureView = _depthTextureView,
+			.outputTextureView = depthTextureView,
 		};
 		texture::createTextureView(&depthTextureViewDescriptor);
 
@@ -84,7 +89,7 @@ namespace render {
 
 	void Initial::doCommands(const render::initial::descriptor::DoCommands* descriptor) {
 		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
-			.view = _depthTextureView,
+			.view = depthTextureView,
 			.depthLoadOp = wgpu::LoadOp::Clear,
 			.depthStoreOp = wgpu::StoreOp::Store,
 			.depthClearValue = 1.0f,
