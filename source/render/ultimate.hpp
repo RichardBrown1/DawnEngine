@@ -19,9 +19,7 @@ namespace render {
 
 		struct DoCommands {
 			wgpu::CommandEncoder& commandEncoder;
-			wgpu::Buffer& vertexBuffer;
-			wgpu::Buffer& indexBuffer;
-			std::vector<structs::host::DrawCall>& drawCalls;
+			wgpu::TextureView& surfaceTextureView;
 		};
 	}
 
@@ -41,15 +39,11 @@ namespace render {
 
 		wgpu::Device* _device;
 		wgpu::Extent2D _screenDimensions;
-		wgpu::TextureFormat _surfaceTextureFormat;	
 
 		wgpu::ComputePipeline _computePipeline;
 		wgpu::BindGroupLayout _inputBindGroupLayout;
 		wgpu::BindGroupLayout _outputBindGroupLayout;
 		wgpu::BindGroup _inputBindGroup;
-		wgpu::BindGroup _outputBindGroup;
-
-		wgpu::TextureView _displayTextureView;
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createInputBindGroupLayout();
@@ -59,7 +53,7 @@ namespace render {
 			wgpu::TextureView& baseColorTextureView,
 			wgpu::TextureView& shadowMapTextureView
 			);
-		void createOutputBindGroup(
+		wgpu::BindGroup createOutputBindGroup(
 			wgpu::TextureView& surfaceTextureView
 			);
 

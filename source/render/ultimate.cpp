@@ -10,7 +10,6 @@ namespace render {
 	Ultimate::Ultimate(wgpu::Device* device) {
 		_device = device;
 		_screenDimensions = wgpu::Extent2D(0, 0); //generateGpuObjects() will handle this
-		_surfaceTextureFormat = wgpu::TextureFormat::BGRA8UnormSrgb;
 
 		_computeShaderModule = device::createShaderModule(*_device, ULTIMATE_SHADER_LABEL, ULTIMATE_SHADER_PATH);
 	};
@@ -20,31 +19,24 @@ namespace render {
 		_screenDimensions = descriptor->screenDimensions;
 
 		createInputBindGroupLayout();
+		createOutputBindGroupLayout();
 		createPipeline();
 		createInputBindGroup(
 			descriptor->baseColorTextureView,
 			descriptor->shadowMapTextureView
 		);
-
-		texture::descriptor::CreateTextureView displayTextureViewDescriptor = {
-			.label = _displayTextureViewLabel,
-			.device = _device,
-			.textureDimensions = descriptor->screenDimensions,
-			.textureFormat = _surfaceTextureFormat,
-			.outputTextureView = _displayTextureView,
-		};
-		texture::createTextureView(&displayTextureViewDescriptor);
 	};
 
 	void Ultimate::doCommands(const render::ultimate::descriptor::DoCommands* descriptor) {
-		//TODO move this to generated gpu objects
+		wgpu::BindGroup outputBindGroup = createOutputBindGroup(descriptor->surfaceTextureView);
+
 		wgpu::ComputePassDescriptor computePassDescriptor = {
 			.label = "ultimate compute pass",
 		};
 		wgpu::ComputePassEncoder computePassEncoder = descriptor->commandEncoder.BeginComputePass(&computePassDescriptor);
 		computePassEncoder.SetPipeline(_computePipeline);
 		computePassEncoder.SetBindGroup(0, _inputBindGroup);
-		computePassEncoder.SetBindGroup(1, _outputBindGroup);
+		computePassEncoder.SetBindGroup(1, outputBindGroup);
 		computePassEncoder.DispatchWorkgroups(_screenDimensions.width, _screenDimensions.height);
 		computePassEncoder.End();
 	}
@@ -89,7 +81,7 @@ namespace render {
 		_inputBindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
 	}
 
-	void Ultimate::createOutputBindGroup(
+	wgpu::BindGroup Ultimate::createOutputBindGroup(
 		wgpu::TextureView& surfaceTextureView
 	) {
 		const wgpu::BindGroupEntry surfaceBindGroupEntry = {
@@ -105,7 +97,7 @@ namespace render {
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		_outputBindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
+		return _device->CreateBindGroup(&bindGroupDescriptor);
 	}
 
 	void Ultimate::createInputBindGroupLayout() {
