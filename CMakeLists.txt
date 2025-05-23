@@ -59,6 +59,15 @@ set(SHADERS_DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 file(MAKE_DIRECTORY ${SHADERS_DEST_DIR})
 add_custom_target(Shaders)
 
+#WGSL
+#file(GLOB_RECURSE WGSL_VERTEX_SHADER_FILES "shaders/*.wgsl")
+file(
+    COPY "shaders/" 
+    DESTINATION ${SHADERS_DEST_DIR} 
+    PATTERN "*.wgsl"
+)
+
+#HLSL -> Spirv Shaders
 file(GLOB_RECURSE HLSL_VERTEX_SHADER_FILES "shaders/*_v.hlsl")
 foreach(FILE ${HLSL_VERTEX_SHADER_FILES})
   get_filename_component(FILE_WE ${FILE} NAME_WE)

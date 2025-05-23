@@ -28,6 +28,12 @@ namespace device {
 		const std::string& filename
 	);
 
+	wgpu::ShaderModule createWGSLShaderModule(
+		wgpu::Device& device,
+		const wgpu::StringView& label,
+		const std::string& filename
+	);
+
 	template <typename T>
 	wgpu::Buffer createBuffer(
 		WGPUContext& wgpuContext,
