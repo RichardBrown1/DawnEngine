@@ -32,7 +32,7 @@ namespace {
 			.mipLevelCount = 1,
 			.arrayLayerCount = 1,
 			.aspect = wgpu::TextureAspect::All,
-			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding,
+			.usage = wgpu::TextureUsage::StorageBinding,
 		};
 
 		wgpu::TextureView textureView = texture.CreateView(&textureViewDescriptor);

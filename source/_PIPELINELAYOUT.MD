@@ -1,17 +1,29 @@
 # Pipeline Layout
 
+## Shadow Map Pipeline
+TODO: Implement an accumulator or something to support multiple light sources.
+Ideally only shadows within the player's viewport will be calculated
+- in
+    - vbo
+    - lights
+    - transforms 
+- out
+    - shadowmap
+
 ## Initial Pipeline
 - in
     - vbo
     - camera position
     - transforms 
     - instance properties
+    - shadow map
 - out
 	- texture maps 
         - color
         - TODO: Metallic Roughness / others?
 	- normal
 	- material / textureCoord
+    - shadows from camera perspective
 
 ## Texture Map Pipeline (for each type of property)
 - in
@@ -32,20 +44,17 @@
 - out
     - light map
 
-## Shadow Map Pipeline
-TODO: Implement an accumulator or something to support multiple light sources.
-Ideally only shadows within the player's viewport will be calculated
-- in
-    - vbo
-    - lights
-    - transforms 
-- out
-    - depthmap
 
-## Final Pipeline
+## Ultimate Pipeline
 - in
     - texture maps
     - light map
     - shadow map
 - out
-    - frame to display to user
+    - ultimate result
+
+## ToSurface Pipeline
+- in
+    - ultimate result
+- out
+    - renderable surface
