@@ -32,6 +32,7 @@ namespace {
 			.mipLevelCount = 1,
 			.arrayLayerCount = 1,
 			.aspect = wgpu::TextureAspect::All,
+			.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding,
 		};
 
 		wgpu::TextureView textureView = texture.CreateView(&textureViewDescriptor);
@@ -78,6 +79,7 @@ Engine::Engine() {
 	_ultimateRender = ultimateRender;
 	const render::ultimate::descriptor::GenerateGpuObjects ultimateGenerateGpuObjectsDescriptor = {
 		.screenDimensions = _wgpuContext.screenDimensions,
+		.baseColorTextureFormat = initialRender->baseColorTextureFormat,
 		.surfaceTextureFormat = wgpu::TextureFormat::BGRA8Unorm,
 		.baseColorTextureView = initialRender->baseColorAccumulatorTextureView,
 		.shadowMapTextureView = shadowRender->shadowMapTextureView,

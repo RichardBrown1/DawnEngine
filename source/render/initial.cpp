@@ -31,6 +31,7 @@ namespace render {
 		texture::descriptor::CreateTextureView masterInfoTextureViewDescriptor = {
 			.label = _masterInfoLabel,
 			.device = _device,
+			.textureUsage = _masterInfoTextureUsage,
 			.textureDimensions = descriptor->screenDimensions,
 			.textureFormat = masterInfoTextureFormat,
 			.outputTextureView = masterInfoTextureView,
@@ -40,6 +41,7 @@ namespace render {
 		texture::descriptor::CreateTextureView baseColorAccumulatorTextureViewDescriptor = {
 			.label = _baseColorLabel,
 			.device = _device,
+			.textureUsage = _baseColorTextureUsage,
 			.textureDimensions = descriptor->screenDimensions,
 			.textureFormat = baseColorTextureFormat,
 			.outputTextureView = baseColorAccumulatorTextureView,
@@ -49,6 +51,7 @@ namespace render {
 		texture::descriptor::CreateTextureView normalAccumulatorTextureViewDescriptor = {
 			.label = _normalLabel,
 			.device = _device,
+			.textureUsage = _normalTextureUsage,
 			.textureDimensions = descriptor->screenDimensions,
 			.textureFormat = normalTextureFormat,
 			.outputTextureView = normalAccumulatorTextureView,
@@ -79,6 +82,7 @@ namespace render {
 		texture::descriptor::CreateTextureView depthTextureViewDescriptor = {
 			.label = _depthTextureLabel,
 			.device = _device,
+			.textureUsage = _depthTextureUsage,
 			.textureDimensions = descriptor->screenDimensions,
 			.textureFormat = depthTextureFormat,
 			.outputTextureView = depthTextureView,

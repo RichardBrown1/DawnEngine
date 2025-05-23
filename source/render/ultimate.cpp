@@ -11,19 +11,19 @@ namespace render {
 		_device = device;
 		_screenDimensions = wgpu::Extent2D(0, 0); //generateGpuObjects() will handle this
 
-		_computeShaderModule = device::createShaderModule(*_device, ULTIMATE_SHADER_LABEL, ULTIMATE_SHADER_PATH);
+		_computeShaderModule = device::createWGSLShaderModule(*_device, ULTIMATE_SHADER_LABEL, ULTIMATE_SHADER_PATH);
 	};
 
 	void Ultimate::generateGpuObjects(const render::ultimate::descriptor::GenerateGpuObjects* descriptor) {
 		assert(descriptor->screenDimensions.width > 1);
 		_screenDimensions = descriptor->screenDimensions;
 
-		createInputBindGroupLayout();
+		createInputBindGroupLayout(descriptor->baseColorTextureFormat);
 		createOutputBindGroupLayout(descriptor->surfaceTextureFormat);
 		createPipeline();
 		createInputBindGroup(
-			descriptor->baseColorTextureView,
-			descriptor->shadowMapTextureView
+			descriptor->baseColorTextureView
+	//		descriptor->shadowMapTextureView
 		);
 	};
 
@@ -57,20 +57,21 @@ namespace render {
 	}
 
 	void Ultimate::createInputBindGroup(
-		wgpu::TextureView& baseColorTextureView,
-		wgpu::TextureView& shadowMapTextureView
+		wgpu::TextureView& baseColorTextureView
+	//	wgpu::TextureView& shadowMapTextureView
 	) {
 		const wgpu::BindGroupEntry baseColorBindGroupEntry = {
 			.binding = 0,
 			.textureView = baseColorTextureView,
 		};
-		const wgpu::BindGroupEntry shadowMapBindGroupEntry = {
-			.binding = 1,
-			.textureView = shadowMapTextureView,
-		};
-		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
+
+//		const wgpu::BindGroupEntry shadowMapBindGroupEntry = {
+//			.binding = 1,
+//			.textureView = shadowMapTextureView,
+//		};
+		std::array<wgpu::BindGroupEntry, 1> bindGroupEntries = {
 			baseColorBindGroupEntry,
-			shadowMapBindGroupEntry,
+//			shadowMapBindGroupEntry,
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 			.label = "ultimate render group",
@@ -100,27 +101,28 @@ namespace render {
 		return _device->CreateBindGroup(&bindGroupDescriptor);
 	}
 
-	void Ultimate::createInputBindGroupLayout() {
+	void Ultimate::createInputBindGroupLayout(wgpu::TextureFormat baseColorTextureFormat) {
 		const wgpu::BindGroupLayoutEntry baseColorBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Compute,
-			.texture = {
-				.sampleType = wgpu::TextureSampleType::Float,
+			.storageTexture = {
+				.access = wgpu::StorageTextureAccess::ReadOnly,
+				.format = baseColorTextureFormat,
 				.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
 		};
-		const wgpu::BindGroupLayoutEntry shadowMapBindGroupLayoutEntry = {
-			.binding = 1,
-			.visibility = wgpu::ShaderStage::Compute,
-			.texture = {
-				.sampleType = wgpu::TextureSampleType::Float,
-				.viewDimension = wgpu::TextureViewDimension::e2D,
-			},
-		};
+//		const wgpu::BindGroupLayoutEntry shadowMapBindGroupLayoutEntry = {
+//			.binding = 1,
+//			.visibility = wgpu::ShaderStage::Compute,
+//			.texture = {
+//				.sampleType = wgpu::TextureSampleType::Float,
+//				.viewDimension = wgpu::TextureViewDimension::e2D,
+//			},
+//		};
 
-		std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
+		std::array<wgpu::BindGroupLayoutEntry, 1> bindGroupLayoutEntries = {
 			baseColorBindGroupLayoutEntry,
-			shadowMapBindGroupLayoutEntry,
+//			shadowMapBindGroupLayoutEntry,
 		};
 
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {

@@ -12,6 +12,7 @@ namespace render {
 
 		struct GenerateGpuObjects {
 			wgpu::Extent2D screenDimensions;
+			wgpu::TextureFormat baseColorTextureFormat;
 			wgpu::TextureFormat surfaceTextureFormat;
 			wgpu::TextureView& baseColorTextureView;
 			wgpu::TextureView& shadowMapTextureView;
@@ -34,7 +35,7 @@ namespace render {
 		const std::string _displayTextureViewLabel = "display ";
 
 		const wgpu::StringView ULTIMATE_SHADER_LABEL = "ultimate render compute shader";
-		const std::string ULTIMATE_SHADER_PATH = "shaders/ultimate_c.spv";
+		const std::string ULTIMATE_SHADER_PATH = "shaders/ultimate_c.wgsl";
 		wgpu::ShaderModule _computeShaderModule;
 
 		wgpu::Device* _device;
@@ -46,12 +47,12 @@ namespace render {
 		wgpu::BindGroup _inputBindGroup;
 
 		wgpu::PipelineLayout getPipelineLayout();
-		void createInputBindGroupLayout();
+		void createInputBindGroupLayout(wgpu::TextureFormat baseColorTextureFormat);
 		void createOutputBindGroupLayout(wgpu::TextureFormat surfaceTextureFormat);
 		void createPipeline();
 		void createInputBindGroup(
-			wgpu::TextureView& baseColorTextureView,
-			wgpu::TextureView& shadowMapTextureView
+			wgpu::TextureView& baseColorTextureView
+		//	wgpu::TextureView& shadowMapTextureView
 			);
 		wgpu::BindGroup createOutputBindGroup(
 			wgpu::TextureView& surfaceTextureView

@@ -36,11 +36,12 @@ namespace render {
 		void doCommands(const render::initial::descriptor::DoCommands* descriptor);
 
 		const wgpu::TextureFormat masterInfoTextureFormat = wgpu::TextureFormat::RGBA32Float;
-		const wgpu::TextureFormat baseColorTextureFormat = wgpu::TextureFormat::BGRA8Unorm;
+		const wgpu::TextureFormat baseColorTextureFormat = wgpu::TextureFormat::RGBA16Float;
 		//TODO normal texture can be a RG format or bitpacked even. You can derive 3 coordinates from 2.
-		const wgpu::TextureFormat normalTextureFormat = wgpu::TextureFormat::RGBA16Float;
+		const wgpu::TextureFormat normalTextureFormat = wgpu::TextureFormat::RGBA8Unorm;
 		const wgpu::TextureFormat depthTextureFormat = constants::DEPTH_FORMAT;
 		//const wgpu::TextureFormat metallicRoughnessAccumulatorTextureFormat = wgpu::TextureFormat::RGBA32Float;
+
 
 		wgpu::TextureView masterInfoTextureView;
 		wgpu::TextureView baseColorAccumulatorTextureView;
@@ -54,6 +55,16 @@ namespace render {
 		const wgpu::StringView FRAGMENT_SHADER_LABEL = "initial render fragment shader";
 		const std::string FRAGMENT_SHADER_PATH = "shaders/initialRender_f.spv";
 
+		const std::string _masterInfoLabel = std::string("master info");
+		const std::string _baseColorLabel = std::string("base color");
+		const std::string _normalLabel = std::string("normals ");
+		const std::string _depthTextureLabel = std::string("depth texture");
+
+		const wgpu::TextureUsage _masterInfoTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+		const wgpu::TextureUsage _baseColorTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+		const wgpu::TextureUsage _normalTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+		const wgpu::TextureUsage _depthTextureUsage = wgpu::TextureUsage::RenderAttachment;
+
 		wgpu::Device* _device;
 		wgpu::Extent2D _screenDimensions;
 
@@ -63,11 +74,6 @@ namespace render {
 
 		wgpu::ShaderModule _vertexShaderModule;
 		wgpu::ShaderModule _fragmentShaderModule;
-
-		const std::string _masterInfoLabel = std::string("master info");
-		const std::string _baseColorLabel = std::string("base color");
-		const std::string _normalLabel = std::string("normals ");
-		const std::string _depthTextureLabel = std::string("depth texture");
 
 		std::array<wgpu::RenderPassColorAttachment, 3> _renderPassColorAttachments;
 

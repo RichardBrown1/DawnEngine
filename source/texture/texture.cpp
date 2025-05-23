@@ -14,7 +14,7 @@ namespace texture {
 		assert(descriptor->textureFormat != wgpu::TextureFormat::Undefined);
 		const wgpu::TextureDescriptor textureDescriptor = {
 					.label = wgpu::StringView(descriptor->label + std::string(" texture")),
-					.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
+					.usage = descriptor->textureUsage,
 					.dimension = wgpu::TextureDimension::e2D,
 					.size = {
 						.width = descriptor->textureDimensions.width,

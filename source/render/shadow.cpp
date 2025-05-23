@@ -169,6 +169,7 @@ namespace render {
 		const texture::descriptor::CreateTextureView createTextureViewDescriptor = {
 			.label = "shadow texture view",
 			.device = _device,
+			.textureUsage = _shadowTextureUsage,
 			.textureDimensions = _shadowDimensions,
 			.textureFormat = constants::DEPTH_FORMAT,
 			.outputTextureView = shadowMapTextureView,

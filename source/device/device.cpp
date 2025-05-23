@@ -26,7 +26,7 @@ namespace {
 	std::string readShaderToString(const std::string& filename) {
 			std::ifstream file(filename, std::ios::binary | std::ios::ate);
 			if (!file.is_open()) {
-				LOG(ERROR) << "Failed to open SPIR-V Shader file at: " << filename;
+				LOG(ERROR) << "Failed to open WGSL Shader file at: " << filename;
 			}
 
 			size_t fileSize = file.tellg();

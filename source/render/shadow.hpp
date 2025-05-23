@@ -38,6 +38,7 @@ namespace render {
 
 		wgpu::Device* _device;
 		wgpu::Extent2D _shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
+		wgpu::TextureUsage _shadowTextureUsage = wgpu::TextureUsage::RenderAttachment;
 
 		wgpu::RenderPipeline _renderPipeline;
 		wgpu::BindGroupLayout _bindGroupLayout;

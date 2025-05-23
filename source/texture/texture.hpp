@@ -10,6 +10,7 @@ namespace texture {
 		struct CreateTextureView {
 			std::string label;
 			wgpu::Device* device;
+			wgpu::TextureUsage textureUsage;
 			wgpu::Extent2D textureDimensions;
 			wgpu::TextureFormat textureFormat;
 			wgpu::TextureView& outputTextureView;

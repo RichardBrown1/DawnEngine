@@ -55,6 +55,7 @@ WGPUContext::WGPUContext() {
 		wgpu::FeatureName::IndirectFirstInstance,
 		wgpu::FeatureName::TextureCompressionBC,
 		wgpu::FeatureName::BGRA8UnormStorage,
+//		wgpu::FeatureName::Unorm16TextureFormats,
 	};
 	wgpu::DeviceDescriptor deviceDescriptor = {};
 	deviceDescriptor.label = "device";
