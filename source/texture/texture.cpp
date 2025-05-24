@@ -13,7 +13,7 @@ namespace texture {
 	void createTextureView(const descriptor::CreateTextureView* descriptor) {
 		assert(descriptor->textureFormat != wgpu::TextureFormat::Undefined);
 		const wgpu::TextureDescriptor textureDescriptor = {
-					.label = wgpu::StringView(descriptor->label + std::string(" texture")),
+					.label = wgpu::StringView(std::string(descriptor->label) + std::string(" texture")),
 					.usage = descriptor->textureUsage,
 					.dimension = wgpu::TextureDimension::e2D,
 					.size = {
@@ -24,7 +24,7 @@ namespace texture {
 		};
 		wgpu::Texture texture = descriptor->device->CreateTexture(&textureDescriptor);
 		const wgpu::TextureViewDescriptor textureViewDescriptor = {
-			.label = wgpu::StringView(descriptor->label + std::string(" texture view")),
+			.label = wgpu::StringView(std::string(descriptor->label) + std::string(" texture view")),
 			.format = textureDescriptor.format,
 			.dimension = wgpu::TextureViewDimension::e2D,
 			.mipLevelCount = 1,
