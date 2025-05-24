@@ -18,25 +18,29 @@ namespace render {
 		assert(descriptor->screenDimensions.width > 1);
 		_screenDimensions = descriptor->screenDimensions;
 
-		createInputBindGroupLayout(descriptor->baseColorTextureFormat);
-		createOutputBindGroupLayout(descriptor->surfaceTextureFormat);
+		const texture::descriptor::CreateTextureView createTextureViewDescriptor = {
+			.label = "ultimate texture view",
+			.device = _device,
+			.textureUsage = wgpu::TextureUsage::StorageBinding,
+			.textureDimensions = _screenDimensions,
+			.textureFormat = ultimateTextureFormat,
+			.outputTextureView = ultimateTextureView,
+		};
+		texture::createTextureView(&createTextureViewDescriptor);
+		createBindGroupLayout(descriptor->baseColorTextureFormat);
 		createPipeline();
-		createInputBindGroup(
+		createBindGroup(
 			descriptor->baseColorTextureView
-	//		descriptor->shadowMapTextureView
 		);
 	};
 
 	void Ultimate::doCommands(const render::ultimate::descriptor::DoCommands* descriptor) {
-		wgpu::BindGroup outputBindGroup = createOutputBindGroup(descriptor->surfaceTextureView);
-
 		wgpu::ComputePassDescriptor computePassDescriptor = {
 			.label = "ultimate compute pass",
 		};
 		wgpu::ComputePassEncoder computePassEncoder = descriptor->commandEncoder.BeginComputePass(&computePassDescriptor);
 		computePassEncoder.SetPipeline(_computePipeline);
-		computePassEncoder.SetBindGroup(0, _inputBindGroup);
-		computePassEncoder.SetBindGroup(1, outputBindGroup);
+		computePassEncoder.SetBindGroup(0, _bindGroup);
 		computePassEncoder.DispatchWorkgroups(_screenDimensions.width, _screenDimensions.height);
 		computePassEncoder.End();
 	}
@@ -56,54 +60,45 @@ namespace render {
 		_computePipeline = _device->CreateComputePipeline(&computePipelineDescriptor);
 	}
 
-	void Ultimate::createInputBindGroup(
+	void Ultimate::createBindGroup(
 		wgpu::TextureView& baseColorTextureView
 	//	wgpu::TextureView& shadowMapTextureView
 	) {
-		const wgpu::BindGroupEntry baseColorBindGroupEntry = {
+		const wgpu::BindGroupEntry ultimateBindGroupEntry = {
 			.binding = 0,
+			.textureView = ultimateTextureView,
+		};
+		const wgpu::BindGroupEntry baseColorBindGroupEntry = {
+			.binding = 1,
 			.textureView = baseColorTextureView,
 		};
 
-//		const wgpu::BindGroupEntry shadowMapBindGroupEntry = {
-//			.binding = 1,
-//			.textureView = shadowMapTextureView,
-//		};
-		std::array<wgpu::BindGroupEntry, 1> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
+			ultimateBindGroupEntry,
 			baseColorBindGroupEntry,
-//			shadowMapBindGroupEntry,
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 			.label = "ultimate render group",
-			.layout = _inputBindGroupLayout,
+			.layout = _bindGroupLayout,
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		_inputBindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
+		_bindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
 	}
 
-	wgpu::BindGroup Ultimate::createOutputBindGroup(
-		wgpu::TextureView& surfaceTextureView
-	) {
-		const wgpu::BindGroupEntry surfaceBindGroupEntry = {
+	void Ultimate::createBindGroupLayout(wgpu::TextureFormat baseColorTextureFormat) {
+		const wgpu::BindGroupLayoutEntry ultimateBindGroupLayoutEntry = {
 			.binding = 0,
-			.textureView = surfaceTextureView,
+			.visibility = wgpu::ShaderStage::Compute,
+			.storageTexture = {
+				.access = wgpu::StorageTextureAccess::WriteOnly, //this should be write only but I don't think I can do it on HLSL
+				.format = ultimateTextureFormat,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
+			},
 		};
-		std::array<wgpu::BindGroupEntry, 1> bindGroupEntries = {
-			surfaceBindGroupEntry
-		};
-		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
-			.label = "ultimate render group",
-			.layout = _outputBindGroupLayout,
-			.entryCount = bindGroupEntries.size(),
-			.entries = bindGroupEntries.data(),
-		};
-		return _device->CreateBindGroup(&bindGroupDescriptor);
-	}
 
-	void Ultimate::createInputBindGroupLayout(wgpu::TextureFormat baseColorTextureFormat) {
 		const wgpu::BindGroupLayoutEntry baseColorBindGroupLayoutEntry = {
-			.binding = 0,
+			.binding = 1,
 			.visibility = wgpu::ShaderStage::Compute,
 			.storageTexture = {
 				.access = wgpu::StorageTextureAccess::ReadOnly,
@@ -111,18 +106,10 @@ namespace render {
 				.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
 		};
-//		const wgpu::BindGroupLayoutEntry shadowMapBindGroupLayoutEntry = {
-//			.binding = 1,
-//			.visibility = wgpu::ShaderStage::Compute,
-//			.texture = {
-//				.sampleType = wgpu::TextureSampleType::Float,
-//				.viewDimension = wgpu::TextureViewDimension::e2D,
-//			},
-//		};
 
-		std::array<wgpu::BindGroupLayoutEntry, 1> bindGroupLayoutEntries = {
+		std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
+			ultimateBindGroupLayoutEntry,
 			baseColorBindGroupLayoutEntry,
-//			shadowMapBindGroupLayoutEntry,
 		};
 
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
@@ -130,31 +117,12 @@ namespace render {
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		_inputBindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+		_bindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
-	void Ultimate::createOutputBindGroupLayout(wgpu::TextureFormat textureFormat) {
-		const wgpu::BindGroupLayoutEntry surfaceBindGroupLayoutEntry = {
-			.binding = 0,
-			.visibility = wgpu::ShaderStage::Compute,
-			.storageTexture = {
-				.access = wgpu::StorageTextureAccess::WriteOnly, //this should be write only but I don't think I can do it on HLSL
-				.format = textureFormat,
-				.viewDimension = wgpu::TextureViewDimension::e2D,
-			},
-		};
-		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-			.label = "ultimate output bind group layout",
-			.entryCount = 1,
-			.entries = &surfaceBindGroupLayoutEntry,
-		};
-		_outputBindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
-	}
-
 	wgpu::PipelineLayout Ultimate::getPipelineLayout() {
-		std::array<wgpu::BindGroupLayout, 2> bindGroupLayout = {
-			_inputBindGroupLayout,
-			_outputBindGroupLayout,
+		std::array<wgpu::BindGroupLayout, 1> bindGroupLayout = {
+			_bindGroupLayout,
 		};
 		const wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
 			.label = "ultimate render pipeline layout",

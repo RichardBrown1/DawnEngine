@@ -13,14 +13,12 @@ namespace render {
 		struct GenerateGpuObjects {
 			wgpu::Extent2D screenDimensions;
 			wgpu::TextureFormat baseColorTextureFormat;
-			wgpu::TextureFormat surfaceTextureFormat;
 			wgpu::TextureView& baseColorTextureView;
 			wgpu::TextureView& shadowMapTextureView;
 		};
 
 		struct DoCommands {
 			wgpu::CommandEncoder& commandEncoder;
-			wgpu::TextureView& surfaceTextureView;
 		};
 	}
 
@@ -30,6 +28,8 @@ namespace render {
 		void generateGpuObjects(const render::ultimate::descriptor::GenerateGpuObjects* descriptor);
 		void doCommands(const render::ultimate::descriptor::DoCommands* descriptor);
 
+		wgpu::TextureView ultimateTextureView;
+		wgpu::TextureFormat ultimateTextureFormat = wgpu::TextureFormat::RGBA16Float;
 
 	private:
 		const std::string _displayTextureViewLabel = "display ";
@@ -42,22 +42,12 @@ namespace render {
 		wgpu::Extent2D _screenDimensions;
 
 		wgpu::ComputePipeline _computePipeline;
-		wgpu::BindGroupLayout _inputBindGroupLayout;
-		wgpu::BindGroupLayout _outputBindGroupLayout;
-		wgpu::BindGroup _inputBindGroup;
+		wgpu::BindGroupLayout _bindGroupLayout;
+		wgpu::BindGroup _bindGroup;
 
 		wgpu::PipelineLayout getPipelineLayout();
-		void createInputBindGroupLayout(wgpu::TextureFormat baseColorTextureFormat);
-		void createOutputBindGroupLayout(wgpu::TextureFormat surfaceTextureFormat);
+		void createBindGroupLayout(wgpu::TextureFormat baseColorTextureFormat);
 		void createPipeline();
-		void createInputBindGroup(
-			wgpu::TextureView& baseColorTextureView
-		//	wgpu::TextureView& shadowMapTextureView
-			);
-		wgpu::BindGroup createOutputBindGroup(
-			wgpu::TextureView& surfaceTextureView
-			);
-
-
+		void createBindGroup(wgpu::TextureView& baseColorTextureView);
 	};
 }
