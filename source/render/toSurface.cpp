@@ -19,7 +19,7 @@ namespace render {
 		_screenDimensions = descriptor->screenDimensions;
 
 		createBindGroupLayout(descriptor->ultimateFormat);
-		createPipeline();
+		createPipeline(descriptor->surfaceTextureFormat);
 		createBindGroup(
 			descriptor->ultimateTextureView
 		);

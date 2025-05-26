@@ -14,6 +14,7 @@ namespace render {
 			wgpu::Extent2D screenDimensions;
 			wgpu::TextureFormat ultimateFormat;
 			wgpu::TextureView& ultimateTextureView;
+			wgpu::TextureFormat surfaceTextureFormat;
 		};
 
 		struct DoCommands {
