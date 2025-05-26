@@ -32,11 +32,11 @@ namespace render {
 		const std::string _displayTextureViewLabel = "display ";
 
 		const wgpu::StringView VERTEX_SHADER_LABEL = "toSurface vertex render shader";
-		const std::string VERTEX_SHADER_PATH = "shaders/canvas_v.hlsl";
+		const std::string VERTEX_SHADER_PATH = "shaders/canvas_v.spv";
 		wgpu::ShaderModule _vertexShaderModule;
 
 		const wgpu::StringView FRAGMENT_SHADER_LABEL = "toSurface fragment render shader";
-		const std::string FRAGMENT_SHADER_PATH = "shaders/toSurface_f.hlsl";
+		const std::string FRAGMENT_SHADER_PATH = "shaders/toSurface_f.spv";
 		wgpu::ShaderModule _fragmentShaderModule;
 
 		wgpu::Device* _device;

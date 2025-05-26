@@ -12,6 +12,7 @@ namespace render {
 		_screenDimensions = wgpu::Extent2D(0, 0); //generateGpuObjects() will handle this
 
 		_vertexShaderModule = device::createShaderModule(*_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
+		_fragmentShaderModule = device::createShaderModule(*_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	};
 
 	void ToSurface::generateGpuObjects(const render::toSurface::descriptor::GenerateGpuObjects* descriptor) {
