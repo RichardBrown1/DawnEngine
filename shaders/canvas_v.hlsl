@@ -11,6 +11,6 @@ float4 vs_main(uint vertexIndex : SV_VertexID) : SV_Position
     }
     else
     {
-        return float4(3.0, 3.0, 0.0, 1.0);
+        return float4(3.0, -1.0, 0.0, 1.0);
     }
 }
