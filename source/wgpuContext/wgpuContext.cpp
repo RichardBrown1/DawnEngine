@@ -7,7 +7,6 @@
 #include "absl/log/initialize.h"
 #include "absl/log/globals.h"
 #include "../print.hpp"
-#include "../surfaceConfiguration.hpp"
 #include "../device/callback.hpp"
 #include "wgpuContext.hpp"
 
@@ -67,6 +66,15 @@ WGPUContext::WGPUContext() {
 	device.SetLoggingCallback(device::callback::logging);
 	queue = device.GetQueue();
 
-	surfaceConfiguration::init(this->device, this->screenDimensions);
-	surface.Configure(&surfaceConfiguration::self);
+	wgpu::SurfaceConfiguration surfaceConfiguration = {
+		.device = device,
+		.format = this->surfaceFormat,
+		.usage = wgpu::TextureUsage::RenderAttachment,
+		.width = screenDimensions.width,
+		.height = screenDimensions.height,
+		.alphaMode = wgpu::CompositeAlphaMode::Auto,
+		.presentMode = wgpu::PresentMode::Immediate,
+		};
+
+	surface.Configure(&surfaceConfiguration);
 }

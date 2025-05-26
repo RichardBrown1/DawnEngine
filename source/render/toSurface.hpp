@@ -45,7 +45,7 @@ namespace render {
 		wgpu::RenderPipeline _renderPipeline;
 		wgpu::BindGroupLayout _bindGroupLayout;
 		wgpu::BindGroup _bindGroup;
-
+		
 		wgpu::Sampler _ultimateSampler;
 
 		wgpu::PipelineLayout getPipelineLayout();
@@ -55,5 +55,6 @@ namespace render {
 			wgpu::TextureView& baseColorTextureView
 		//	wgpu::TextureView& shadowMapTextureView
 			);
+		void createSampler();
 	};
 }

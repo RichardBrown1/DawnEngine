@@ -164,6 +164,7 @@ void Engine::draw() {
 		.commandEncoder = commandEncoder,
 		.surfaceTextureView = surfaceTextureView,
 	};
+	_toSurfaceRender->doCommands(&doToSurfaceRenderCommandsDescriptor);
 
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
 		.label = "Command Buffer",

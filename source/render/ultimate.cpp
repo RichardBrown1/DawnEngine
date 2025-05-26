@@ -21,7 +21,7 @@ namespace render {
 		const texture::descriptor::CreateTextureView createTextureViewDescriptor = {
 			.label = "ultimate texture view",
 			.device = _device,
-			.textureUsage = wgpu::TextureUsage::StorageBinding,
+			.textureUsage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding,
 			.textureDimensions = _screenDimensions,
 			.textureFormat = ultimateTextureFormat,
 			.outputTextureView = ultimateTextureView,

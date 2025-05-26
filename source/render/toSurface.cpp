@@ -19,17 +19,29 @@ namespace render {
 		assert(descriptor->screenDimensions.width > 1);
 		_screenDimensions = descriptor->screenDimensions;
 
+		createSampler();
 		createBindGroupLayout();
 		createPipeline(descriptor->surfaceTextureFormat);
 		createBindGroup(
 			descriptor->ultimateTextureView
 		);
+
 	};
 
 	void ToSurface::doCommands(const render::toSurface::descriptor::DoCommands* descriptor) {
-		wgpu::RenderPassDescriptor renderPassDescriptor = {
-			.label = "toSurface render pass",
+		const wgpu::RenderPassColorAttachment surfaceAttachment = {
+			.view = descriptor->surfaceTextureView,
+			.loadOp = wgpu::LoadOp::Clear,
+			.storeOp = wgpu::StoreOp::Store,
+			.clearValue = wgpu::Color{0.7, 0.4, 0.4, 1},
 		};
+
+		const wgpu::RenderPassDescriptor renderPassDescriptor = {
+			.label = "toSurface render pass",
+			.colorAttachmentCount = 1,
+			.colorAttachments = &surfaceAttachment,
+		};
+
 		wgpu::RenderPassEncoder renderPassEncoder = descriptor->commandEncoder.BeginRenderPass(&renderPassDescriptor);
 		renderPassEncoder.SetPipeline(_renderPipeline);
 		renderPassEncoder.SetBindGroup(0, _bindGroup);
@@ -132,5 +144,17 @@ namespace render {
 		};
 		return _device->CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};
+
+	void ToSurface::createSampler() {
+		constexpr wgpu::SamplerDescriptor samplerDescriptor = {
+			.label = "toSurface sampler",
+			.addressModeU = wgpu::AddressMode::ClampToEdge,
+			.addressModeV = wgpu::AddressMode::ClampToEdge,
+			.magFilter = wgpu::FilterMode::Nearest,
+			.minFilter = wgpu::FilterMode::Nearest,
+			.mipmapFilter = wgpu::MipmapFilterMode::Nearest,
+		};
+		_ultimateSampler = _device->CreateSampler(&samplerDescriptor);
+	}
 
 }

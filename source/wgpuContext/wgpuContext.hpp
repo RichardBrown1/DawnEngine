@@ -16,7 +16,7 @@ struct WGPUContext {
 	wgpu::Surface surface;
 	
 	wgpu::Extent2D screenDimensions = { 1280, 720 };
-	wgpu::TextureFormat surfaceFormat = wgpu::TextureFormat::BGRA8UnormSrgb;
+	wgpu::TextureFormat surfaceFormat = wgpu::TextureFormat::BGRA8Unorm;
 
 	WGPUContext();
 };
