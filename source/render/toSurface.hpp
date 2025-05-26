@@ -12,7 +12,6 @@ namespace render {
 
 		struct GenerateGpuObjects {
 			wgpu::Extent2D screenDimensions;
-			wgpu::TextureFormat ultimateFormat;
 			wgpu::TextureView& ultimateTextureView;
 			wgpu::TextureFormat surfaceTextureFormat;
 		};
@@ -50,7 +49,7 @@ namespace render {
 		wgpu::Sampler _ultimateSampler;
 
 		wgpu::PipelineLayout getPipelineLayout();
-		void createBindGroupLayout(wgpu::TextureFormat baseColorTextureFormat);
+		void createBindGroupLayout();
 		void createPipeline(wgpu::TextureFormat surfaceTextureFormat);
 		void createBindGroup(
 			wgpu::TextureView& baseColorTextureView

@@ -18,7 +18,7 @@ namespace render {
 		assert(descriptor->screenDimensions.width > 1);
 		_screenDimensions = descriptor->screenDimensions;
 
-		createBindGroupLayout(descriptor->ultimateFormat);
+		createBindGroupLayout();
 		createPipeline(descriptor->surfaceTextureFormat);
 		createBindGroup(
 			descriptor->ultimateTextureView
@@ -89,7 +89,7 @@ namespace render {
 		_bindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
 	}
 
-	void ToSurface::createBindGroupLayout(wgpu::TextureFormat toSurfaceTextureFormat) {
+	void ToSurface::createBindGroupLayout() {
 		const wgpu::BindGroupLayoutEntry ultimateTextureBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Fragment,
