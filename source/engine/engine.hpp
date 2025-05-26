@@ -4,6 +4,7 @@
 #include "../render/initial.hpp"
 #include "../render/shadow.hpp"
 #include "../render/ultimate.hpp"
+#include "../render/toSurface.hpp"
 
 class Engine {
 public:
@@ -15,6 +16,7 @@ private:
 	render::Initial* _initialRender;
 	render::Shadow* _shadowRender;
 	render::Ultimate* _ultimateRender;
+	render::ToSurface* _toSurfaceRender;
 	std::vector<structs::host::DrawCall> _drawCalls;
 
 	void draw();

@@ -84,6 +84,15 @@ Engine::Engine() {
 		.shadowMapTextureView = shadowRender->shadowMapTextureView,
 	};
 	_ultimateRender->generateGpuObjects(&ultimateGenerateGpuObjectsDescriptor);
+
+	render::ToSurface* toSurfaceRender = new render::ToSurface(&_wgpuContext.device);
+	_toSurfaceRender = toSurfaceRender;
+	const render::toSurface::descriptor::GenerateGpuObjects toSurfaceGenerateGpuObjectsDescriptor = {
+		.screenDimensions = _wgpuContext.screenDimensions,
+		.ultimateTextureView = _ultimateRender->ultimateTextureView,
+		.surfaceTextureFormat = _wgpuContext.surfaceFormat,
+	};
+	_toSurfaceRender->generateGpuObjects(&toSurfaceGenerateGpuObjectsDescriptor);
 }
 
 void Engine::run() {
@@ -150,6 +159,11 @@ void Engine::draw() {
 		.commandEncoder = commandEncoder,
 	};
 	_ultimateRender->doCommands(&doUltimateRenderCommandsDescriptor);
+
+	const render::toSurface::descriptor::DoCommands doToSurfaceRenderCommandsDescriptor = {
+		.commandEncoder = commandEncoder,
+		.surfaceTextureView = surfaceTextureView,
+	};
 
 	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
 		.label = "Command Buffer",
