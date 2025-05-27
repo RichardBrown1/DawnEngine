@@ -61,15 +61,20 @@ namespace render {
 	}
 
 	void Accumulator::createAccumulatorBindGroup(
-			wgpu::TextureView& inputTextureView,
+			wgpu::TextureView& accumulatorTextureView,
 			wgpu::TextureView& infoTextureView
 	) {
-		const wgpu::BindGroupEntry inputBindGroupEntry = {
+		const wgpu::BindGroupEntry accumulatorBindGroupEntry = {
 			.binding = 0,
-			.textureView = inputTextureView,
+			.textureView = accumulatorTextureView,
 		};
-		std::array<wgpu::BindGroupEntry, 1> bindGroupEntries = {
-			inputBindGroupEntry,
+		const wgpu::BindGroupEntry infoBindGroupEntry = {
+			.binding = 1,
+			.textureView = infoTextureView,
+		};
+		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
+			accumulatorBindGroupEntry,
+			infoBindGroupEntry,
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 			.label = "accumulator accumulator bind group",
