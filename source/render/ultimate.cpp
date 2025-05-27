@@ -78,7 +78,7 @@ namespace render {
 			baseColorBindGroupEntry,
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
-			.label = "ultimate render group",
+			.label = "ultimate bind group",
 			.layout = _bindGroupLayout,
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
