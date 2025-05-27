@@ -9,14 +9,17 @@ namespace render {
 		namespace descriptor {
 			struct GenerateGpuObjects {
 				wgpu::TextureFormat accumulatorTextureFormat;
+				wgpu::TextureView& infoTextureView;
 				wgpu::TextureFormat infoTextureFormat;
+				wgpu::TextureView& inputTextureView;
 				wgpu::TextureFormat inputTextureFormat;
 			};
 
 			struct DoCommands {
-				wgpu::CommandEncoder commandEncoder;
-				wgpu::TextureView accumulatorTextureView;
-				wgpu::TextureView masterTextureInfoTextureView;
+				wgpu::CommandEncoder& commandEncoder;
+				std::vector<wgpu::TextureView>& inputTextureViews;
+				wgpu::TextureView& accumulatorTextureView;
+				wgpu::TextureView& masterTextureInfoTextureView;
 			};
 		}
 	}

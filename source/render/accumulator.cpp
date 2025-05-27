@@ -23,6 +23,7 @@ namespace render {
 			descriptor->infoTextureFormat
 		);
 		createInputBindGroupLayout(descriptor->inputTextureFormat);
+		createAccumulatorBindGroup(descriptor->inputTextureView, descriptor->infoTextureView);
 		createComputePipeline();
 	}
 
@@ -33,8 +34,10 @@ namespace render {
 		wgpu::ComputePassEncoder computePassEncoder = descriptor->commandEncoder.BeginComputePass(&computePassDescriptor);
 		computePassEncoder.SetPipeline(_computePipeline);
 		computePassEncoder.SetBindGroup(0, _accumulatorBindGroup);
-		computePassEncoder.SetBindGroup(1, getInputBindGroup());
-		computePassEncoder.DispatchWorkgroups(_screenDimensions.width, _screenDimensions.height);
+		for (auto& t : descriptor->inputTextureViews) {
+			computePassEncoder.SetBindGroup(1, getInputBindGroup(t));
+			computePassEncoder.DispatchWorkgroups(_screenDimensions.width, _screenDimensions.height);
+		}
 		computePassEncoder.End();
 	}
 
