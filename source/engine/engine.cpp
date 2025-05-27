@@ -74,6 +74,16 @@ Engine::Engine() {
 	};
 	_shadowRender->generateGpuObjects(&shadowGenerateGpuObjectsDescriptor);
 
+	render::Accumulator* baseColorAccumulatorRender = new render::Accumulator(&_wgpuContext.device);
+	_baseColorAccumulatorRender = baseColorAccumulatorRender;
+	const render::accumulator::descriptor::GenerateGpuObjects baseColorAccumulatorGenerateGpuObjectsDescriptor = {
+		.accumulatorTextureFormat = _initialRender->baseColorTextureFormat,
+		.infoTextureView = _initialRender->masterInfoTextureView,
+		.infoTextureFormat = _initialRender->masterInfoTextureFormat,
+		.inputTextureView = _initialRender->baseColorAccumulatorTextureView,
+		.inputTextureFormat = _initialRender->baseColorTextureFormat,
+	};
+	_baseColorAccumulatorRender->generateGpuObjects(&baseColorAccumulatorGenerateGpuObjectsDescriptor);
 	
 	render::Ultimate* ultimateRender = new render::Ultimate(&_wgpuContext.device);
 	_ultimateRender = ultimateRender;
@@ -154,6 +164,14 @@ void Engine::draw() {
 		.drawCalls = _drawCalls,
 	};
 	_shadowRender->doCommands(&doShadowRenderCommandsDescriptor);
+
+	const render::accumulator::descriptor::DoCommands doBaseColorAccumulatorRenderCommandsDescriptor = {
+		.commandEncoder = commandEncoder,
+		.inputTextureViews = _deviceSceneResources.textureViews,
+		.accumulatorTextureView = _initialRender->baseColorAccumulatorTextureView,
+		.masterTextureInfoTextureView = _initialRender->masterInfoTextureView,
+	};
+	_baseColorAccumulatorRender->doCommands(&doBaseColorAccumulatorRenderCommandsDescriptor);
 
 	const render::ultimate::descriptor::DoCommands doUltimateRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,
