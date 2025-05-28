@@ -22,7 +22,7 @@ namespace render {
 			descriptor->accumulatorTextureFormat,
 			descriptor->infoTextureFormat
 		);
-		createInputBindGroupLayout(descriptor->inputTextureFormat);
+		createInputBindGroupLayout();
 		createAccumulatorBindGroup(descriptor->inputTextureView, descriptor->infoTextureView);
 		createComputePipeline();
 	}
@@ -124,20 +124,26 @@ namespace render {
 
 	}
 
-	void Accumulator::createInputBindGroupLayout(
-		wgpu::TextureFormat inputTextureFormat
-	) {
-			const wgpu::BindGroupLayoutEntry inputBindGroupLayoutEntry = {
+	void Accumulator::createInputBindGroupLayout() {
+		const wgpu::BindGroupLayoutEntry textureBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Compute,
-			.storageTexture = {
-				.access = wgpu::StorageTextureAccess::ReadOnly,
-				.format = inputTextureFormat,
-				.viewDimension = wgpu::TextureViewDimension::e2D,
+			.texture = {
+					.sampleType = wgpu::TextureSampleType::Float,
+					.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
 		};
-		std::array<wgpu::BindGroupLayoutEntry, 1> bindGroupLayoutEntries = {
-			inputBindGroupLayoutEntry
+		const wgpu::BindGroupLayoutEntry samplerBindGroupLayoutEntry = {
+			.binding = 1,
+			.visibility = wgpu::ShaderStage::Compute,
+			.sampler = {
+				//TODO: This should depend on the sampler input probably file instead of being assumed
+				.type = wgpu::SamplerBindingType::Filtering,	//ASSUMPTION
+			},
+		};
+		std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
+			textureBindGroupLayoutEntry,
+			samplerBindGroupLayoutEntry,
 		};
 
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
