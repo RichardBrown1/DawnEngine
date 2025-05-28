@@ -12,7 +12,6 @@ namespace render {
 				wgpu::TextureView& infoTextureView;
 				wgpu::TextureFormat infoTextureFormat;
 				wgpu::TextureView& inputTextureView;
-				wgpu::TextureFormat inputTextureFormat;
 			};
 
 			struct DoCommands {
@@ -47,7 +46,7 @@ namespace render {
 			wgpu::TextureFormat accumulatorTextureFormat,
 			wgpu::TextureFormat infoTextureFormat
 		);
-		void createInputBindGroupLayout(wgpu::TextureFormat inputTextureFormat);
+		void createInputBindGroupLayout();
 		wgpu::PipelineLayout getPipelineLayout();
 		void createComputePipeline();
 
