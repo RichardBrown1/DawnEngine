@@ -3,15 +3,21 @@
 #include <unordered_map>
 #include <webgpu/webgpu_cpp.h>
 #include <fastgltf/types.hpp>
+#include "../structs/structs.hpp"
 
 namespace render {
 	namespace accumulator {
 		namespace descriptor {
 			struct GenerateGpuObjects {
+				wgpu::TextureView& accumulatorTextureView;
 				wgpu::TextureFormat accumulatorTextureFormat;
 				wgpu::TextureView& infoTextureView;
 				wgpu::TextureFormat infoTextureFormat;
-				wgpu::TextureView& inputTextureView;
+
+				//for input bind group
+				std::vector<structs::SamplerTexturePair>& inputSTPs;
+				std::vector<wgpu::TextureView>& allTextureViews;
+				std::vector<wgpu::Sampler>& allSamplers;
 			};
 
 			struct DoCommands {
@@ -40,6 +46,7 @@ namespace render {
 		wgpu::BindGroupLayout _accumulatorBindGroupLayout;
 		wgpu::BindGroupLayout _inputBindGroupLayout;
 		wgpu::BindGroup _accumulatorBindGroup;
+		std::vector<wgpu::BindGroup> _inputBindGroups;
 		wgpu::ComputePipeline _computePipeline;
 
 		void createAccumulatorBindGroupLayout(
@@ -54,6 +61,6 @@ namespace render {
 			wgpu::TextureView& accumulatorTextureView,
 			wgpu::TextureView& infoTextureView
 		);
-		wgpu::BindGroup getInputBindGroup(wgpu::TextureView& inputTextureView);
+		void insertInputBindGroup(wgpu::TextureView& inputTextureView, wgpu::Sampler& sampler);
 	};
 }

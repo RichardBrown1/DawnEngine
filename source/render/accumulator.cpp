@@ -23,8 +23,15 @@ namespace render {
 			descriptor->infoTextureFormat
 		);
 		createInputBindGroupLayout();
-		createAccumulatorBindGroup(descriptor->inputTextureView, descriptor->infoTextureView);
 		createComputePipeline();
+
+		createAccumulatorBindGroup(descriptor->accumulatorTextureView, descriptor->infoTextureView);
+		for (auto& stp : descriptor->inputSTPs) {
+			insertInputBindGroup(
+				descriptor->allTextureViews[stp.textureIndex],
+				descriptor->allSamplers[stp.samplerIndex]
+			);
+		}
 	}
 
 	void Accumulator::doCommands(const accumulator::descriptor::DoCommands* descriptor) {
@@ -34,31 +41,13 @@ namespace render {
 		wgpu::ComputePassEncoder computePassEncoder = descriptor->commandEncoder.BeginComputePass(&computePassDescriptor);
 		computePassEncoder.SetPipeline(_computePipeline);
 		computePassEncoder.SetBindGroup(0, _accumulatorBindGroup);
-		for (auto& t : descriptor->inputTextureViews) {
-			computePassEncoder.SetBindGroup(1, getInputBindGroup(t));
+		for (auto& bg : _inputBindGroups) {
+			computePassEncoder.SetBindGroup(1, bg);
 			computePassEncoder.DispatchWorkgroups(_screenDimensions.width, _screenDimensions.height);
 		}
 		computePassEncoder.End();
 	}
 
-	wgpu::BindGroup Accumulator::getInputBindGroup(
-			wgpu::TextureView& inputTextureView
-	) {
-		const wgpu::BindGroupEntry inputBindGroupEntry = {
-			.binding = 0,
-			.textureView = inputTextureView,
-		};
-		std::array<wgpu::BindGroupEntry, 1> bindGroupEntries = {
-			inputBindGroupEntry,
-		};
-		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
-			.label = "accumulator input bind group",
-			.layout = _inputBindGroupLayout,
-			.entryCount = bindGroupEntries.size(),
-			.entries = bindGroupEntries.data(),
-		};
-		return _device->CreateBindGroup(&bindGroupDescriptor);
-	}
 
 	void Accumulator::createAccumulatorBindGroup(
 			wgpu::TextureView& accumulatorTextureView,
@@ -83,6 +72,31 @@ namespace render {
 			.entries = bindGroupEntries.data(),
 		};
 		_accumulatorBindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
+	}
+
+	void Accumulator::insertInputBindGroup(
+			wgpu::TextureView& inputTextureView,
+			wgpu::Sampler& sampler
+	) {
+		const wgpu::BindGroupEntry textureBindGroupEntry = {
+			.binding = 0,
+			.textureView = inputTextureView,
+		};
+		const wgpu::BindGroupEntry samplerBindGroupEntry = {
+			.binding = 1,
+			.sampler = sampler,
+		};
+		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
+			textureBindGroupEntry,
+			samplerBindGroupEntry,
+		};
+		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
+			.label = "accumulator input bind group",
+			.layout = _inputBindGroupLayout,
+			.entryCount = bindGroupEntries.size(),
+			.entries = bindGroupEntries.data(),
+		};
+		_inputBindGroups.emplace_back(_device->CreateBindGroup(&bindGroupDescriptor));
 	}
 
 
