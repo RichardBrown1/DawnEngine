@@ -77,12 +77,14 @@ Engine::Engine() {
 	render::Accumulator* baseColorAccumulatorRender = new render::Accumulator(&_wgpuContext.device);
 	_baseColorAccumulatorRender = baseColorAccumulatorRender;
 	const render::accumulator::descriptor::GenerateGpuObjects baseColorAccumulatorGenerateGpuObjectsDescriptor = {
+		.accumulatorTextureView = _initialRender->baseColorAccumulatorTextureView,
 		.accumulatorTextureFormat = _initialRender->baseColorTextureFormat,
 		.infoTextureView = _initialRender->masterInfoTextureView,
 		.infoTextureFormat = _initialRender->masterInfoTextureFormat,
-		.inputTextureView = _initialRender->baseColorAccumulatorTextureView,
-		.inputTextureFormat = _initialRender->baseColorTextureFormat,
-	};
+		.inputSTPs = h_objects.samplerTexturePairs,
+		.allTextureViews = _deviceSceneResources.textureViews,
+		.allSamplers = _deviceSceneResources.samplers,
+		};
 	_baseColorAccumulatorRender->generateGpuObjects(&baseColorAccumulatorGenerateGpuObjectsDescriptor);
 	
 	render::Ultimate* ultimateRender = new render::Ultimate(&_wgpuContext.device);
