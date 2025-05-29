@@ -6,7 +6,7 @@ StructuredBuffer<Material> materials : register(t3, space0);
 
 struct FSOutput //FYI there is a max of 8 targets in webgpu
 {
-    float4 worldPosition : SV_Target0;
+    float4 worldPosition : SV_Target0; //only xyz is used, w is currently always 1
     float4 baseColor : SV_Target1;
     float4 normal : SV_Target2; //float3(normal) + float(scale)
     float2 texCoord : SV_Target3;
