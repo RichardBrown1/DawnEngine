@@ -45,7 +45,7 @@ namespace gltf {
 					.index = UINT32_MAX,
 					.texCoord = UINT32_MAX,
 				};
-				outScale = UINT32_MAX;
+				outScale = 1.0f;
 			}
 		}
 
