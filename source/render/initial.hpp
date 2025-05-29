@@ -35,17 +35,20 @@ namespace render {
 		void generateGpuObjects(const render::initial::descriptor::GenerateGpuObjects* descriptor);
 		void doCommands(const render::initial::descriptor::DoCommands* descriptor);
 
-		const wgpu::TextureFormat masterInfoTextureFormat = wgpu::TextureFormat::RGBA32Float;
+		const wgpu::TextureFormat worldPositionTextureFormat = wgpu::TextureFormat::RGBA32Float;
 		const wgpu::TextureFormat baseColorTextureFormat = wgpu::TextureFormat::RGBA16Float;
-		//TODO normal texture can be a RG format or bitpacked even. You can derive 3 coordinates from 2.
-		const wgpu::TextureFormat normalTextureFormat = wgpu::TextureFormat::RGBA8Unorm;
+		const wgpu::TextureFormat normalTextureFormat = wgpu::TextureFormat::RGBA16Float; //normal texture can tangent-ized	if I need it
+		const wgpu::TextureFormat texCoordTextureFormat = wgpu::TextureFormat::RG16Unorm;
+		const wgpu::TextureFormat baseColorTextureIdTextureFormat = wgpu::TextureFormat::R16Uint;
+		const wgpu::TextureFormat normalTextureIdTextureFormat = wgpu::TextureFormat::R16Uint;
 		const wgpu::TextureFormat depthTextureFormat = constants::DEPTH_FORMAT;
-		//const wgpu::TextureFormat metallicRoughnessAccumulatorTextureFormat = wgpu::TextureFormat::RGBA32Float;
 
-
-		wgpu::TextureView masterInfoTextureView;
-		wgpu::TextureView baseColorAccumulatorTextureView;
-		wgpu::TextureView normalAccumulatorTextureView;
+		wgpu::TextureView worldPositionTextureView;
+		wgpu::TextureView baseColorTextureView;
+		wgpu::TextureView normalTextureView;
+		wgpu::TextureView texCoordTextureView;
+		wgpu::TextureView baseColorTextureIdTextureView;
+		wgpu::TextureView normalTextureIdTextureView;
 		wgpu::TextureView depthTextureView;
 
 	private:
@@ -55,14 +58,20 @@ namespace render {
 		const wgpu::StringView FRAGMENT_SHADER_LABEL = "initial render fragment shader";
 		const std::string FRAGMENT_SHADER_PATH = "shaders/initialRender_f.spv";
 
-		const std::string _masterInfoLabel = std::string("master info");
+		const std::string _worldPositionLabel = std::string("world position info");
 		const std::string _baseColorLabel = std::string("base color");
-		const std::string _normalLabel = std::string("normals ");
+		const std::string _normalLabel = std::string("normals");
+		const std::string _texCoordLabel = std::string("texcoord");
+		const std::string _baseColorTextureIdLabel = std::string("base color id");
+		const std::string _normalTextureIdLabel = std::string("normal id");
 		const std::string _depthTextureLabel = std::string("depth texture");
 
-		const wgpu::TextureUsage _masterInfoTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+		const wgpu::TextureUsage _worldPositionTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 		const wgpu::TextureUsage _baseColorTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 		const wgpu::TextureUsage _normalTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+		const wgpu::TextureUsage _texCoordTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+		const wgpu::TextureUsage _baseColorTextureIdTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+		const wgpu::TextureUsage _normalTextureIdTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 		const wgpu::TextureUsage _depthTextureUsage = wgpu::TextureUsage::RenderAttachment;
 
 		wgpu::Device* _device;
@@ -75,7 +84,7 @@ namespace render {
 		wgpu::ShaderModule _vertexShaderModule;
 		wgpu::ShaderModule _fragmentShaderModule;
 
-		std::array<wgpu::RenderPassColorAttachment, 3> _renderPassColorAttachments;
+		std::array<wgpu::RenderPassColorAttachment, 6> _renderPassColorAttachments;
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createBindGroupLayout();
