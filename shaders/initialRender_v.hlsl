@@ -16,10 +16,10 @@ VSOutput vs_main(VSInput input, uint vertexIndex : SV_VertexID, uint instanceInd
 {
     VSOutput output = (VSOutput) 0;    
     
-    const float3 position = (float3) mul(transforms[instanceIndex], float4(input.position, 1.0));
+    output.worldPosition = float4((float3) mul(transforms[instanceIndex], float4(input.position, 1.0)), 1.0);
     output.cameraPosition = mul(
                             camera.projectionView,
-                            float4(position, 1.0)
+                            output.worldPosition
                           );
     output.texcoord = input.texcoord;
     output.normal = normalize((float3) mul(invertTranspose(transforms[instanceIndex]), float4(input.normal, 0.0)));
