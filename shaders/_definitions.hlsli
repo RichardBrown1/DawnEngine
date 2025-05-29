@@ -41,6 +41,9 @@ struct PBRMetallicRoughness
 struct Material
 {
     PBRMetallicRoughness pbrMetallicRoughness;
+    TextureInfo normalTextureInfo;
+    float normalScale;
+    uint PAD0;
 };
 
 struct Light

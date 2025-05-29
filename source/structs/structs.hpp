@@ -53,6 +53,9 @@ namespace structs {
 
 	struct Material {
 		PBRMetallicRoughness pbrMetallicRoughness;
+		TextureInfo normalTextureInfo;
+		float_t normalScale;
+		uint32_t PAD0;
 	};
 
 }
