@@ -8,24 +8,48 @@ namespace gltf {
 	//Not used for processing 
 	namespace convert {
 
-		structs::TextureInfo textureInfo(const std::optional<fastgltf::TextureInfo>& texInfo)
-		{
+		void textureInfo(
+			const std::optional<fastgltf::TextureInfo>& texInfo, 
+			structs::TextureInfo& outTextureInfo
+		) {
 			if (texInfo.has_value()) {
 				const fastgltf::TextureInfo& textureInfo = texInfo.value();
-				return {
+				outTextureInfo = {
 					.index = static_cast<uint32_t>(textureInfo.textureIndex),
 					.texCoord = static_cast<uint32_t>(textureInfo.texCoordIndex),
 				};
 			}
 			else {
-				return {
+				outTextureInfo = {
 					.index = UINT32_MAX,
 					.texCoord = UINT32_MAX,
 				};
 			}
 		}
 
-		wgpu::AddressMode convertType(fastgltf::Wrap wrap) {
+		void normalTextureInfo(
+			const std::optional<fastgltf::NormalTextureInfo>& texInfo, 
+			structs::TextureInfo& outTextureInfo, 
+			float& outScale 
+		)	{
+			if (texInfo.has_value()) {
+				const fastgltf::NormalTextureInfo& textureInfo = texInfo.value();
+				outTextureInfo = {
+					.index = static_cast<uint32_t>(textureInfo.textureIndex),
+					.texCoord = static_cast<uint32_t>(textureInfo.texCoordIndex),
+				};
+				outScale = textureInfo.scale;
+			}
+			else {
+				outTextureInfo = {
+					.index = UINT32_MAX,
+					.texCoord = UINT32_MAX,
+				};
+				outScale = UINT32_MAX;
+			}
+		}
+
+		wgpu::AddressMode convertType(const fastgltf::Wrap wrap) {
 		switch (wrap) {
 		case fastgltf::Wrap::ClampToEdge:
 			return wgpu::AddressMode::ClampToEdge;
@@ -38,7 +62,7 @@ namespace gltf {
 		}
 	};
 
-	wgpu::FilterMode convertFilter(fastgltf::Filter filter) {
+	wgpu::FilterMode convertFilter(const fastgltf::Filter filter) {
 		switch (filter) {
 		case fastgltf::Filter::Linear:
 		case fastgltf::Filter::LinearMipMapLinear:
@@ -53,7 +77,7 @@ namespace gltf {
 		}
 	};
 
-	wgpu::MipmapFilterMode convertMipMapFilter(fastgltf::Filter filter) {
+	wgpu::MipmapFilterMode convertMipMapFilter(const fastgltf::Filter filter) {
 		switch (filter) {
 		case fastgltf::Filter::Linear:
 		case fastgltf::Filter::Nearest:
