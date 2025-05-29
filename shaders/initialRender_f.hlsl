@@ -4,29 +4,31 @@
 StructuredBuffer<InstanceProperties> instanceProperties : register(t2, space0);
 StructuredBuffer<Material> materials : register(t3, space0);
 
-struct FSOutput
+struct FSOutput //FYI there is a max of 8 targets in webgpu
 {
-    float4 masterInfoTexture : SV_Target0;
+    float4 worldPosition : SV_Target0;
     float4 baseColor : SV_Target1;
-    float4 normal : SV_Target2;
+    float4 normal : SV_Target2; //float3(normal) + float(scale)
+    float2 texCoord : SV_Target3;
+    uint baseColorId : SV_Target4; 
+    uint normalId : SV_Target5;
 };
 
 FSOutput fs_main(VSOutput input)
 {
     FSOutput output;
 
-    const InstanceProperties ip = instanceProperties[input.instanceIndex];
-    output.masterInfoTexture = float4(
-        input.texcoord.x,
-        input.texcoord.y,
-        asfloat(ip.materialIndex),
-        0.0f
-    );
+    output.worldPosition = input.worldPosition;
+    output.texCoord = input.texcoord;
 
+    const InstanceProperties ip = instanceProperties[input.instanceIndex];
     const Material material = materials[ip.materialIndex];
+
     output.baseColor = material.pbrMetallicRoughness.baseColor;
+    output.normal = float4(input.normal, material.normalScale);
     
-    output.normal = float4(input.normal, 0);
+    output.baseColorId = material.pbrMetallicRoughness.baseColorTextureInfo.index;
+    output.normalId = material.normalTextureInfo.index;
 
     return output;
 }
