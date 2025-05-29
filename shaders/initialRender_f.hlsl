@@ -10,8 +10,8 @@ struct FSOutput //FYI there is a max of 8 targets in webgpu
     float4 baseColor : SV_Target1;
     float4 normal : SV_Target2; //float3(normal) + float(scale)
     float2 texCoord : SV_Target3;
-    uint baseColorId : SV_Target4; 
-    uint normalId : SV_Target5;
+    uint baseColorTextureId : SV_Target4; 
+    uint normalTextureId : SV_Target5;
 };
 
 FSOutput fs_main(VSOutput input)
@@ -27,8 +27,8 @@ FSOutput fs_main(VSOutput input)
     output.baseColor = material.pbrMetallicRoughness.baseColor;
     output.normal = float4(input.normal, material.normalScale);
     
-    output.baseColorId = material.pbrMetallicRoughness.baseColorTextureInfo.index;
-    output.normalId = material.normalTextureInfo.index;
+    output.baseColorTextureId = material.pbrMetallicRoughness.baseColorTextureInfo.index;
+    output.normalTextureId = material.normalTextureInfo.index;
 
     return output;
 }
