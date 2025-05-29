@@ -11,8 +11,10 @@ namespace render {
 			struct GenerateGpuObjects {
 				wgpu::TextureView& accumulatorTextureView;
 				wgpu::TextureFormat accumulatorTextureFormat;
-				wgpu::TextureView& infoTextureView;
-				wgpu::TextureFormat infoTextureFormat;
+				wgpu::TextureView& texCoordTextureView;
+				wgpu::TextureFormat texCoordTextureFormat;
+				wgpu::TextureView& textureIdTextureView;
+				wgpu::TextureFormat textureIdTextureFormat;
 
 				//for input bind group
 				std::vector<structs::SamplerTexturePair>& inputSTPs;
@@ -22,9 +24,6 @@ namespace render {
 
 			struct DoCommands {
 				wgpu::CommandEncoder& commandEncoder;
-				std::vector<wgpu::TextureView>& inputTextureViews;
-				wgpu::TextureView& accumulatorTextureView;
-				wgpu::TextureView& masterTextureInfoTextureView;
 			};
 		}
 	}
@@ -51,7 +50,8 @@ namespace render {
 
 		void createAccumulatorBindGroupLayout(
 			wgpu::TextureFormat accumulatorTextureFormat,
-			wgpu::TextureFormat infoTextureFormat
+			wgpu::TextureFormat texCoordTextureFormat,
+			wgpu::TextureFormat textureIdTextureFormat
 		);
 		void createInputBindGroupLayout();
 		wgpu::PipelineLayout getPipelineLayout();
@@ -59,7 +59,8 @@ namespace render {
 
 		void createAccumulatorBindGroup(
 			wgpu::TextureView& accumulatorTextureView,
-			wgpu::TextureView& infoTextureView
+			wgpu::TextureView& texCoordTextureFormat,
+			wgpu::TextureView& textureIdTextureFormat
 		);
 		void insertInputBindGroup(wgpu::TextureView& inputTextureView, wgpu::Sampler& sampler);
 	};

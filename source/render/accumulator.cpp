@@ -20,12 +20,17 @@ namespace render {
 	void Accumulator::generateGpuObjects(const accumulator::descriptor::GenerateGpuObjects* descriptor) {
 		createAccumulatorBindGroupLayout(
 			descriptor->accumulatorTextureFormat,
-			descriptor->infoTextureFormat
+			descriptor->texCoordTextureFormat,
+			descriptor->textureIdTextureFormat
 		);
 		createInputBindGroupLayout();
 		createComputePipeline();
 
-		createAccumulatorBindGroup(descriptor->accumulatorTextureView, descriptor->infoTextureView);
+		createAccumulatorBindGroup(
+			descriptor->accumulatorTextureView,
+			descriptor->texCoordTextureView,
+			descriptor->textureIdTextureView
+		);
 		for (auto& stp : descriptor->inputSTPs) {
 			insertInputBindGroup(
 				descriptor->allTextureViews[stp.textureIndex],
@@ -51,19 +56,26 @@ namespace render {
 
 	void Accumulator::createAccumulatorBindGroup(
 			wgpu::TextureView& accumulatorTextureView,
-			wgpu::TextureView& infoTextureView
+			wgpu::TextureView& texCoordTextureView,
+			wgpu::TextureView& textureIdTextureView
 	) {
 		const wgpu::BindGroupEntry accumulatorBindGroupEntry = {
 			.binding = 0,
 			.textureView = accumulatorTextureView,
 		};
-		const wgpu::BindGroupEntry infoBindGroupEntry = {
+		const wgpu::BindGroupEntry texCoordBindGroupEntry = {
 			.binding = 1,
-			.textureView = infoTextureView,
+			.textureView = texCoordTextureView,
 		};
-		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
+		const wgpu::BindGroupEntry textureIdBindGroupEntry = {
+			.binding = 2,
+			.textureView = textureIdTextureView,
+		};
+
+		std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = {
 			accumulatorBindGroupEntry,
-			infoBindGroupEntry,
+			texCoordBindGroupEntry,
+			textureIdBindGroupEntry
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 			.label = "accumulator accumulator bind group",
@@ -102,7 +114,8 @@ namespace render {
 
 	void Accumulator::createAccumulatorBindGroupLayout(
 		wgpu::TextureFormat accumulatorTextureFormat,
-		wgpu::TextureFormat infoTextureFormat
+		wgpu::TextureFormat texCoordTextureFormat,
+		wgpu::TextureFormat textureIdTextureFormat
 	) {
 			const wgpu::BindGroupLayoutEntry accumulatorBindGroupLayoutEntry = {
 			.binding = 0,
@@ -114,19 +127,30 @@ namespace render {
 			},
 		};
 
-		const wgpu::BindGroupLayoutEntry infoBindGroupLayoutEntry = {
+		const wgpu::BindGroupLayoutEntry texCoordBindGroupLayoutEntry = {
 			.binding = 1,
 			.visibility = wgpu::ShaderStage::Compute,
 			.storageTexture = {
 				.access = wgpu::StorageTextureAccess::ReadOnly,
-				.format = infoTextureFormat,
+				.format = texCoordTextureFormat,
 				.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
 		};
 
-		std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
+		const wgpu::BindGroupLayoutEntry textureIdBindGroupLayoutEntry = {
+			.binding = 2,
+			.visibility = wgpu::ShaderStage::Compute,
+			.storageTexture = {
+				.access = wgpu::StorageTextureAccess::ReadOnly,
+				.format = textureIdTextureFormat,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
+			},
+		};
+
+		std::array<wgpu::BindGroupLayoutEntry, 3> bindGroupLayoutEntries = {
 			accumulatorBindGroupLayoutEntry,
-			infoBindGroupLayoutEntry,
+			texCoordBindGroupLayoutEntry,
+			textureIdBindGroupLayoutEntry
 		};
 
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {

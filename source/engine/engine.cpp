@@ -76,23 +76,25 @@ Engine::Engine() {
 
 	render::Accumulator* baseColorAccumulatorRender = new render::Accumulator(&_wgpuContext.device);
 	_baseColorAccumulatorRender = baseColorAccumulatorRender;
-	const render::accumulator::descriptor::GenerateGpuObjects baseColorAccumulatorGenerateGpuObjectsDescriptor = {
-		.accumulatorTextureView = _initialRender->baseColorAccumulatorTextureView,
+	const render::accumulator::descriptor::GenerateGpuObjects baseColorGenerateGpuObjectsDescriptor = {
+		.accumulatorTextureView = _initialRender->baseColorTextureView,
 		.accumulatorTextureFormat = _initialRender->baseColorTextureFormat,
-		.infoTextureView = _initialRender->masterInfoTextureView,
-		.infoTextureFormat = _initialRender->masterInfoTextureFormat,
+		.texCoordTextureView = _initialRender->texCoordTextureView,
+		.texCoordTextureFormat = _initialRender->texCoordTextureFormat,
+		.textureIdTextureView = _initialRender->baseColorTextureIdTextureView,
+		.textureIdTextureFormat = _initialRender->baseColorTextureIdTextureFormat, 
 		.inputSTPs = h_objects.samplerTexturePairs,
 		.allTextureViews = _deviceSceneResources.textureViews,
 		.allSamplers = _deviceSceneResources.samplers,
 		};
-	_baseColorAccumulatorRender->generateGpuObjects(&baseColorAccumulatorGenerateGpuObjectsDescriptor);
+	_baseColorAccumulatorRender->generateGpuObjects(&baseColorGenerateGpuObjectsDescriptor);
 	
 	render::Ultimate* ultimateRender = new render::Ultimate(&_wgpuContext.device);
 	_ultimateRender = ultimateRender;
 	const render::ultimate::descriptor::GenerateGpuObjects ultimateGenerateGpuObjectsDescriptor = {
 		.screenDimensions = _wgpuContext.screenDimensions,
 		.baseColorTextureFormat = initialRender->baseColorTextureFormat,
-		.baseColorTextureView = initialRender->baseColorAccumulatorTextureView,
+		.baseColorTextureView = initialRender->baseColorTextureView,
 		.shadowMapTextureView = shadowRender->shadowMapTextureView,
 	};
 	_ultimateRender->generateGpuObjects(&ultimateGenerateGpuObjectsDescriptor);
@@ -169,9 +171,6 @@ void Engine::draw() {
 
 	const render::accumulator::descriptor::DoCommands doBaseColorAccumulatorRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,
-		.inputTextureViews = _deviceSceneResources.textureViews,
-		.accumulatorTextureView = _initialRender->baseColorAccumulatorTextureView,
-		.masterTextureInfoTextureView = _initialRender->masterInfoTextureView,
 	};
 	_baseColorAccumulatorRender->doCommands(&doBaseColorAccumulatorRenderCommandsDescriptor);
 
