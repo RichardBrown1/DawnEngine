@@ -193,8 +193,8 @@ namespace {
 			throw std::runtime_error("only KTX files are able to be used as textures");
 		}
 		const structs::SamplerTexturePair samplerTexturePair = {
-			.samplerIndex = static_cast<uint32_t>(inputTexture.samplerIndex.has_value()),
-			.textureIndex = static_cast<uint32_t>(inputTexture.basisuImageIndex.has_value()),
+			.samplerIndex = static_cast<uint32_t>(inputTexture.samplerIndex.value()),
+			.textureIndex = static_cast<uint32_t>(inputTexture.basisuImageIndex.value()),
 		};
 		outputStp = samplerTexturePair;
 	}

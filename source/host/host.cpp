@@ -76,8 +76,8 @@ device::SceneResources host::SceneResources::ToDevice(
 	}
 
 	d_objects.textures.resize(this->textureUris.size());
-	d_objects.textureViews.resize(d_objects.textures.size());
-	for (uint32_t i = 0; i < d_objects.samplers.size(); ++i) {
+	d_objects.textureViews.resize(this->textureUris.size());
+	for (uint32_t i = 0; i < this->textureUris.size(); ++i) {
 		texture::getTexture(wgpuContext, this->textureUris[i], d_objects.textures[i], d_objects.textureViews[i]);
 	}
 

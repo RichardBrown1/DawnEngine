@@ -33,12 +33,12 @@ namespace render {
 		);
 
 		std::vector<wgpu::Buffer> inputInfoBuffers;
-		for (uint32_t i = 0; descriptor->inputSTPs.size(); i++) {
+		for (uint32_t i = 0; i < descriptor->inputSTPs.size(); i++) {
 			structs::InputInfo inputInfo = {
 				.stpIndex = i
 			};
 			inputInfoBuffers.emplace_back(
-				device::createBuffer(descriptor->wgpuContext, inputInfo, "input info", wgpu::BufferUsage::CopyDst)
+				device::createBuffer(descriptor->wgpuContext, inputInfo, "input info", wgpu::BufferUsage::Uniform)
 			);
 		};
 		for (uint32_t i = 0; auto & stp : descriptor->inputSTPs) {
@@ -186,7 +186,7 @@ namespace render {
 			.visibility = wgpu::ShaderStage::Compute,
 			.buffer = {
 				.type = wgpu::BufferBindingType::Uniform,
-				.minBindingSize = 32,
+				.minBindingSize = 16,
 			},
 		};
 		const wgpu::BindGroupLayoutEntry textureBindGroupLayoutEntry = {
