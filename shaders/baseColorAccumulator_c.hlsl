@@ -7,9 +7,9 @@ struct TextureMasterInfo //struct DawnEngine::InfoBufferLayout
     uint PAD0;
 };
 
-struct TextureInputInfo
+struct InputInfo
 {
-    uint stpId;
+    uint stpIndex;
     uint PAD0;
     uint PAD1;
     uint PAD2;
@@ -18,7 +18,7 @@ struct TextureInputInfo
 RWTexture2D<float4> accumulatorTexture : register(u0, space0);
 Texture2D<float2> texCoordTexture : register(t1, space0);
 Texture2D<uint> textureIdTexture : register(t2, space0);
-ConstantBuffer<TextureInputInfo> textureInputInfo : register(b0, space1);
+ConstantBuffer<InputInfo> inputInfo : register(b0, space1);
 Texture2D inputTexture : register(t1, space1);
 SamplerState inputSamplerState : register(s2, space1);
 
@@ -26,7 +26,7 @@ SamplerState inputSamplerState : register(s2, space1);
 [numthreads(1,1,1)]
 void cs_main(uint2 dispatchThreadID: SV_DispatchThreadID)
 {
-    if (textureIdTexture[dispatchThreadID.xy] == textureInputInfo.stpId)
+    if (textureIdTexture[dispatchThreadID.xy] == inputInfo.stpIndex)
     {
         accumulatorTexture[dispatchThreadID.xy] = inputTexture.Sample(
             inputSamplerState, 
