@@ -58,4 +58,11 @@ namespace structs {
 		uint32_t PAD0;
 	};
 
+	struct InputInfo {
+		uint32_t stpIndex;
+		uint32_t PAD0;
+		uint32_t PAD1;
+		uint32_t PAD2;
+	};
+
 }

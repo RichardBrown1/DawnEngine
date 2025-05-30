@@ -1,14 +1,18 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
-#include <webgpu/webgpu_cpp.h>
 #include <fastgltf/types.hpp>
 #include "../structs/structs.hpp"
+#include <string>
+#include "../wgpuContext/wgpuContext.hpp"
+#include <dawn/webgpu_cpp.h>
 
 namespace render {
 	namespace accumulator {
 		namespace descriptor {
 			struct GenerateGpuObjects {
+				WGPUContext& wgpuContext;
+
 				wgpu::TextureView& accumulatorTextureView;
 				wgpu::TextureFormat accumulatorTextureFormat;
 				wgpu::TextureView& texCoordTextureView;
@@ -42,6 +46,8 @@ namespace render {
 		wgpu::Device* _device;
 		wgpu::Extent2D _screenDimensions;
 
+		std::vector<wgpu::Buffer> _infoBuffer;
+
 		wgpu::BindGroupLayout _accumulatorBindGroupLayout;
 		wgpu::BindGroupLayout _inputBindGroupLayout;
 		wgpu::BindGroup _accumulatorBindGroup;
@@ -62,6 +68,10 @@ namespace render {
 			wgpu::TextureView& texCoordTextureFormat,
 			wgpu::TextureView& textureIdTextureFormat
 		);
-		void insertInputBindGroup(wgpu::TextureView& inputTextureView, wgpu::Sampler& sampler);
+		void insertInputBindGroup(
+			wgpu::Buffer& buffer,
+			wgpu::TextureView& inputTextureView,
+			wgpu::Sampler& sampler
+		);
 	};
 }

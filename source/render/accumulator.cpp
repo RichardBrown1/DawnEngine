@@ -31,11 +31,23 @@ namespace render {
 			descriptor->texCoordTextureView,
 			descriptor->textureIdTextureView
 		);
-		for (auto& stp : descriptor->inputSTPs) {
+
+		std::vector<wgpu::Buffer> inputInfoBuffers;
+		for (uint32_t i = 0; descriptor->inputSTPs.size(); i++) {
+			structs::InputInfo inputInfo = {
+				.stpIndex = i
+			};
+			inputInfoBuffers.emplace_back(
+				device::createBuffer(descriptor->wgpuContext, inputInfo, "input info", wgpu::BufferUsage::CopyDst)
+			);
+		};
+		for (uint32_t i = 0; auto & stp : descriptor->inputSTPs) {
 			insertInputBindGroup(
+				inputInfoBuffers[i],
 				descriptor->allTextureViews[stp.textureIndex],
 				descriptor->allSamplers[stp.samplerIndex]
 			);
+			i++;
 		}
 	}
 
@@ -87,18 +99,24 @@ namespace render {
 	}
 
 	void Accumulator::insertInputBindGroup(
+			wgpu::Buffer& inputInfoBuffer,
 			wgpu::TextureView& inputTextureView,
 			wgpu::Sampler& sampler
 	) {
-		const wgpu::BindGroupEntry textureBindGroupEntry = {
+		const wgpu::BindGroupEntry inputInfoBindGroupEntry = {
 			.binding = 0,
+			.buffer = inputInfoBuffer,
+		};
+		const wgpu::BindGroupEntry textureBindGroupEntry = {
+			.binding = 1,
 			.textureView = inputTextureView,
 		};
 		const wgpu::BindGroupEntry samplerBindGroupEntry = {
-			.binding = 1,
+			.binding = 2,
 			.sampler = sampler,
 		};
-		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = {
+			inputInfoBindGroupEntry,
 			textureBindGroupEntry,
 			samplerBindGroupEntry,
 		};

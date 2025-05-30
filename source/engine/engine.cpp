@@ -77,6 +77,7 @@ Engine::Engine() {
 	render::Accumulator* baseColorAccumulatorRender = new render::Accumulator(&_wgpuContext.device);
 	_baseColorAccumulatorRender = baseColorAccumulatorRender;
 	const render::accumulator::descriptor::GenerateGpuObjects baseColorGenerateGpuObjectsDescriptor = {
+		.wgpuContext = _wgpuContext,
 		.accumulatorTextureView = _initialRender->baseColorTextureView,
 		.accumulatorTextureFormat = _initialRender->baseColorTextureFormat,
 		.texCoordTextureView = _initialRender->texCoordTextureView,
