@@ -40,7 +40,7 @@ namespace render {
 
 	private:
 		const wgpu::StringView BASE_COLOR_ACCUMULATOR_SHADER_LABEL = "base color accumulator shader";
-		const std::string BASE_COLOR_ACCUMULATOR_SHADER_PATH = "shaders/c_colorAccumulator.spv";
+		const std::string BASE_COLOR_ACCUMULATOR_SHADER_PATH = "shaders/baseColorAccumulator_c.wgsl";
 		wgpu::ShaderModule _computeShaderModule;
 
 		wgpu::Device* _device;

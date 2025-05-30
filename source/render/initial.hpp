@@ -36,11 +36,11 @@ namespace render {
 		void doCommands(const render::initial::descriptor::DoCommands* descriptor);
 
 		const wgpu::TextureFormat worldPositionTextureFormat = wgpu::TextureFormat::RGBA32Float;
-		const wgpu::TextureFormat baseColorTextureFormat = wgpu::TextureFormat::RGBA16Float;
-		const wgpu::TextureFormat normalTextureFormat = wgpu::TextureFormat::RGBA16Float; //normal texture can tangent-ized	if I need it
-		const wgpu::TextureFormat texCoordTextureFormat = wgpu::TextureFormat::RG16Unorm;
-		const wgpu::TextureFormat baseColorTextureIdTextureFormat = wgpu::TextureFormat::R16Uint;
-		const wgpu::TextureFormat normalTextureIdTextureFormat = wgpu::TextureFormat::R16Uint;
+		const wgpu::TextureFormat baseColorTextureFormat = wgpu::TextureFormat::RGBA32Float;
+		const wgpu::TextureFormat normalTextureFormat = wgpu::TextureFormat::RGBA32Float; //normal texture can tangent-ized	if I need it
+		const wgpu::TextureFormat texCoordTextureFormat = wgpu::TextureFormat::RG32Float; //I would prefer unorm but I think its bugged
+		const wgpu::TextureFormat baseColorTextureIdTextureFormat = wgpu::TextureFormat::R32Uint;
+		const wgpu::TextureFormat normalTextureIdTextureFormat = wgpu::TextureFormat::R32Uint;
 		const wgpu::TextureFormat depthTextureFormat = constants::DEPTH_FORMAT;
 
 		wgpu::TextureView worldPositionTextureView;

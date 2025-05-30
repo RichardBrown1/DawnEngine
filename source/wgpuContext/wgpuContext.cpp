@@ -22,7 +22,7 @@ WGPUContext::WGPUContext() {
 	constexpr wgpu::InstanceDescriptor instanceDescriptor = {
 		.capabilities = {
 			.timedWaitAnyEnable = true,
-		},
+		}
 	};
 	this->instance = wgpu::CreateInstance(&instanceDescriptor);
 	CHECK(instance);
@@ -30,7 +30,12 @@ WGPUContext::WGPUContext() {
 	this->surface = wgpu::Surface(SDL_GetWGPUSurface(this->instance, p_sdl_window));
 	CHECK(surface);
 
+//	const char* useDxcToggle = "use_dxc"; //this works if you drop the dxil and dxcompiler dlls at the exe path
+//	wgpu::DawnTogglesDescriptor dawnTogglesDescriptor = {};
+//	dawnTogglesDescriptor.enabledToggleCount = 1;
+//	dawnTogglesDescriptor.enabledToggles = &useDxcToggle;
 	const wgpu::RequestAdapterOptions requestAdapterOptions = {
+//		.nextInChain = &dawnTogglesDescriptor,
 		.powerPreference = wgpu::PowerPreference::HighPerformance,
 	};
 	this->instance.WaitAny(this->instance.RequestAdapter(
@@ -50,11 +55,10 @@ WGPUContext::WGPUContext() {
 	print::adapter::GetInfo(this->adapter);
 	print::adapter::GetLimits(this->adapter);
 
-	const std::array<wgpu::FeatureName, 4> requiredFeatures = {
+	const std::array<wgpu::FeatureName, 3> requiredFeatures = {
 		wgpu::FeatureName::IndirectFirstInstance,
 		wgpu::FeatureName::TextureCompressionBC,
 		wgpu::FeatureName::BGRA8UnormStorage,
-		wgpu::FeatureName::Unorm16TextureFormats,
 	};
 	
 	constexpr wgpu::Limits requiredLimits = {

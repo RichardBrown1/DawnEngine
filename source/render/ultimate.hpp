@@ -29,7 +29,7 @@ namespace render {
 		void doCommands(const render::ultimate::descriptor::DoCommands* descriptor);
 
 		wgpu::TextureView ultimateTextureView;
-		wgpu::TextureFormat ultimateTextureFormat = wgpu::TextureFormat::RGBA16Float;
+		wgpu::TextureFormat ultimateTextureFormat = wgpu::TextureFormat::RGBA32Float;
 
 	private:
 		const std::string _displayTextureViewLabel = "display ";

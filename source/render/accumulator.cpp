@@ -10,7 +10,7 @@ namespace render {
 		_device = device;
 		_screenDimensions = wgpu::Extent2D{ 0, 0 };
 
-		_computeShaderModule = device::createShaderModule(
+		_computeShaderModule = device::createWGSLShaderModule(
 			*_device,
 			BASE_COLOR_ACCUMULATOR_SHADER_LABEL,
 			BASE_COLOR_ACCUMULATOR_SHADER_PATH
@@ -91,7 +91,7 @@ namespace render {
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 			.label = "accumulator accumulator bind group",
-			.layout = _inputBindGroupLayout,
+			.layout = _accumulatorBindGroupLayout,
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
@@ -139,7 +139,7 @@ namespace render {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Compute,
 			.storageTexture = {
-				.access = wgpu::StorageTextureAccess::ReadWrite,
+				.access = wgpu::StorageTextureAccess::WriteOnly,
 				.format = accumulatorTextureFormat,
 				.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
@@ -181,34 +181,42 @@ namespace render {
 	}
 
 	void Accumulator::createInputBindGroupLayout() {
-		const wgpu::BindGroupLayoutEntry textureBindGroupLayoutEntry = {
+		const wgpu::BindGroupLayoutEntry inputInfoBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Compute,
+			.buffer = {
+				.type = wgpu::BufferBindingType::Uniform,
+				.minBindingSize = 32,
+			},
+		};
+		const wgpu::BindGroupLayoutEntry textureBindGroupLayoutEntry = {
+			.binding = 1,
+			.visibility = wgpu::ShaderStage::Compute,
 			.texture = {
-					.sampleType = wgpu::TextureSampleType::Float,
-					.viewDimension = wgpu::TextureViewDimension::e2D,
+				.sampleType = wgpu::TextureSampleType::Float,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
 		};
 		const wgpu::BindGroupLayoutEntry samplerBindGroupLayoutEntry = {
-			.binding = 1,
+			.binding = 2,
 			.visibility = wgpu::ShaderStage::Compute,
 			.sampler = {
 				//TODO: This should depend on the sampler descriptor magfilter and comparison filter probably instead of being assumed
 				.type = wgpu::SamplerBindingType::Filtering,	//ASSUMPTION
 			},
 		};
-		std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
+		std::array<wgpu::BindGroupLayoutEntry, 3> bindGroupLayoutEntries = {
+			inputInfoBindGroupLayoutEntry,
 			textureBindGroupLayoutEntry,
 			samplerBindGroupLayoutEntry,
 		};
 
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-			.label = "accumulator input bind group layout",
+			.label = "input bind group layout",
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		_accumulatorBindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
-
+		_inputBindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	}
 
 
@@ -233,7 +241,7 @@ namespace render {
 		};
 
 		const wgpu::ComputePipelineDescriptor computePipelineDescriptor = {
-			.label = "ultimate compute pipeline",
+			.label = "accumulator compute pipeline",
 			.layout = pipelineLayout,
 			.compute = computeState,
 		};
