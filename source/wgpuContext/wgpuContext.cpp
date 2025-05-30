@@ -31,7 +31,7 @@ WGPUContext::WGPUContext() {
 	CHECK(surface);
 
 	const wgpu::RequestAdapterOptions requestAdapterOptions = {
-		.powerPreference = wgpu::PowerPreference::HighPerformance
+		.powerPreference = wgpu::PowerPreference::HighPerformance,
 	};
 	this->instance.WaitAny(this->instance.RequestAdapter(
 		&requestAdapterOptions,
@@ -50,15 +50,22 @@ WGPUContext::WGPUContext() {
 	print::adapter::GetInfo(this->adapter);
 	print::adapter::GetLimits(this->adapter);
 
-	std::array<wgpu::FeatureName, 3> requiredFeatures = {
+	const std::array<wgpu::FeatureName, 4> requiredFeatures = {
 		wgpu::FeatureName::IndirectFirstInstance,
 		wgpu::FeatureName::TextureCompressionBC,
 		wgpu::FeatureName::BGRA8UnormStorage,
+		wgpu::FeatureName::Unorm16TextureFormats,
 	};
+	
+	constexpr wgpu::Limits requiredLimits = {
+		.maxColorAttachmentBytesPerSample = 64,
+	};
+
 	wgpu::DeviceDescriptor deviceDescriptor = {};
 	deviceDescriptor.label = "device";
 	deviceDescriptor.requiredFeatures = requiredFeatures.data();
 	deviceDescriptor.requiredFeatureCount = requiredFeatures.size();
+	deviceDescriptor.requiredLimits = &requiredLimits;
 	deviceDescriptor.SetUncapturedErrorCallback(device::callback::uncapturedError);
 	deviceDescriptor.SetDeviceLostCallback(wgpu::CallbackMode::AllowSpontaneous, device::callback::deviceLost);
 
@@ -66,7 +73,7 @@ WGPUContext::WGPUContext() {
 	device.SetLoggingCallback(device::callback::logging);
 	queue = device.GetQueue();
 
-	wgpu::SurfaceConfiguration surfaceConfiguration = {
+	const wgpu::SurfaceConfiguration surfaceConfiguration = {
 		.device = device,
 		.format = this->surfaceFormat,
 		.usage = wgpu::TextureUsage::RenderAttachment,
