@@ -107,7 +107,7 @@ namespace render {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Fragment,
 			.texture = {
-				.sampleType = wgpu::TextureSampleType::Float,
+				.sampleType = wgpu::TextureSampleType::UnfilterableFloat,
 				.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
 		};
