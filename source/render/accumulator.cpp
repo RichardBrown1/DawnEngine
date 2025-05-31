@@ -8,7 +8,6 @@
 namespace render {
 	Accumulator::Accumulator(wgpu::Device* device) {
 		_device = device;
-		_screenDimensions = wgpu::Extent2D{ 0, 0 };
 
 		_computeShaderModule = device::createWGSLShaderModule(
 			*_device,
@@ -53,14 +52,14 @@ namespace render {
 
 	void Accumulator::doCommands(const accumulator::descriptor::DoCommands* descriptor) {
 		wgpu::ComputePassDescriptor computePassDescriptor = {
-			.label = "ultimate compute pass",
+			.label = "accumulator compute pass",
 		};
 		wgpu::ComputePassEncoder computePassEncoder = descriptor->commandEncoder.BeginComputePass(&computePassDescriptor);
 		computePassEncoder.SetPipeline(_computePipeline);
 		computePassEncoder.SetBindGroup(0, _accumulatorBindGroup);
 		for (auto& bg : _inputBindGroups) {
 			computePassEncoder.SetBindGroup(1, bg);
-			computePassEncoder.DispatchWorkgroups(_screenDimensions.width, _screenDimensions.height);
+			computePassEncoder.DispatchWorkgroups(descriptor->screenDimensions.width, descriptor->screenDimensions.height);
 		}
 		computePassEncoder.End();
 	}

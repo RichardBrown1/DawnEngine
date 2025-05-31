@@ -28,6 +28,7 @@ namespace render {
 
 			struct DoCommands {
 				wgpu::CommandEncoder& commandEncoder;
+				wgpu::Extent2D& screenDimensions;
 			};
 		}
 	}
@@ -44,7 +45,6 @@ namespace render {
 		wgpu::ShaderModule _computeShaderModule;
 
 		wgpu::Device* _device;
-		wgpu::Extent2D _screenDimensions;
 
 		std::vector<wgpu::Buffer> _infoBuffer;
 

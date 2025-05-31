@@ -172,6 +172,7 @@ void Engine::draw() {
 
 	const render::accumulator::descriptor::DoCommands doBaseColorAccumulatorRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,
+		.screenDimensions = _wgpuContext.screenDimensions,
 	};
 	_baseColorAccumulatorRender->doCommands(&doBaseColorAccumulatorRenderCommandsDescriptor);
 
