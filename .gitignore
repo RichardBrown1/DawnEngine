@@ -367,3 +367,4 @@ CMakeUserPresets.json
 /build
 /models/
 !/models/cornellBox
+/third-party/fastgltf/deps/simdjson
