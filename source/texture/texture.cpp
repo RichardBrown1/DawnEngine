@@ -35,19 +35,13 @@ namespace texture {
 		int x = 0;
 		int y = 0;
 		int c = 0;
-		unsigned char* stbi_data = stbi_load(filePath.c_str(), &x, &y, &c, REQUESTED_CHANNELS);
+		unsigned char* data = stbi_load(filePath.c_str(), &x, &y, &c, REQUESTED_CHANNELS);
 		const uint32_t width = static_cast<uint32_t>(x);
 		const uint32_t height = static_cast<uint32_t>(y);
 		const uint32_t channels = static_cast<uint32_t>(REQUESTED_CHANNELS);
 
-		std::vector<char> data(width * height * channels);
-    for (uint32_t i = 0; i < width * height * channels; ++i) {
-        data[i] = static_cast<float>(stbi_data[i]) / 255.0f;
-    }
-		stbi_image_free(stbi_data);
-		
 		const wgpu::TextureDescriptor textureDescriptor = {
-			.label = wgpu::StringView("filePath"),
+			.label = wgpu::StringView(std::string("texture: " + filePath)),
 			.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst,
 			.dimension = wgpu::TextureDimension::e2D,
 			.size = wgpu::Extent3D {
@@ -73,18 +67,19 @@ namespace texture {
 			.mipLevel = 0,
 		};
 		const wgpu::TexelCopyBufferLayout texelCopyBufferLayout = {
-				.bytesPerRow = width * channels * sizeof(float),
+				.bytesPerRow = width * channels * sizeof(char),
 				.rowsPerImage = height,
 		};
 
 		wgpuContext.queue.WriteTexture(
 			&texelCopyTextureInfo,
-			data.data(),
-			width * height * channels * sizeof(float),
+			data,
+			width * height * channels * sizeof(char),
 			&texelCopyBufferLayout,
 			&textureDescriptor.size
 		);
 
+		stbi_image_free(data);
 		const wgpu::TextureViewDescriptor textureViewDescriptor = {
 			.label = "Textures",
 			.format = textureDescriptor.format,
