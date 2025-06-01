@@ -189,12 +189,13 @@ namespace {
 
 	//texture is gltf name - stp will be DawnEngine name.
 	void addSamplerTexturePair(const fastgltf::Texture& inputTexture, structs::SamplerTexturePair& outputStp) {
-		if (!inputTexture.basisuImageIndex.has_value()) {
-			throw std::runtime_error("only KTX files are able to be used as textures");
+		if (!inputTexture.imageIndex.has_value()) {
+			LOG(ERROR) << "cannot add stp - missing image index";
 		}
+
 		const structs::SamplerTexturePair samplerTexturePair = {
-			.samplerIndex = static_cast<uint32_t>(inputTexture.samplerIndex.value()),
-			.textureIndex = static_cast<uint32_t>(inputTexture.basisuImageIndex.value()),
+			.samplerIndex = static_cast<uint32_t>(inputTexture.samplerIndex.value_or(UINT32_MAX)),
+			.textureIndex = static_cast<uint32_t>(inputTexture.imageIndex.value()),
 		};
 		outputStp = samplerTexturePair;
 	}
@@ -205,9 +206,6 @@ namespace {
 			LOG(ERROR) << "Cannot get fastgltf::DataSource Texture, unsupported type";
 		}
 		fastgltf::sources::URI* p_uri = std::get_if<fastgltf::sources::URI>(&dataSource);
-		if (p_uri->mimeType != fastgltf::MimeType::KTX2) {
-			LOG(ERROR) << "Only KTX2 Textures are supported";
-		}
 		outputFilePath = gltfDirectory + p_uri->uri.c_str();
 	}
 

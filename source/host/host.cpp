@@ -70,10 +70,18 @@ device::SceneResources host::SceneResources::ToDevice(
 		wgpu::BufferUsage::Uniform
 	);
 
-	d_objects.samplers.resize(this->samplers.size());
 	for (uint32_t i = 0; i < d_objects.samplers.size(); ++i) {
 		d_objects.samplers[i] = wgpuContext.device.CreateSampler(&this->samplers[i]);
 	}
+	const wgpu::SamplerDescriptor defaultSamplerDescriptor = {
+		.label = "default label",
+		.addressModeU = wgpu::AddressMode::Repeat,
+		.addressModeV = wgpu::AddressMode::Repeat,
+		.magFilter = wgpu::FilterMode::Linear,
+		.minFilter = wgpu::FilterMode::Linear,
+		.mipmapFilter = wgpu::MipmapFilterMode::Nearest,
+	};
+	d_objects.samplers[UINT32_MAX] = wgpuContext.device.CreateSampler(&defaultSamplerDescriptor);
 
 	d_objects.textures.resize(this->textureUris.size());
 	d_objects.textureViews.resize(this->textureUris.size());

@@ -23,7 +23,7 @@ namespace render {
 				//for input bind group
 				std::vector<structs::SamplerTexturePair>& inputSTPs;
 				std::vector<wgpu::TextureView>& allTextureViews;
-				std::vector<wgpu::Sampler>& allSamplers;
+				std::unordered_map<uint32_t, wgpu::Sampler>& allSamplers;
 			};
 
 			struct DoCommands {

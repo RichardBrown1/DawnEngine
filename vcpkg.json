@@ -1,11 +1,12 @@
 {
   "dependencies": [
+    "abseil",
+    "directx-dxc",
     "fastgltf",
     "glm",
     "ktx",
     "sdl3",
-    "directx-dxc",
-    "abseil"
+    "stb"
   ],
   "overrides": [
     {

@@ -17,7 +17,7 @@ namespace device {
 		wgpu::Buffer materials;
 		wgpu::Buffer samplerTexturePairs;
 
-		std::vector<wgpu::Sampler> samplers;
+		std::unordered_map<uint32_t, wgpu::Sampler> samplers;
 		std::vector<wgpu::Texture> textures;
 		std::vector<wgpu::TextureView> textureViews;
 	};

@@ -21,6 +21,7 @@ find_package(glm CONFIG REQUIRED)
 find_package(fastgltf CONFIG REQUIRED)
 find_package(directx-dxc CONFIG REQUIRED)
 find_package(absl CONFIG REQUIRED)
+find_package(Stb REQUIRED)
 
 # Build
 file(GLOB_RECURSE SRC_FILES "source/*.cpp")
@@ -28,7 +29,7 @@ add_executable (DawnEngine ${SRC_FILES})
 
 target_link_libraries(DawnEngine 
     PUBLIC dawn::webgpu_dawn     
-    PRIVATE SDL3::SDL3 KTX::ktx glm::glm fastgltf::fastgltf absl::log
+    PRIVATE SDL3::SDL3 KTX::ktx glm::glm fastgltf::fastgltf absl::log ${Stb_INCLUDE_DIR}
 )
 
 #Disable compile warnings on libraries
