@@ -118,13 +118,13 @@ namespace render {
 				.view = baseColorTextureIdTextureView,
 				.loadOp = wgpu::LoadOp::Clear,
 				.storeOp = wgpu::StoreOp::Store,
-				.clearValue = wgpu::Color{1.0f, 1.0f, 1.0f, 1.0f},
+				.clearValue = wgpu::Color(UINT32_MAX),
 			},
 			wgpu::RenderPassColorAttachment {
 				.view = normalTextureIdTextureView,
 				.loadOp = wgpu::LoadOp::Clear,
 				.storeOp = wgpu::StoreOp::Store,
-				.clearValue = wgpu::Color{1.0f, 1.0f, 1.0f, 1.0f},
+				.clearValue = wgpu::Color(UINT32_MAX),
 			},
 		};
 
