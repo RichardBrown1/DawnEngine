@@ -149,7 +149,7 @@ void Engine::draw() {
 	//Get next surface texture view
 	wgpu::TextureView surfaceTextureView = getNextSurfaceTextureView(_wgpuContext.surface);
 
-	wgpu::CommandEncoderDescriptor commandEncoderDescriptor = {
+	constexpr wgpu::CommandEncoderDescriptor commandEncoderDescriptor = {
 		.label = "My command encoder"
 	};
 	wgpu::CommandEncoder commandEncoder = _wgpuContext.device.CreateCommandEncoder(&commandEncoderDescriptor);
@@ -187,7 +187,7 @@ void Engine::draw() {
 	};
 	_toSurfaceRender->doCommands(&doToSurfaceRenderCommandsDescriptor);
 
-	wgpu::CommandBufferDescriptor commandBufferDescriptor = {
+	constexpr wgpu::CommandBufferDescriptor commandBufferDescriptor = {
 		.label = "Command Buffer",
 	};
 	wgpu::CommandBuffer commandBuffer = commandEncoder.Finish(&commandBufferDescriptor);
