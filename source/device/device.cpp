@@ -55,7 +55,7 @@ namespace device {
 			return device.CreateShaderModule(&shaderModuleDescriptor);
 		}
 
-	wgpu::ShaderModule createWGSLShaderModule(wgpu::Device& device, const wgpu::StringView& label, const std::string& filename)
+	wgpu::ShaderModule createWGSLShaderModule(const wgpu::Device& device, const wgpu::StringView& label, const std::string& filename)
 		{
 			const std::string shaderCode = readShaderToString(std::string(filename));
 			wgpu::ShaderSourceWGSL shaderSource = wgpu::ShaderSourceWGSL();

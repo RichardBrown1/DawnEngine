@@ -35,7 +35,7 @@ namespace render {
 
 	class Accumulator {
 	public:
-		Accumulator(wgpu::Device* device);
+		Accumulator(WGPUContext* wgpuContext);
 		void generateGpuObjects(const render::accumulator::descriptor::GenerateGpuObjects* descriptor);
 		void doCommands(const render::accumulator::descriptor::DoCommands* descriptor);
 
@@ -44,7 +44,7 @@ namespace render {
 		const std::string BASE_COLOR_ACCUMULATOR_SHADER_PATH = "shaders/baseColorAccumulator_c.wgsl";
 		wgpu::ShaderModule _computeShaderModule;
 
-		wgpu::Device* _device;
+		WGPUContext* _wgpuContext;
 
 		std::vector<wgpu::Buffer> _infoBuffer;
 
@@ -55,23 +55,23 @@ namespace render {
 		wgpu::ComputePipeline _computePipeline;
 
 		void createAccumulatorBindGroupLayout(
-			wgpu::TextureFormat accumulatorTextureFormat,
-			wgpu::TextureFormat texCoordTextureFormat,
-			wgpu::TextureFormat textureIdTextureFormat
+			const wgpu::TextureFormat accumulatorTextureFormat,
+			const wgpu::TextureFormat texCoordTextureFormat,
+			const wgpu::TextureFormat textureIdTextureFormat
 		);
 		void createInputBindGroupLayout();
 		wgpu::PipelineLayout getPipelineLayout();
 		void createComputePipeline();
 
 		void createAccumulatorBindGroup(
-			wgpu::TextureView& accumulatorTextureView,
-			wgpu::TextureView& texCoordTextureFormat,
-			wgpu::TextureView& textureIdTextureFormat
+			const wgpu::TextureView& accumulatorTextureView,
+			const wgpu::TextureView& texCoordTextureFormat,
+			const wgpu::TextureView& textureIdTextureFormat
 		);
 		void insertInputBindGroup(
-			wgpu::Buffer& buffer,
-			wgpu::TextureView& inputTextureView,
-			wgpu::Sampler& sampler
+			const wgpu::Buffer& buffer,
+			const wgpu::TextureView& inputTextureView,
+			const wgpu::Sampler& sampler
 		);
 	};
 }

@@ -29,7 +29,7 @@ namespace device {
 	);
 
 	wgpu::ShaderModule createWGSLShaderModule(
-		wgpu::Device& device,
+		const wgpu::Device& device,
 		const wgpu::StringView& label,
 		const std::string& filename
 	);

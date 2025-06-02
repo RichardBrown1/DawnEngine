@@ -4,13 +4,18 @@
 #include "accumulator.hpp"
 #include "../device/device.hpp"
 #include "../enums.hpp"
+#include <array>
+#include <cstdint>
+#include <vector>
+#include "../structs/structs.hpp"
+#include "../wgpuContext/wgpuContext.hpp"
+#include <dawn/webgpu_cpp.h>
 
 namespace render {
-	Accumulator::Accumulator(wgpu::Device* device) {
-		_device = device;
-
+	Accumulator::Accumulator(WGPUContext* wgpuContext) {
+		_wgpuContext = wgpuContext;
 		_computeShaderModule = device::createWGSLShaderModule(
-			*_device,
+			_wgpuContext->device,
 			BASE_COLOR_ACCUMULATOR_SHADER_LABEL,
 			BASE_COLOR_ACCUMULATOR_SHADER_PATH
 		);
@@ -66,9 +71,9 @@ namespace render {
 
 
 	void Accumulator::createAccumulatorBindGroup(
-			wgpu::TextureView& accumulatorTextureView,
-			wgpu::TextureView& texCoordTextureView,
-			wgpu::TextureView& textureIdTextureView
+			const wgpu::TextureView& accumulatorTextureView,
+			const wgpu::TextureView& texCoordTextureView,
+			const wgpu::TextureView& textureIdTextureView
 	) {
 		const wgpu::BindGroupEntry accumulatorBindGroupEntry = {
 			.binding = 0,
@@ -94,13 +99,13 @@ namespace render {
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		_accumulatorBindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
+		_accumulatorBindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
 	}
 
 	void Accumulator::insertInputBindGroup(
-			wgpu::Buffer& inputInfoBuffer,
-			wgpu::TextureView& inputTextureView,
-			wgpu::Sampler& sampler
+			const wgpu::Buffer& inputInfoBuffer,
+			const wgpu::TextureView& inputTextureView,
+			const wgpu::Sampler& sampler
 	) {
 		const wgpu::BindGroupEntry inputInfoBindGroupEntry = {
 			.binding = 0,
@@ -125,14 +130,14 @@ namespace render {
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		_inputBindGroups.emplace_back(_device->CreateBindGroup(&bindGroupDescriptor));
+		_inputBindGroups.emplace_back(_wgpuContext->device.CreateBindGroup(&bindGroupDescriptor));
 	}
 
 
 	void Accumulator::createAccumulatorBindGroupLayout(
-		wgpu::TextureFormat accumulatorTextureFormat,
-		wgpu::TextureFormat texCoordTextureFormat,
-		wgpu::TextureFormat textureIdTextureFormat
+		const wgpu::TextureFormat accumulatorTextureFormat,
+		const wgpu::TextureFormat texCoordTextureFormat,
+		const wgpu::TextureFormat textureIdTextureFormat
 	) {
 			const wgpu::BindGroupLayoutEntry accumulatorBindGroupLayoutEntry = {
 			.binding = 0,
@@ -175,7 +180,7 @@ namespace render {
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		_accumulatorBindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+		_accumulatorBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 
 	}
 
@@ -215,7 +220,7 @@ namespace render {
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		_inputBindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+		_inputBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	}
 
 
@@ -229,7 +234,7 @@ namespace render {
 			.bindGroupLayoutCount = bindGroupLayout.size(),
 			.bindGroupLayouts = bindGroupLayout.data(),
 		};
-		return _device->CreatePipelineLayout(&pipelineLayoutDescriptor);
+		return _wgpuContext->device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};
 
 	void Accumulator::createComputePipeline() {
@@ -244,7 +249,7 @@ namespace render {
 			.layout = pipelineLayout,
 			.compute = computeState,
 		};
-		_computePipeline = _device->CreateComputePipeline(&computePipelineDescriptor);
+		_computePipeline = _wgpuContext->device.CreateComputePipeline(&computePipelineDescriptor);
 	}
 	
 }
