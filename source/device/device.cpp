@@ -42,7 +42,7 @@ namespace {
 }
 
 namespace device {
-	wgpu::ShaderModule createShaderModule(wgpu::Device& device, const wgpu::StringView& label, const std::string& filename)
+	wgpu::ShaderModule createShaderModule(const wgpu::Device& device, const wgpu::StringView& label, const std::string& filename)
 		{
 			const std::vector<uint32_t> shaderCode = readShader(std::string(filename));
 			wgpu::ShaderSourceSPIRV shaderSource = wgpu::ShaderSourceSPIRV();
