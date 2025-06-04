@@ -15,7 +15,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
-#include <webgpu/webgpu_cpp.h>
+#include <dawn/webgpu_cpp.h>
 #include "../host/host.hpp"
 
 namespace {

@@ -1,5 +1,5 @@
 #pragma once
-#include <webgpu/webgpu_cpp.h>
+#include <dawn/webgpu_cpp.h>
 #include <string>
 #include <vector>
 #include "../wgpuContext/wgpuContext.hpp"

@@ -36,7 +36,7 @@
 #pragma once
 #include "sdl3webgpu.hpp"
 
-#include <webgpu/webgpu_cpp.h>
+#include <dawn/webgpu_cpp.h>
 #include <windows.h>
 
 #include <SDL3/SDL.h>

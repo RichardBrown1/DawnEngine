@@ -1,6 +1,6 @@
 #pragma once
 #include <array>
-#include <webgpu/webgpu_cpp.h>
+#include <dawn/webgpu_cpp.h>
 #include "../structs/structs.hpp"
 
 namespace {

@@ -1,5 +1,5 @@
 #pragma once
-#include <webgpu/webgpu_cpp.h>
+#include <dawn/webgpu_cpp.h>
 #include "absl/log/log.h"
 
 namespace device {

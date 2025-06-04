@@ -1,6 +1,6 @@
 #pragma once
 #include "glm/glm.hpp"
-#include <webgpu/webgpu_cpp.h>
+#include <dawn/webgpu_cpp.h>
 
 namespace structs {
 	struct VBO {

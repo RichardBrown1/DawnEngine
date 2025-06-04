@@ -1,5 +1,5 @@
 #pragma once
-#include <webgpu/webgpu_cpp.h>
+#include <dawn/webgpu_cpp.h>
 
 namespace vkFormat {
 	// Provided by VK_VERSION_1_0

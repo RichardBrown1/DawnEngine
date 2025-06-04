@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <webgpu/webgpu_cpp.h>
+#include <dawn/webgpu_cpp.h>
 #include <fastgltf/types.hpp>
 #include "../constants.hpp"
 #include "../structs/host.hpp"

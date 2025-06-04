@@ -1,6 +1,6 @@
 #pragma once
 #include <absl/base/log_severity.h>
-#include <webgpu/webgpu_cpp.h>
+#include <dawn/webgpu_cpp.h>
 
 namespace {
 	constexpr absl::LogSeverityAtLeast LOG_LEVEL = absl::LogSeverityAtLeast::kInfo;

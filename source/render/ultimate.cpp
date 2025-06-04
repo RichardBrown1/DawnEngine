@@ -3,8 +3,8 @@
 #include <array>
 #include "../device/device.hpp"
 #include "../enums.hpp"
-#include "vertexBufferLayout.hpp"
 #include "../texture/texture.hpp"
+#include <dawn/webgpu_cpp.h>
 
 namespace render {
 	Ultimate::Ultimate(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {

@@ -1,7 +1,7 @@
 #pragma once
 #include "fastgltf/types.hpp"
 #include "../structs/host.hpp"
-#include <webgpu/webgpu_cpp.h>
+#include <dawn/webgpu_cpp.h>
 
 namespace gltf {
 	//Used to convert any fastgltf types
