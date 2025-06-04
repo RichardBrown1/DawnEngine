@@ -7,22 +7,16 @@
 #include "../texture/texture.hpp"
 
 namespace render {
-	Ultimate::Ultimate(wgpu::Device* device) {
-		_device = device;
-		_screenDimensions = wgpu::Extent2D(0, 0); //generateGpuObjects() will handle this
-
-		_computeShaderModule = device::createWGSLShaderModule(*_device, ULTIMATE_SHADER_LABEL, ULTIMATE_SHADER_PATH);
+	Ultimate::Ultimate(WGPUContext* wgpuContext) {
+		_computeShaderModule = device::createWGSLShaderModule(wgpuContext->device, ULTIMATE_SHADER_LABEL, ULTIMATE_SHADER_PATH);
 	};
 
 	void Ultimate::generateGpuObjects(const render::ultimate::descriptor::GenerateGpuObjects* descriptor) {
-		assert(descriptor->screenDimensions.width > 1);
-		_screenDimensions = descriptor->screenDimensions;
-
 		const texture::descriptor::CreateTextureView createTextureViewDescriptor = {
 			.label = "ultimate texture view",
-			.device = _device,
+			.device = &_wgpuContext->device,
 			.textureUsage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding,
-			.textureDimensions = _screenDimensions,
+			.textureDimensions = _wgpuContext->screenDimensions,
 			.textureFormat = ultimateTextureFormat,
 			.outputTextureView = ultimateTextureView,
 		};
@@ -41,7 +35,7 @@ namespace render {
 		wgpu::ComputePassEncoder computePassEncoder = descriptor->commandEncoder.BeginComputePass(&computePassDescriptor);
 		computePassEncoder.SetPipeline(_computePipeline);
 		computePassEncoder.SetBindGroup(0, _bindGroup);
-		computePassEncoder.DispatchWorkgroups(_screenDimensions.width, _screenDimensions.height);
+		computePassEncoder.DispatchWorkgroups(_wgpuContext->screenDimensions.width, _wgpuContext->screenDimensions.height);
 		computePassEncoder.End();
 	}
 
@@ -57,7 +51,7 @@ namespace render {
 			.layout = pipelineLayout,
 			.compute = computeState,
 		};
-		_computePipeline = _device->CreateComputePipeline(&computePipelineDescriptor);
+		_computePipeline = _wgpuContext->device.CreateComputePipeline(&computePipelineDescriptor);
 	}
 
 	void Ultimate::createBindGroup(
@@ -83,7 +77,7 @@ namespace render {
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		_bindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
+		_bindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
 	}
 
 	void Ultimate::createBindGroupLayout(wgpu::TextureFormat baseColorTextureFormat) {
@@ -117,7 +111,7 @@ namespace render {
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		_bindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+		_bindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
 	wgpu::PipelineLayout Ultimate::getPipelineLayout() {
@@ -129,7 +123,7 @@ namespace render {
 			.bindGroupLayoutCount = bindGroupLayout.size(),
 			.bindGroupLayouts = bindGroupLayout.data(),
 		};
-		return _device->CreatePipelineLayout(&pipelineLayoutDescriptor);
+		return _wgpuContext->device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};
 
 }

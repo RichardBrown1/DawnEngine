@@ -87,7 +87,7 @@ Engine::Engine() {
 		};
 	_baseColorAccumulatorRender->generateGpuObjects(&baseColorGenerateGpuObjectsDescriptor);
 	
-	render::Ultimate* ultimateRender = new render::Ultimate(&_wgpuContext.device);
+	render::Ultimate* ultimateRender = new render::Ultimate(&_wgpuContext);
 	_ultimateRender = ultimateRender;
 	const render::ultimate::descriptor::GenerateGpuObjects ultimateGenerateGpuObjectsDescriptor = {
 		.screenDimensions = _wgpuContext.screenDimensions,

@@ -6,6 +6,7 @@
 #include <fastgltf/types.hpp>
 #include "../constants.hpp"
 #include "../structs/host.hpp"
+#include "../wgpuContext/wgpuContext.hpp"
 
 namespace render {
 	namespace ultimate::descriptor {
@@ -24,7 +25,7 @@ namespace render {
 
 	class Ultimate {
 	public:
-		Ultimate(wgpu::Device* device);
+		Ultimate(WGPUContext* wgpuContext);
 		void generateGpuObjects(const render::ultimate::descriptor::GenerateGpuObjects* descriptor);
 		void doCommands(const render::ultimate::descriptor::DoCommands* descriptor);
 
@@ -38,8 +39,7 @@ namespace render {
 		const std::string ULTIMATE_SHADER_PATH = "shaders/ultimate_c.wgsl";
 		wgpu::ShaderModule _computeShaderModule;
 
-		wgpu::Device* _device;
-		wgpu::Extent2D _screenDimensions;
+		WGPUContext* _wgpuContext;
 
 		wgpu::ComputePipeline _computePipeline;
 		wgpu::BindGroupLayout _bindGroupLayout;
