@@ -9,30 +9,29 @@
 #include "../render/shadow.hpp"
 #include "../render/ultimate.hpp"
 
-
-
 namespace render {
-	Initial::Initial(wgpu::Device* device) {
-			_device = device;
-			_screenDimensions = wgpu::Extent2D(0,0); //generateGpuObjects() will handle this
-		
-			_vertexShaderModule = device::createShaderModule(*_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
-			_fragmentShaderModule = device::createShaderModule(*_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
+	Initial::Initial(WGPUContext* wgpuContext) {
+		_wgpuContext = wgpuContext;
+
+		_vertexShaderModule = device::createShaderModule(_wgpuContext->device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
+		_fragmentShaderModule = device::createShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	};
 
 	void Initial::generateGpuObjects(const render::initial::descriptor::GenerateGpuObjects* descriptor) {
-		assert(descriptor->screenDimensions.width > 1);
-		_screenDimensions = descriptor->screenDimensions;
-
 		createBindGroupLayout();
 		createPipeline();
-		createBindGroup(&descriptor->buffers);
-		
+		createBindGroup(
+			descriptor->cameraBuffer,
+			descriptor->transformBuffer,
+			descriptor->instancePropertiesBuffer,
+			descriptor->materialBuffer
+		);
+
 		texture::descriptor::CreateTextureView worldPositionTextureViewDescriptor = {
 			.label = _worldPositionLabel,
-			.device = _device,
+			.device = &_wgpuContext->device,
 			.textureUsage = _worldPositionTextureUsage,
-			.textureDimensions = descriptor->screenDimensions,
+			.textureDimensions = _wgpuContext->screenDimensions,
 			.textureFormat = worldPositionTextureFormat,
 			.outputTextureView = worldPositionTextureView,
 		};
@@ -40,9 +39,9 @@ namespace render {
 
 		texture::descriptor::CreateTextureView baseColorTextureViewDescriptor = {
 			.label = _baseColorLabel,
-			.device = _device,
+			.device = &_wgpuContext->device,
 			.textureUsage = _baseColorTextureUsage,
-			.textureDimensions = descriptor->screenDimensions,
+			.textureDimensions = _wgpuContext->screenDimensions,
 			.textureFormat = baseColorTextureFormat,
 			.outputTextureView = baseColorTextureView,
 		};
@@ -50,9 +49,9 @@ namespace render {
 
 		texture::descriptor::CreateTextureView normalTextureViewDescriptor = {
 			.label = _normalLabel,
-			.device = _device,
+			.device = &_wgpuContext->device,
 			.textureUsage = _normalTextureUsage,
-			.textureDimensions = descriptor->screenDimensions,
+			.textureDimensions = _wgpuContext->screenDimensions,
 			.textureFormat = normalTextureFormat,
 			.outputTextureView = normalTextureView,
 		};
@@ -60,9 +59,9 @@ namespace render {
 
 		texture::descriptor::CreateTextureView texCoordTextureViewDescriptor = {
 			.label = _texCoordLabel,
-			.device = _device,
+			.device = &_wgpuContext->device,
 			.textureUsage = _texCoordTextureUsage,
-			.textureDimensions = descriptor->screenDimensions,
+			.textureDimensions = _wgpuContext->screenDimensions,
 			.textureFormat = texCoordTextureFormat,
 			.outputTextureView = texCoordTextureView,
 		};
@@ -70,9 +69,9 @@ namespace render {
 
 		texture::descriptor::CreateTextureView baseColorTextureIdTextureViewDescriptor = {
 					.label = _baseColorTextureIdLabel,
-					.device = _device,
+					.device = &_wgpuContext->device,
 					.textureUsage = _baseColorTextureIdTextureUsage,
-					.textureDimensions = descriptor->screenDimensions,
+					.textureDimensions = _wgpuContext->screenDimensions,
 					.textureFormat = baseColorTextureIdTextureFormat,
 					.outputTextureView = baseColorTextureIdTextureView,
 		};
@@ -80,9 +79,9 @@ namespace render {
 
 		texture::descriptor::CreateTextureView normalTextureIdTextureViewDescriptor = {
 					.label = _normalTextureIdLabel,
-					.device = _device,
+					.device = &_wgpuContext->device,
 					.textureUsage = _normalTextureIdTextureUsage,
-					.textureDimensions = descriptor->screenDimensions,
+					.textureDimensions = _wgpuContext->screenDimensions,
 					.textureFormat = normalTextureIdTextureFormat,
 					.outputTextureView = normalTextureIdTextureView,
 		};
@@ -130,9 +129,9 @@ namespace render {
 
 		texture::descriptor::CreateTextureView depthTextureViewDescriptor = {
 			.label = _depthTextureLabel,
-			.device = _device,
+			.device = &_wgpuContext->device,
 			.textureUsage = _depthTextureUsage,
-			.textureDimensions = descriptor->screenDimensions,
+			.textureDimensions = _wgpuContext->screenDimensions,
 			.textureFormat = depthTextureFormat,
 			.outputTextureView = depthTextureView,
 		};
@@ -237,29 +236,34 @@ namespace render {
 			},
 			.fragment = &fragmentState,
 		};
-		_renderPipeline = _device->CreateRenderPipeline(&renderPipelineDescriptor);
+		_renderPipeline = _wgpuContext->device.CreateRenderPipeline(&renderPipelineDescriptor);
 	}
 
-	void Initial::createBindGroup(const render::initial::descriptor::Buffers* descriptor) {
+	void Initial::createBindGroup(
+		const wgpu::Buffer& cameraBuffer,
+		const wgpu::Buffer& transformBuffer,
+		const wgpu::Buffer& instancePropertiesBuffer,
+		const wgpu::Buffer& materialBuffer
+	) {
 		const wgpu::BindGroupEntry cameraBindGroupEntry = {
 			.binding = 0,
-			.buffer = descriptor->cameraBuffer,
-			.size = descriptor->cameraBuffer.GetSize(),
+			.buffer = cameraBuffer,
+			.size = cameraBuffer.GetSize(),
 		};
 		const wgpu::BindGroupEntry transformBindGroupEntry = {
 			.binding = 1,
-			.buffer = descriptor->transformBuffer,
-			.size = descriptor->transformBuffer.GetSize(),
+			.buffer = transformBuffer,
+			.size = transformBuffer.GetSize(),
 		};
 		const wgpu::BindGroupEntry instancePropertiesBindGroupEntry = {
 			.binding = 2,
-			.buffer = descriptor->instancePropertiesBuffer,
-			.size = descriptor->instancePropertiesBuffer.GetSize(),
+			.buffer = instancePropertiesBuffer,
+			.size = instancePropertiesBuffer.GetSize(),
 		};
 		const wgpu::BindGroupEntry materialBindGroupEntry = {
 			.binding = 3,
-			.buffer = descriptor->materialBuffer,
-			.size = descriptor->materialBuffer.GetSize(),
+			.buffer = materialBuffer,
+			.size = materialBuffer.GetSize(),
 		};
 		std::array<wgpu::BindGroupEntry, 4> bindGroupEntries = {
 			cameraBindGroupEntry,
@@ -273,7 +277,7 @@ namespace render {
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		_bindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
+		_bindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
 	}
 
 	void Initial::createBindGroupLayout() {
@@ -321,7 +325,7 @@ namespace render {
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		_bindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+		_bindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
 	wgpu::PipelineLayout Initial::getPipelineLayout() {
@@ -331,7 +335,7 @@ namespace render {
 			.bindGroupLayoutCount = 1,
 			.bindGroupLayouts = &_bindGroupLayout,
 		};
-		return _device->CreatePipelineLayout(&pipelineLayoutDescriptor);
+		return _wgpuContext->device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};
 
 }

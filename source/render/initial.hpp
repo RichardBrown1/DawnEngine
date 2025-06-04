@@ -6,19 +6,15 @@
 #include <fastgltf/types.hpp>
 #include "../constants.hpp"
 #include "../structs/host.hpp"
+#include "../wgpuContext/wgpuContext.hpp"
 
 namespace render {
 	namespace initial::descriptor {
-		struct Buffers {
+		struct GenerateGpuObjects {
 			wgpu::Buffer& cameraBuffer;
 			wgpu::Buffer& transformBuffer;
 			wgpu::Buffer& instancePropertiesBuffer;
 			wgpu::Buffer& materialBuffer;
-		};
-
-		struct GenerateGpuObjects {
-			Buffers buffers;
-			wgpu::Extent2D screenDimensions;
 		};
 
 		struct DoCommands {
@@ -31,7 +27,7 @@ namespace render {
 
 	class Initial {
 	public:
-		Initial(wgpu::Device* device);
+		Initial(WGPUContext* wgpuContext);
 		void generateGpuObjects(const render::initial::descriptor::GenerateGpuObjects* descriptor);
 		void doCommands(const render::initial::descriptor::DoCommands* descriptor);
 
@@ -74,8 +70,7 @@ namespace render {
 		const wgpu::TextureUsage _normalTextureIdTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 		const wgpu::TextureUsage _depthTextureUsage = wgpu::TextureUsage::RenderAttachment;
 
-		wgpu::Device* _device;
-		wgpu::Extent2D _screenDimensions;
+		WGPUContext* _wgpuContext;
 
 		wgpu::RenderPipeline _renderPipeline;
 		wgpu::BindGroupLayout _bindGroupLayout;
@@ -89,6 +84,11 @@ namespace render {
 		wgpu::PipelineLayout getPipelineLayout();
 		void createBindGroupLayout();
 		void createPipeline();
-		void createBindGroup(const render::initial::descriptor::Buffers* descriptor);
+		void createBindGroup(
+			const wgpu::Buffer& cameraBuffer,
+			const wgpu::Buffer& transformBuffer,
+			const wgpu::Buffer& instancePropertiesBuffer,
+			const wgpu::Buffer& materialBuffer
+		);
 	};
 }

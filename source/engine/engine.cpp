@@ -52,16 +52,13 @@ Engine::Engine() {
 	_drawCalls = h_objects.drawCalls;
 	_deviceSceneResources = h_objects.ToDevice(_wgpuContext);
 
-	render::Initial* initialRender = new render::Initial(&_wgpuContext.device);
+	render::Initial* initialRender = new render::Initial(&_wgpuContext);
 	_initialRender = initialRender;
 	const render::initial::descriptor::GenerateGpuObjects initialGenerateGpuObjectsDescriptor = {
-		.buffers = {
-			.cameraBuffer = _deviceSceneResources.cameras,
-			.transformBuffer = _deviceSceneResources.transforms,
-			.instancePropertiesBuffer = _deviceSceneResources.instanceProperties,
-			.materialBuffer = _deviceSceneResources.materials,
-		},
-		.screenDimensions = _wgpuContext.screenDimensions,
+		.cameraBuffer = _deviceSceneResources.cameras,
+		.transformBuffer = _deviceSceneResources.transforms,
+		.instancePropertiesBuffer = _deviceSceneResources.instanceProperties,
+		.materialBuffer = _deviceSceneResources.materials,
 	};
 	_initialRender->generateGpuObjects(&initialGenerateGpuObjectsDescriptor);
 
