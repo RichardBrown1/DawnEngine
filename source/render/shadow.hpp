@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "../structs/host.hpp"
+#include "../wgpuContext/wgpuContext.hpp"
 
 namespace render {
 	namespace shadow {
@@ -24,7 +25,7 @@ namespace render {
 
 	class Shadow {
 	public:
-		Shadow(wgpu::Device* device);
+		Shadow(WGPUContext* wgpuContext);
 		void generateGpuObjects(const render::shadow::descriptor::GenerateGpuObjects* descriptor);
 		void doCommands(const render::shadow::descriptor::DoCommands* descriptor);
 
@@ -36,7 +37,7 @@ namespace render {
 		const wgpu::StringView FRAGMENT_SHADER_LABEL = "shadow render fragment shader";
 		const std::string FRAGMENT_SHADER_PATH = "shaders/shadowMap_f.spv";
 
-		wgpu::Device* _device;
+		WGPUContext* _wgpuContext;
 		wgpu::Extent2D _shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
 		wgpu::TextureUsage _shadowTextureUsage = wgpu::TextureUsage::RenderAttachment;
 

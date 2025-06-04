@@ -62,7 +62,7 @@ Engine::Engine() {
 	};
 	_initialRender->generateGpuObjects(&initialGenerateGpuObjectsDescriptor);
 
-	render::Shadow* shadowRender = new render::Shadow(&_wgpuContext.device);
+	render::Shadow* shadowRender = new render::Shadow(&_wgpuContext);
 	_shadowRender = shadowRender;
 	const render::shadow::descriptor::GenerateGpuObjects shadowGenerateGpuObjectsDescriptor = {
 		.screenDimensions = _wgpuContext.screenDimensions,

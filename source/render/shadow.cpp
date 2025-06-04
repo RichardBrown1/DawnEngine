@@ -10,12 +10,12 @@
 
 namespace render {
 
-	Shadow::Shadow(wgpu::Device* device) {
-		_device = device;
+	Shadow::Shadow(WGPUContext* wgpuContext) {
+		_wgpuContext = wgpuContext;
 		_shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
 
-		_vertexShaderModule = device::createShaderModule(*_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
-		_fragmentShaderModule = device::createShaderModule(*_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
+		_vertexShaderModule = device::createShaderModule(_wgpuContext->device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
+		_fragmentShaderModule = device::createShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	}
 
 	void Shadow::generateGpuObjects(const render::shadow::descriptor::GenerateGpuObjects* descriptor) {
@@ -99,7 +99,7 @@ namespace render {
 			.fragment = &fragmentState,
 		};
 
-		_renderPipeline = _device->CreateRenderPipeline(&renderPipelineDescriptor);
+		_renderPipeline = _wgpuContext->device.CreateRenderPipeline(&renderPipelineDescriptor);
 	}
 
 	wgpu::PipelineLayout Shadow::getPipelineLayout() {
@@ -108,7 +108,7 @@ namespace render {
 			.bindGroupLayoutCount = 1,
 			.bindGroupLayouts = &_bindGroupLayout,
 		};
-		return _device->CreatePipelineLayout(&pipelineLayoutDescriptor);
+		return _wgpuContext->device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};
 
 	void Shadow::createBindGroupLayout() {
@@ -138,7 +138,7 @@ namespace render {
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		_bindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+		_bindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
 	void Shadow::createBindGroup(wgpu::Buffer& transformBuffer, wgpu::Buffer& lightBuffer) {
@@ -162,13 +162,13 @@ namespace render {
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		_bindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
+		_bindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
 	}
 
 	void Shadow::createShadowMapTextureView() {
 		const texture::descriptor::CreateTextureView createTextureViewDescriptor = {
 			.label = "shadow texture view",
-			.device = _device,
+			.device = &_wgpuContext->device,
 			.textureUsage = _shadowTextureUsage,
 			.textureDimensions = _shadowDimensions,
 			.textureFormat = constants::DEPTH_FORMAT,
