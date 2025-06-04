@@ -10,8 +10,7 @@
 
 namespace render {
 
-	Shadow::Shadow(WGPUContext* wgpuContext) {
-		_wgpuContext = wgpuContext;
+	Shadow::Shadow(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {
 		_shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
 
 		_vertexShaderModule = device::createShaderModule(_wgpuContext->device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);

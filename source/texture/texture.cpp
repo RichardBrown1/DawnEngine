@@ -29,7 +29,7 @@ namespace texture {
 		descriptor->outputTextureView = texture.CreateView(&textureViewDescriptor);
 	}
 
-	void getTexture(WGPUContext& wgpuContext, std::string& filePath, wgpu::Texture& outTexture, wgpu::TextureView& outTextureView)
+	void getTexture(const WGPUContext& wgpuContext, const std::string& filePath, wgpu::Texture& outTexture, wgpu::TextureView& outTextureView)
 	{
 		constexpr int REQUESTED_CHANNELS = 4;
 		int x = 0;

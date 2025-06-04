@@ -12,8 +12,7 @@
 #include <dawn/webgpu_cpp.h>
 
 namespace render {
-	Accumulator::Accumulator(WGPUContext* wgpuContext) {
-		_wgpuContext = wgpuContext;
+	Accumulator::Accumulator(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {
 		_computeShaderModule = device::createWGSLShaderModule(
 			_wgpuContext->device,
 			BASE_COLOR_ACCUMULATOR_SHADER_LABEL,

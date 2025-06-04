@@ -7,7 +7,7 @@
 #include "../texture/texture.hpp"
 
 namespace render {
-	Ultimate::Ultimate(WGPUContext* wgpuContext) {
+	Ultimate::Ultimate(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {
 		_computeShaderModule = device::createWGSLShaderModule(wgpuContext->device, ULTIMATE_SHADER_LABEL, ULTIMATE_SHADER_PATH);
 	};
 

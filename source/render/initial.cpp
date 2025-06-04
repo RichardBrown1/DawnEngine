@@ -10,9 +10,7 @@
 #include "../render/ultimate.hpp"
 
 namespace render {
-	Initial::Initial(WGPUContext* wgpuContext) {
-		_wgpuContext = wgpuContext;
-
+	Initial::Initial(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {
 		_vertexShaderModule = device::createShaderModule(_wgpuContext->device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
 		_fragmentShaderModule = device::createShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	};

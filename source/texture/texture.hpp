@@ -18,5 +18,5 @@ namespace texture {
 	}
 
 	void createTextureView(const descriptor::CreateTextureView* descriptor);
-	void getTexture(WGPUContext& wgpuContext, std::string& filePath, wgpu::Texture& outTexture, wgpu::TextureView& outTextureView);
+	void getTexture(const WGPUContext& wgpuContext, const std::string& filePath, wgpu::Texture& outTexture, wgpu::TextureView& outTextureView);
 }
