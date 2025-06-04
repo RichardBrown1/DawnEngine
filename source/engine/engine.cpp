@@ -97,10 +97,9 @@ Engine::Engine() {
 	};
 	_ultimateRender->generateGpuObjects(&ultimateGenerateGpuObjectsDescriptor);
 
-	render::ToSurface* toSurfaceRender = new render::ToSurface(&_wgpuContext.device);
+	render::ToSurface* toSurfaceRender = new render::ToSurface(&_wgpuContext);
 	_toSurfaceRender = toSurfaceRender;
 	const render::toSurface::descriptor::GenerateGpuObjects toSurfaceGenerateGpuObjectsDescriptor = {
-		.screenDimensions = _wgpuContext.screenDimensions,
 		.ultimateTextureView = _ultimateRender->ultimateTextureView,
 		.surfaceTextureFormat = _wgpuContext.surfaceFormat,
 	};

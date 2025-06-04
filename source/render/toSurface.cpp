@@ -7,18 +7,13 @@
 #include "../texture/texture.hpp"
 
 namespace render {
-	ToSurface::ToSurface(wgpu::Device* device) {
-		_device = device;
-		_screenDimensions = wgpu::Extent2D(0, 0); //generateGpuObjects() will handle this
+	ToSurface::ToSurface(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {
 
-		_vertexShaderModule = device::createShaderModule(*_device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
-		_fragmentShaderModule = device::createShaderModule(*_device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
+		_vertexShaderModule = device::createShaderModule(_wgpuContext->device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
+		_fragmentShaderModule = device::createShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	};
 
 	void ToSurface::generateGpuObjects(const render::toSurface::descriptor::GenerateGpuObjects* descriptor) {
-		assert(descriptor->screenDimensions.width > 1);
-		_screenDimensions = descriptor->screenDimensions;
-
 		createSampler();
 		createBindGroupLayout();
 		createPipeline(descriptor->surfaceTextureFormat);
@@ -73,7 +68,7 @@ namespace render {
 			.vertex = vertexState,
 			.fragment = &fragmentState,
 		};
-		_renderPipeline = _device->CreateRenderPipeline(&renderPipelineDescriptor);
+		_renderPipeline = _wgpuContext->device.CreateRenderPipeline(&renderPipelineDescriptor);
 	}
 
 	void ToSurface::createBindGroup(
@@ -99,7 +94,7 @@ namespace render {
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		_bindGroup = _device->CreateBindGroup(&bindGroupDescriptor);
+		_bindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
 	}
 
 	void ToSurface::createBindGroupLayout() {
@@ -130,7 +125,7 @@ namespace render {
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		_bindGroupLayout = _device->CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+		_bindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
 	wgpu::PipelineLayout ToSurface::getPipelineLayout() {
@@ -142,7 +137,7 @@ namespace render {
 			.bindGroupLayoutCount = bindGroupLayout.size(),
 			.bindGroupLayouts = bindGroupLayout.data(),
 		};
-		return _device->CreatePipelineLayout(&pipelineLayoutDescriptor);
+		return _wgpuContext->device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};
 
 	void ToSurface::createSampler() {
@@ -154,7 +149,7 @@ namespace render {
 			.minFilter = wgpu::FilterMode::Nearest,
 			.mipmapFilter = wgpu::MipmapFilterMode::Nearest,
 		};
-		_ultimateSampler = _device->CreateSampler(&samplerDescriptor);
+		_ultimateSampler = _wgpuContext->device.CreateSampler(&samplerDescriptor);
 	}
 
 }

@@ -6,12 +6,12 @@
 #include <fastgltf/types.hpp>
 #include "../constants.hpp"
 #include "../structs/host.hpp"
+#include "../wgpuContext/wgpuContext.hpp"
 
 namespace render {
 	namespace toSurface::descriptor {
 
 		struct GenerateGpuObjects {
-			wgpu::Extent2D screenDimensions;
 			wgpu::TextureView& ultimateTextureView;
 			wgpu::TextureFormat surfaceTextureFormat;
 		};
@@ -24,7 +24,7 @@ namespace render {
 
 	class ToSurface {
 	public:
-		ToSurface(wgpu::Device* device);
+		ToSurface(WGPUContext* wgpuContext);
 		void generateGpuObjects(const render::toSurface::descriptor::GenerateGpuObjects* descriptor);
 		void doCommands(const render::toSurface::descriptor::DoCommands* descriptor);
 
@@ -39,8 +39,7 @@ namespace render {
 		const std::string FRAGMENT_SHADER_PATH = "shaders/toSurface_f.spv";
 		wgpu::ShaderModule _fragmentShaderModule;
 
-		wgpu::Device* _device;
-		wgpu::Extent2D _screenDimensions;
+		const WGPUContext* _wgpuContext;
 
 		wgpu::RenderPipeline _renderPipeline;
 		wgpu::BindGroupLayout _bindGroupLayout;
