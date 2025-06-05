@@ -43,11 +43,10 @@ namespace {
 }
 
 Engine::Engine() {
-	fastgltf::Asset asset = gltf::getAsset(gltfDirectory, gltfFileName);
-	host::SceneResources h_objects = gltf::processAsset(
-		asset,
-		std::array<uint32_t, 2>{_wgpuContext.screenDimensions.width, _wgpuContext.screenDimensions.height},
-		gltfDirectory
+	host::SceneResources h_objects = host::SceneResources(
+		gltfDirectory,
+		gltfFileName,
+		std::array<uint32_t, 2>{_wgpuContext.screenDimensions.width, _wgpuContext.screenDimensions.height}
 	);
 	_drawCalls = h_objects.drawCalls;
 	_deviceSceneResources = h_objects.ToDevice(_wgpuContext);

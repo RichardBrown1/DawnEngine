@@ -16,7 +16,7 @@ namespace enums {
 	};
 
 	//TODO: Fill this out with more Texture Types.
-	enum TextureType {
+	enum class MaterialProperty {
 		COLOR = 0,
 		NORMAL = 1,
 		METALLIC_ROUGHNESS = 2,

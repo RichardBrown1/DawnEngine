@@ -7,6 +7,7 @@
 #include "absl/log/log.h"
 #include "../structs/host.hpp"
 #include "convert.hpp"
+#include <map>
 #include <cstdint>
 #include <cstring>
 #include <stdexcept>
@@ -17,6 +18,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <dawn/webgpu_cpp.h>
 #include "../host/host.hpp"
+#include "../enums.hpp"
 
 namespace {
 	void addMeshData(host::SceneResources& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
@@ -182,9 +184,6 @@ namespace {
 			outputMaterial.normalTextureInfo,
 			outputMaterial.normalScale
 		);
-
-		//TODO _stpMaterialIndex[outputMaterial.pbrMetallicRoughness.baseColorTextureInfo.index];
-
 	}
 
 	//texture is gltf name - stp will be DawnEngine name.
@@ -240,9 +239,7 @@ namespace gltf {
 		return std::move(wholeGltf.get());
 	}
 
-	host::SceneResources processAsset(fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
-		host::SceneResources hostObjects;
-
+	void processAsset(host::SceneResources &hostObjects, fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
 		processNodes(hostObjects, asset, screenDimensions);
 
 		hostObjects.materials.resize(asset.materials.size());
@@ -261,24 +258,5 @@ namespace gltf {
 		for (uint32_t i = 0; i < hostObjects.samplers.size(); ++i) {
 			addSampler(asset.samplers[i], hostObjects.samplers[i]);
 		}
-
-		//defaults if none found
-		if (hostObjects.cameras.size() == 0) {
-			hostObjects.cameras.push_back(structs::host::H_Camera{
-				.projection = glm::perspectiveRH_ZO(45.0f, screenDimensions[0] / (float)screenDimensions[1], 0.00001f, 1024.0f),
-				.position = { 0.0f, 0.0f, -0.1f },
-				.forward = { 0.0f, 0.0f, 1.0f },
-				});
-		}
-		if (hostObjects.lights.size() == 0) {
-			hostObjects.lights.push_back(structs::Light{
-			.rotation = glm::f32vec3{2.755f, -0.286f, -1.269f}, //Points downwards and slightly in +X and +Z
-			.color = {1.0f, 1.0f, 0.9f},
-			.type = 0, //Directional
-			.intensity = 128.0f,
-			});
-		}
-
-		return hostObjects;
 	}
 }
