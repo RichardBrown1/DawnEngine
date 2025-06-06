@@ -21,6 +21,7 @@ namespace render {
 				wgpu::TextureFormat textureIdTextureFormat;
 
 				//for input bind group
+				std::vector<uint32_t>& stpIds;
 				std::vector<structs::SamplerTexturePair>& inputSTPs;
 				std::vector<wgpu::TextureView>& allTextureViews;
 				std::unordered_map<uint32_t, wgpu::Sampler>& allSamplers;

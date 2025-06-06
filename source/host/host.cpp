@@ -14,14 +14,15 @@ namespace host {
 	SceneResources::SceneResources(
 	const std::string& gltfDirectory,
 	const std::string& gltfFileName,
-  std::array<uint32_t, 2> screenDimensions) {
+  const std::array<uint32_t, 2> screenDimensions) {
 		fastgltf::Asset asset = gltf::getAsset(gltfDirectory, gltfFileName);
 		gltf::processAsset(*this, asset, screenDimensions, gltfDirectory);
-		
+		addDefaults(screenDimensions);
+		postProcessData();
 	};
 	
 	//defaults if none found
-	void SceneResources::addDefaults(std::array<uint32_t, 2> screenDimensions) {
+	void SceneResources::addDefaults(const std::array<uint32_t, 2> screenDimensions) {
 		if (cameras.size() == 0) {
 			cameras.push_back(structs::host::H_Camera{
 				.projection = glm::perspectiveRH_ZO(45.0f, screenDimensions[0] / (float)screenDimensions[1], 0.00001f, 1024.0f),

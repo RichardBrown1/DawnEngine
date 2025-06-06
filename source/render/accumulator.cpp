@@ -44,13 +44,13 @@ namespace render {
 				device::createBuffer(descriptor->wgpuContext, inputInfo, "input info", wgpu::BufferUsage::Uniform)
 			);
 		};
-		for (uint32_t i = 0; auto & stp : descriptor->inputSTPs) {
+		for (auto & stpId: descriptor->stpIds) {
+			structs::SamplerTexturePair stp = descriptor->inputSTPs.at(stpId);
 			insertInputBindGroup(
-				inputInfoBuffers[i],
+				inputInfoBuffers[stpId],
 				descriptor->allTextureViews[stp.textureIndex],
 				descriptor->allSamplers[stp.samplerIndex]
 			);
-			i++;
 		}
 	}
 

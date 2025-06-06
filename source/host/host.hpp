@@ -37,7 +37,7 @@ namespace host {
 		SceneResources(
 			const std::string& gltfDirectory,
 			const std::string& gltfFileName,
-			std::array<uint32_t, 2> screenDimensions
+			const std::array<uint32_t, 2> screenDimensions
 		);
 		device::SceneResources ToDevice(WGPUContext& wgpuContext);
 

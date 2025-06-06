@@ -80,6 +80,7 @@ Engine::Engine() {
 		.texCoordTextureFormat = _initialRender->texCoordTextureFormat,
 		.textureIdTextureView = _initialRender->baseColorTextureIdTextureView,
 		.textureIdTextureFormat = _initialRender->baseColorTextureIdTextureFormat, 
+		.stpIds = h_objects.baseColorStpIds,
 		.inputSTPs = h_objects.samplerTexturePairs,
 		.allTextureViews = _deviceSceneResources.textureViews,
 		.allSamplers = _deviceSceneResources.samplers,
