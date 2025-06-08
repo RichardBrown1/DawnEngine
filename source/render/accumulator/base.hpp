@@ -1,10 +1,9 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
-#include <fastgltf/types.hpp>
-#include "../structs/structs.hpp"
+#include "../../structs/structs.hpp"
 #include <string>
-#include "../wgpuContext/wgpuContext.hpp"
+#include "../../wgpuContext/wgpuContext.hpp"
 #include <dawn/webgpu_cpp.h>
 
 namespace render {
@@ -34,16 +33,15 @@ namespace render {
 		}
 	}
 
-	class Accumulator {
+	template <typename Derived>
+	class BaseAccumulator {
 	public:
-		Accumulator(WGPUContext* wgpuContext);
+		BaseAccumulator(WGPUContext* wgpuContext);
 		void generateGpuObjects(const render::accumulator::descriptor::GenerateGpuObjects* descriptor);
 		void doCommands(const render::accumulator::descriptor::DoCommands* descriptor);
 
 	private:
-		const wgpu::StringView BASE_COLOR_ACCUMULATOR_SHADER_LABEL = "base color accumulator shader";
-		const std::string BASE_COLOR_ACCUMULATOR_SHADER_PATH = "shaders/baseColorAccumulator_c.wgsl";
-		wgpu::ShaderModule _computeShaderModule;
+				wgpu::ShaderModule _computeShaderModule;
 
 		WGPUContext* _wgpuContext;
 
