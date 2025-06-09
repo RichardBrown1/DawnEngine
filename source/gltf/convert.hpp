@@ -29,8 +29,7 @@ namespace gltf {
 
 		void normalTextureInfo(
 			const std::optional<fastgltf::NormalTextureInfo>& texInfo, 
-			structs::TextureInfo& outTextureInfo, 
-			float& outScale 
+			structs::TextureInfo& outTextureInfo
 		)	{
 			if (texInfo.has_value()) {
 				const fastgltf::NormalTextureInfo& textureInfo = texInfo.value();
@@ -38,14 +37,12 @@ namespace gltf {
 					.index = static_cast<uint32_t>(textureInfo.textureIndex),
 					.texCoord = static_cast<uint32_t>(textureInfo.texCoordIndex),
 				};
-				outScale = textureInfo.scale;
 			}
 			else {
 				outTextureInfo = {
 					.index = UINT32_MAX,
 					.texCoord = UINT32_MAX,
 				};
-				outScale = 1.0f;
 			}
 		}
 

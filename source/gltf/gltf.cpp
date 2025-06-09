@@ -179,10 +179,12 @@ namespace {
 			inputMaterial.pbrData.baseColorTexture,
 			outputMaterial.pbrMetallicRoughness.baseColorTextureInfo
 		);
+		if (inputMaterial.normalTexture.has_value() && inputMaterial.normalTexture.value().scale != 1) {
+			LOG(WARNING) << "Normal Scale is unsupported";
+		}
 		gltf::convert::normalTextureInfo(
 			inputMaterial.normalTexture,
-			outputMaterial.normalTextureInfo,
-			outputMaterial.normalScale
+			outputMaterial.normalTextureInfo
 		);
 	}
 
