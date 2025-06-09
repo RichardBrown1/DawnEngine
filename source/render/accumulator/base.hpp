@@ -5,8 +5,8 @@
 #include <string>
 #include "../../wgpuContext/wgpuContext.hpp"
 #include <dawn/webgpu_cpp.h>
-#include "../../device/device.hpp" // Make sure this is included
-#include "../../enums.hpp"        // Make sure this is included
+#include "../../device/device.hpp"
+#include "../../enums.hpp"
 #include <array>
 #include <cstdint>
 
@@ -44,12 +44,6 @@ namespace render {
 
 	public:
 		void generateGpuObjects(const render::accumulator::descriptor::GenerateGpuObjects* descriptor) {
-			_computeShaderModule = device::createWGSLShaderModule(
-				_wgpuContext->device,
-				static_cast<Derived*>(this)->getAccumulatorShaderLabel(),
-				static_cast<Derived*>(this)->getAccumulatorShaderPath()
-			);
-
 			createAccumulatorBindGroupLayout(
 				descriptor->accumulatorTextureFormat,
 				descriptor->texCoordTextureFormat,
@@ -215,7 +209,7 @@ namespace render {
 		void createComputePipeline() {
 			const wgpu::PipelineLayout pipelineLayout = getPipelineLayout();
 			wgpu::ComputeState computeState = {
-				.module = _computeShaderModule,
+				.module = static_cast<Derived*>(this)->computeShaderModule,
 				.entryPoint = enums::EntryPoint::COMPUTE,
 			};
 
