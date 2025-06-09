@@ -70,7 +70,7 @@ Engine::Engine() {
 	};
 	_shadowRender->generateGpuObjects(&shadowGenerateGpuObjectsDescriptor);
 
-	render::Accumulator* baseColorAccumulatorRender = new render::Accumulator(&_wgpuContext);
+	render::FourChannel* baseColorAccumulatorRender = new render::FourChannel(&_wgpuContext);
 	_baseColorAccumulatorRender = baseColorAccumulatorRender;
 	const render::accumulator::descriptor::GenerateGpuObjects baseColorGenerateGpuObjectsDescriptor = {
 		.wgpuContext = _wgpuContext,

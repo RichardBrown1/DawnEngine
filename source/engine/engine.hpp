@@ -3,7 +3,7 @@
 #include "../wgpuContext/wgpuContext.hpp"
 #include "../render/initial.hpp"
 #include "../render/shadow.hpp"
-#include "../render/accumulator.hpp"
+#include "../render/accumulator/fourChannel.hpp"
 #include "../render/ultimate.hpp"
 #include "../render/toSurface.hpp"
 
@@ -16,7 +16,7 @@ private:
 	device::SceneResources _deviceSceneResources;
 	render::Initial* _initialRender;
 	render::Shadow* _shadowRender;
-	render::Accumulator* _baseColorAccumulatorRender;
+	render::FourChannel* _baseColorAccumulatorRender;
 	render::Ultimate* _ultimateRender;
 	render::ToSurface* _toSurfaceRender;
 	std::vector<structs::host::DrawCall> _drawCalls;
