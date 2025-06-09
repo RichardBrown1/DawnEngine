@@ -8,10 +8,15 @@
 #include "../render/toSurface.hpp"
 
 class Engine {
+
 public:
 	Engine();
 	void run();
+
 private:
+	const std::string gltfDirectory = "models/avocado/"; //must end with "/"
+	const std::string gltfFileName = "Avocado2.gltf";
+
 	WGPUContext _wgpuContext;
 	device::SceneResources _deviceSceneResources;
 	render::Initial* _initialRender;
