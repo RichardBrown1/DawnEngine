@@ -17,6 +17,7 @@ private:
 	render::Initial* _initialRender;
 	render::Shadow* _shadowRender;
 	render::FourChannel* _baseColorAccumulatorRender;
+	render::FourChannel* _normalAccumulatorRender;
 	render::Ultimate* _ultimateRender;
 	render::ToSurface* _toSurfaceRender;
 	std::vector<structs::host::DrawCall> _drawCalls;
