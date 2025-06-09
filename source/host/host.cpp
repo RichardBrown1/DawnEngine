@@ -42,9 +42,18 @@ namespace host {
 
 	void SceneResources::postProcessData() {
 		for (auto& m : materials) {
-			baseColorStpIds.emplace_back(m.pbrMetallicRoughness.baseColorTextureInfo.index);
-			metallicRoughnessStpIds.emplace_back(m.pbrMetallicRoughness.metallicRoughnessTextureInfo.index);
-			normalStpIds.emplace_back(m.normalTextureInfo.index);
+			const uint32_t baseColorStpId = m.pbrMetallicRoughness.baseColorTextureInfo.index;
+			if (baseColorStpId != UINT32_MAX) {
+				baseColorStpIds.emplace_back(baseColorStpId);
+			}
+			const uint32_t metallicRoughnessStpId = m.pbrMetallicRoughness.baseColorTextureInfo.index;
+			if (metallicRoughnessStpId != UINT32_MAX) {
+				metallicRoughnessStpIds.emplace_back(metallicRoughnessStpId);
+			}
+			const uint32_t normalStpId = m.normalTextureInfo.index;
+			if (normalStpId != UINT32_MAX) {
+				normalStpIds.emplace_back(normalStpId);
+			}
 		}
 	}
 

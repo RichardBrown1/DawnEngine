@@ -14,8 +14,8 @@ public:
 	void run();
 
 private:
-	const std::string gltfDirectory = "models/avocado/"; //must end with "/"
-	const std::string gltfFileName = "Avocado2.gltf";
+	const std::string gltfDirectory = "models/cornellBox/"; //must end with "/"
+	const std::string gltfFileName = "cornellbox.gltf";
 
 	WGPUContext _wgpuContext;
 	device::SceneResources _deviceSceneResources;
