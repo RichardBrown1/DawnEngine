@@ -30,7 +30,7 @@ namespace render {
 		void doCommands(const render::lighting::descriptor::DoCommands* descriptor);
 
 		wgpu::TextureView lightTextureView;
-		wgpu::TextureFormat lightFormat = wgpu::TextureFormat::RGBA32Float;
+		wgpu::TextureFormat lightFormat = wgpu::TextureFormat::R32Uint;
 
 	private:
 		const std::string _accumulatorTextureViewLabel = "light accumulator ";

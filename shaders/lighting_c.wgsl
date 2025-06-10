@@ -18,11 +18,11 @@ struct Light {
 
 override lightsLength = 0;
 
-@group(0) @binding(0) var accumulatorTexture: texture_storage_2d<rgba32float, write>;
+@group(0) @binding(0) var accumulatorTexture: texture_storage_2d<r32uint, read_write>;
 @group(0) @binding(1) var worldPositionTexture: texture_storage_2d<rgba32float, read>;
 @group(0) @binding(2) var normalTexture: texture_storage_2d<rgba32float, read>;
 
-@group(1) @binding(0) var<uniform> lights: array<Light, 5>;
+@group(1) @binding(0) var<uniform> light: Light;
 
 
 
@@ -55,25 +55,24 @@ fn spotLight(light:Light, normal:vec3<f32>, worldPosition:vec3<f32>) -> vec3<f32
 
 @compute @workgroup_size(1, 1, 1)
 fn cs_main(@builtin(global_invocation_id) GlobalInvocationID: vec3<u32>) {
+    var accumulator : vec4<f32> = unpack4x8unorm(textureLoad(accumulatorTexture, GlobalInvocationID.xy));
     let worldPosition : vec3<f32> = textureLoad(worldPositionTexture, GlobalInvocationID.xy).xyz;
     let normal : vec3<f32> = textureLoad(normalTexture, GlobalInvocationID.xy).xyz;
-    var result : vec3<f32> = vec3<f32>(0.0, 0.0, 0.0);
 
-    for(var i:u32 = 0; i < lightsLength; i++) {
-        let light = lights[i];
-        switch(light.lightType) {
-            case LIGHTTYPE_DIRECTIONAL {
-                result = result + directionalLight(light, normal);
-            }
-            case LIGHTTYPE_POINT {
-                result = result + pointLight(light, normal, worldPosition);
-            }
-            case LIGHTTYPE_SPOT {
-                result = result + spotLight(light, normal, worldPosition);
-            }
-            case default: {}
+    switch(light.lightType) {
+        case LIGHTTYPE_DIRECTIONAL {
+            accumulator = accumulator + vec4<f32>(directionalLight(light, normal), 1.0f);
         }
+        case LIGHTTYPE_POINT {
+            accumulator = accumulator + vec4<f32>(pointLight(light, normal), 1.0f);
+        }
+        case LIGHTTYPE_SPOT {
+            accumulator = accumulator + vec4<f32>(spotLight(light, normal), 1.0f);
+        }
+        case default: {}
     }
+    let result : u32 = pack4x8unorm(accumulator);
+    textureStore(accumulatorTexture, GlobalInvocationID.xy, result);
 }
 
 fn getNDotL(normal:vec3<f32>, lightDir:vec3<f32>) -> f32 {
