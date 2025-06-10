@@ -9,7 +9,6 @@ namespace render {
 	namespace shadow {
 		namespace descriptor {
 			struct GenerateGpuObjects {
-				wgpu::Extent2D screenDimensions;
 				wgpu::Buffer& transformBuffer;
 				wgpu::Buffer& lightBuffer;
 			};
