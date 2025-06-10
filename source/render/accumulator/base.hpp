@@ -14,8 +14,6 @@ namespace render {
 	namespace accumulator {
 		namespace descriptor {
 			struct GenerateGpuObjects {
-				WGPUContext& wgpuContext;
-
 				wgpu::TextureView& accumulatorTextureView;
 				wgpu::TextureFormat accumulatorTextureFormat;
 				wgpu::TextureView& texCoordTextureView;
@@ -32,7 +30,6 @@ namespace render {
 
 			struct DoCommands {
 				wgpu::CommandEncoder& commandEncoder;
-				wgpu::Extent2D& screenDimensions;
 			};
 		}
 	}
@@ -64,7 +61,7 @@ namespace render {
 					.stpIndex = i
 				};
 				inputInfoBuffers.emplace_back(
-					device::createBuffer(descriptor->wgpuContext, inputInfo, "input info", wgpu::BufferUsage::Uniform)
+					device::createBuffer(*_wgpuContext, inputInfo, "input info", wgpu::BufferUsage::Uniform)
 				);
 			};
 			for (auto& stpId : descriptor->stpIds) {
@@ -86,7 +83,7 @@ namespace render {
 			computePassEncoder.SetBindGroup(0, _accumulatorBindGroup);
 			for (auto& bg : _inputBindGroups) {
 				computePassEncoder.SetBindGroup(1, bg);
-				computePassEncoder.DispatchWorkgroups(descriptor->screenDimensions.width, descriptor->screenDimensions.height);
+				computePassEncoder.DispatchWorkgroups(_wgpuContext->screenDimensions.width, _wgpuContext->screenDimensions.height);
 			}
 			computePassEncoder.End();
 		}
