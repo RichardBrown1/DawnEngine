@@ -55,10 +55,8 @@ Engine::Engine() {
 	};
 	_initialRender->generateGpuObjects(&initialGenerateGpuObjectsDescriptor);
 
-	render::FourChannel* baseColorAccumulatorRender = new render::FourChannel(&_wgpuContext);
-	_baseColorAccumulatorRender = baseColorAccumulatorRender;
+	_baseColorAccumulatorRender = new render::FourChannel(&_wgpuContext);
 	const render::accumulator::descriptor::GenerateGpuObjects baseColorGenerateGpuObjectsDescriptor = {
-		.wgpuContext = _wgpuContext,
 		.accumulatorTextureView = _initialRender->baseColorTextureView,
 		.accumulatorTextureFormat = _initialRender->baseColorTextureFormat,
 		.texCoordTextureView = _initialRender->texCoordTextureView,
@@ -72,10 +70,8 @@ Engine::Engine() {
 		};
 	_baseColorAccumulatorRender->generateGpuObjects(&baseColorGenerateGpuObjectsDescriptor);
 	
-	render::FourChannel* normalAccumulatorRender = new render::FourChannel(&_wgpuContext);
-	_normalAccumulatorRender = normalAccumulatorRender;
+	_normalAccumulatorRender = new render::FourChannel(&_wgpuContext);
 	const render::accumulator::descriptor::GenerateGpuObjects normalGenerateGpuObjectsDescriptor = {
-		.wgpuContext = _wgpuContext,
 		.accumulatorTextureView = _initialRender->normalTextureView,
 		.accumulatorTextureFormat = _initialRender->normalTextureFormat,
 		.texCoordTextureView = _initialRender->texCoordTextureView,
@@ -89,17 +85,23 @@ Engine::Engine() {
 		};
 	_normalAccumulatorRender->generateGpuObjects(&normalGenerateGpuObjectsDescriptor);
 
+	_lightingRender = new render::Lighting(&_wgpuContext);
+	const render::lighting::descriptor::GenerateGpuObjects lightingGenerateGpuObjectsDescriptor = {
+		.normalTextureFormat = _initialRender->normalTextureFormat,
+		.normalTextureView = _initialRender->normalTextureView,
+		.lights = h_objects.lights,
+	};
+	_lightingRender->generateGpuObjects(&lightingGenerateGpuObjectsDescriptor);
+
 	render::Shadow* shadowRender = new render::Shadow(&_wgpuContext);
 	_shadowRender = shadowRender;
 	const render::shadow::descriptor::GenerateGpuObjects shadowGenerateGpuObjectsDescriptor = {
-		.screenDimensions = _wgpuContext.screenDimensions,
 		.transformBuffer = _deviceSceneResources.transforms,
 		.lightBuffer = _deviceSceneResources.lights,
 	};
 	_shadowRender->generateGpuObjects(&shadowGenerateGpuObjectsDescriptor);
 
-	render::Ultimate* ultimateRender = new render::Ultimate(&_wgpuContext);
-	_ultimateRender = ultimateRender;
+	_ultimateRender = new render::Ultimate(&_wgpuContext);
 	const render::ultimate::descriptor::GenerateGpuObjects ultimateGenerateGpuObjectsDescriptor = {
 		.baseColorTextureFormat = initialRender->baseColorTextureFormat,
 		.baseColorTextureView = initialRender->baseColorTextureView,
@@ -170,15 +172,18 @@ void Engine::draw() {
 
 	const render::accumulator::descriptor::DoCommands doBaseColorAccumulatorRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,
-		.screenDimensions = _wgpuContext.screenDimensions,
 	};
 	_baseColorAccumulatorRender->doCommands(&doBaseColorAccumulatorRenderCommandsDescriptor);
 
 	const render::accumulator::descriptor::DoCommands doNormalAccumulatorRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,
-		.screenDimensions = _wgpuContext.screenDimensions,
 	};
 	_normalAccumulatorRender->doCommands(&doNormalAccumulatorRenderCommandsDescriptor);
+
+	const render::lighting::descriptor::DoCommands doLightingAccumulatorRenderCommandsDescriptor = {
+		.commandEncoder = commandEncoder,
+	};
+	_lightingRender->doCommands(&doLightingAccumulatorRenderCommandsDescriptor);
 
 	const render::shadow::descriptor::DoCommands doShadowRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,

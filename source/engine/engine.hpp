@@ -6,6 +6,7 @@
 #include "../render/accumulator/fourChannel.hpp"
 #include "../render/ultimate.hpp"
 #include "../render/toSurface.hpp"
+#include "../render/lighting.hpp"
 
 class Engine {
 
@@ -23,6 +24,7 @@ private:
 	render::Shadow* _shadowRender;
 	render::FourChannel* _baseColorAccumulatorRender;
 	render::FourChannel* _normalAccumulatorRender;
+	render::Lighting* _lightingRender;
 	render::Ultimate* _ultimateRender;
 	render::ToSurface* _toSurfaceRender;
 	std::vector<structs::host::DrawCall> _drawCalls;

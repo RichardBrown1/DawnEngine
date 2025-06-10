@@ -1,3 +1,4 @@
+#pragma once
 #include "lighting.hpp"
 #include "../device/device.hpp"
 #include "../enums.hpp"
@@ -13,11 +14,17 @@ namespace render {
 		createInputBindGroupLayout();
 		createComputePipeline();
 
-		createAccumulatorBindGroup(descriptor->normalTextureView);
+		createAccumulatorBindGroup(
+			descriptor->normalTextureView
+		);
 		
-		insertInputBindGroup()
-
-
+		std::vector<wgpu::Buffer> lightBuffers;
+		for (auto& light : descriptor->lights) {
+			lightBuffers.emplace_back(device::createBuffer(*_wgpuContext, light, "lights", wgpu::BufferUsage::Uniform));
+		}
+		for (auto& buffer : lightBuffers) {
+			insertInputBindGroup(buffer);
+		}
 	}
 
 	void Lighting::doCommands(const render::lighting::descriptor::DoCommands* descriptor) {
@@ -40,7 +47,7 @@ namespace render {
 			.visibility = wgpu::ShaderStage::Compute,
 			.storageTexture = {
 				.access = wgpu::StorageTextureAccess::WriteOnly,
-				.format = accumulatorFormat,
+				.format = lightFormat,
 				.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
 		};
@@ -118,12 +125,11 @@ namespace render {
 	}
 
 	void Lighting::createAccumulatorBindGroup(
-		const wgpu::TextureView& accumulatorTextureView,
 		const wgpu::TextureView& normalTextureView
 	) {
 		const wgpu::BindGroupEntry accumulatorBindGroupEntry = {
 			.binding = 0,
-			.textureView = accumulatorTextureView,
+			.textureView = lightTextureView,
 		};
 		const wgpu::BindGroupEntry normalBindGroupEntry = {
 			.binding = 1,
