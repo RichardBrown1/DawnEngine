@@ -101,7 +101,6 @@ Engine::Engine() {
 	render::Ultimate* ultimateRender = new render::Ultimate(&_wgpuContext);
 	_ultimateRender = ultimateRender;
 	const render::ultimate::descriptor::GenerateGpuObjects ultimateGenerateGpuObjectsDescriptor = {
-		.screenDimensions = _wgpuContext.screenDimensions,
 		.baseColorTextureFormat = initialRender->baseColorTextureFormat,
 		.baseColorTextureView = initialRender->baseColorTextureView,
 		.shadowMapTextureView = shadowRender->shadowMapTextureView,

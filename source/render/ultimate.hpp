@@ -12,7 +12,6 @@ namespace render {
 	namespace ultimate::descriptor {
 
 		struct GenerateGpuObjects {
-			wgpu::Extent2D screenDimensions;
 			wgpu::TextureFormat baseColorTextureFormat;
 			wgpu::TextureView& baseColorTextureView;
 			wgpu::TextureView& shadowMapTextureView;
