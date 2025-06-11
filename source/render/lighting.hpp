@@ -12,6 +12,8 @@ namespace render {
 	namespace lighting::descriptor {
 
 		struct GenerateGpuObjects {
+			wgpu::TextureFormat worldTextureFormat;
+			wgpu::TextureView& worldTextureView;
 			wgpu::TextureFormat normalTextureFormat;
 			wgpu::TextureView& normalTextureView;
 
@@ -29,8 +31,8 @@ namespace render {
 		void generateGpuObjects(const render::lighting::descriptor::GenerateGpuObjects* descriptor);
 		void doCommands(const render::lighting::descriptor::DoCommands* descriptor);
 
-		wgpu::TextureView lightTextureView;
-		wgpu::TextureFormat lightFormat = wgpu::TextureFormat::R32Uint;
+		wgpu::TextureView lightingTextureView;
+		wgpu::TextureFormat lightingTextureFormat = wgpu::TextureFormat::R32Uint;
 
 	private:
 		const std::string _accumulatorTextureViewLabel = "light accumulator ";
@@ -48,11 +50,14 @@ namespace render {
 		std::vector<wgpu::BindGroup> _inputBindGroups;
 
 		wgpu::PipelineLayout getPipelineLayout();
-		void createAccumulatorBindGroupLayout(wgpu::TextureFormat normalTextureFormat);
+		void createAccumulatorBindGroupLayout(
+			const wgpu::TextureFormat worldPositionTextureFormat,
+			const wgpu::TextureFormat normalTextureFormat);
 		void createInputBindGroupLayout();
 		void createComputePipeline();
 
 		void createAccumulatorBindGroup(
+			const wgpu::TextureView& worldPositionTextureView,
 			const wgpu::TextureView& normalTextureView
 		);
 		void insertInputBindGroup(

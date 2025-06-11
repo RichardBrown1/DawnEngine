@@ -2,6 +2,7 @@
 #include "lighting.hpp"
 #include "../device/device.hpp"
 #include "../enums.hpp"
+#include "../texture/texture.hpp"
 
 //TODO Create render pipeline to clear the storage texture
 namespace render {
@@ -10,11 +11,25 @@ namespace render {
 	};
 
 	void Lighting::generateGpuObjects(const render::lighting::descriptor::GenerateGpuObjects* descriptor) {
-		createAccumulatorBindGroupLayout(descriptor->normalTextureFormat);
+		createAccumulatorBindGroupLayout(
+			descriptor->worldTextureFormat,
+			descriptor->normalTextureFormat
+		);
 		createInputBindGroupLayout();
 		createComputePipeline();
 
+		const texture::descriptor::CreateTextureView lightingTextureViewDescriptor = {
+			.label = "lighting",
+			.device = &_wgpuContext->device,
+			.textureUsage = wgpu::TextureUsage::StorageBinding,
+			.textureDimensions = _wgpuContext->screenDimensions,
+			.textureFormat = lightingTextureFormat,
+			.outputTextureView = lightingTextureView,
+		};
+		texture::createTextureView(&lightingTextureViewDescriptor);
+
 		createAccumulatorBindGroup(
+			descriptor->worldTextureView,
 			descriptor->normalTextureView
 		);
 		
@@ -41,19 +56,31 @@ namespace render {
 		computePassEncoder.End();
 	}
 
-	void Lighting::createAccumulatorBindGroupLayout(wgpu::TextureFormat normalTextureFormat) {
+	void Lighting::createAccumulatorBindGroupLayout(
+		const wgpu::TextureFormat worldPositionTextureFormat,
+	  const wgpu::TextureFormat normalTextureFormat) {
 		const wgpu::BindGroupLayoutEntry accumulatorBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Compute,
 			.storageTexture = {
-				.access = wgpu::StorageTextureAccess::WriteOnly,
-				.format = lightFormat,
+				.access = wgpu::StorageTextureAccess::ReadWrite,
+				.format = lightingTextureFormat,
 				.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
 		};
 
-		const wgpu::BindGroupLayoutEntry  normalBindGroupLayoutEntry = {
+		const wgpu::BindGroupLayoutEntry worldPositionBindGroupLayoutEntry = {
 			.binding = 1,
+			.visibility = wgpu::ShaderStage::Compute,
+			.storageTexture = {
+				.access = wgpu::StorageTextureAccess::ReadOnly,
+				.format = worldPositionTextureFormat,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
+			}
+		};
+
+		const wgpu::BindGroupLayoutEntry  normalBindGroupLayoutEntry = {
+			.binding = 2,
 			.visibility = wgpu::ShaderStage::Compute,
 			.storageTexture = {
 				.access = wgpu::StorageTextureAccess::ReadOnly,
@@ -62,8 +89,9 @@ namespace render {
 			},
 		};
 
-		std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
+		std::array<wgpu::BindGroupLayoutEntry, 3> bindGroupLayoutEntries = {
 			accumulatorBindGroupLayoutEntry,
+			worldPositionBindGroupLayoutEntry,
 			normalBindGroupLayoutEntry,
 		};
 
@@ -125,19 +153,25 @@ namespace render {
 	}
 
 	void Lighting::createAccumulatorBindGroup(
+		const wgpu::TextureView& worldPositionTextureView,
 		const wgpu::TextureView& normalTextureView
 	) {
 		const wgpu::BindGroupEntry accumulatorBindGroupEntry = {
 			.binding = 0,
-			.textureView = lightTextureView,
+			.textureView = lightingTextureView,
+		};
+		const wgpu::BindGroupEntry worldPositionBindGroupEntry = {
+			.binding = 1,
+			.textureView = worldPositionTextureView,
 		};
 		const wgpu::BindGroupEntry normalBindGroupEntry = {
-			.binding = 1,
+			.binding = 2,
 			.textureView = normalTextureView,
 		};
 
-		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = {
 			accumulatorBindGroupEntry,
+			worldPositionBindGroupEntry,
 			normalBindGroupEntry,
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {

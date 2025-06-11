@@ -87,6 +87,8 @@ Engine::Engine() {
 
 	_lightingRender = new render::Lighting(&_wgpuContext);
 	const render::lighting::descriptor::GenerateGpuObjects lightingGenerateGpuObjectsDescriptor = {
+		.worldTextureFormat = _initialRender->worldPositionTextureFormat,
+		.worldTextureView = _initialRender->worldPositionTextureView,
 		.normalTextureFormat = _initialRender->normalTextureFormat,
 		.normalTextureView = _initialRender->normalTextureView,
 		.lights = h_objects.lights,
