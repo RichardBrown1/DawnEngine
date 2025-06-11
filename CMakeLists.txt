@@ -61,12 +61,16 @@ file(MAKE_DIRECTORY ${SHADERS_DEST_DIR})
 add_custom_target(Shaders)
 
 #WGSL
-#file(GLOB_RECURSE WGSL_VERTEX_SHADER_FILES "shaders/*.wgsl")
-file(
-    COPY "shaders/" 
-    DESTINATION ${SHADERS_DEST_DIR} 
-    PATTERN "*.wgsl"
-)
+file(GLOB_RECURSE WGSL_SHADER_FILES "shaders/*.wgsl")
+foreach(FILE ${WGSL_SHADER_FILES})
+    add_custom_command(
+        TARGET Shaders
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${FILE}
+        ${SHADERS_DEST_DIR}
+        COMMENT "WGSL ${FILE}"
+    )
+endforeach(FILE)
 
 #HLSL -> Spirv Shaders
 file(GLOB_RECURSE HLSL_VERTEX_SHADER_FILES "shaders/*_v.hlsl")
