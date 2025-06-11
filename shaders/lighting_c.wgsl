@@ -56,7 +56,6 @@ fn cs_main(@builtin(global_invocation_id) GlobalInvocationID: vec3<u32>) {
     var accumulator : vec4<f32> = unpack4x8unorm(loadAccumulator.x);
     let worldPosition : vec3<f32> = textureLoad(worldPositionTexture, GlobalInvocationID.xy).xyz;
     let normal : vec3<f32> = textureLoad(normalTexture, GlobalInvocationID.xy).xyz;
-
     switch(light.lightType) {
         case LIGHTTYPE_DIRECTIONAL {
             accumulator = accumulator + vec4<f32>(directionalLight(light, normal), 1.0f);
@@ -107,7 +106,7 @@ fn computeLightDirection(eulerRadians: vec3<f32>) -> vec3<f32> {
     let finalRot = rotZ * (rotY * rotX);
 
     // Default forward direction in left-handed systems: positive Z
-    let forward = vec3<f32>(0.0, 0.0, 1.0);
+    let forward = vec3<f32>(0.0, 0.0, -1.0); //TODO: revisit this should be vec3<f32>(0.0, 0.0, 1.0);
 
     return normalize(finalRot * forward);
 }
