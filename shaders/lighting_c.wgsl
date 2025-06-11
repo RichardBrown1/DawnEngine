@@ -16,14 +16,11 @@ struct Light {
     outerConeAngle : f32,
 };
 
-override lightsLength = 0;
-
 @group(0) @binding(0) var accumulatorTexture: texture_storage_2d<r32uint, read_write>;
 @group(0) @binding(1) var worldPositionTexture: texture_storage_2d<rgba32float, read>;
 @group(0) @binding(2) var normalTexture: texture_storage_2d<rgba32float, read>;
 
 @group(1) @binding(0) var<uniform> light: Light;
-
 
 
 fn directionalLight(light:Light, normal:vec3<f32>) -> vec3<f32> {
@@ -113,12 +110,4 @@ fn computeLightDirection(eulerRadians: vec3<f32>) -> vec3<f32> {
     let forward = vec3<f32>(0.0, 0.0, 1.0);
 
     return normalize(finalRot * forward);
-}
-
-fn invertTranspose(m: mat4x4<f32>) -> mat4x4<f32> {
-    const inverseTransposeMultiplier: mat4x4<f32> = mat4x4<f32>(1.0f, 0.0f, 0.0f, 0.0f,
-                                                                0.0f, 1.0f, 0.0f, 0.0f,
-                                                                0.0f, 0.0f, 1.0f, 0.0f, 
-                                                                0.0f, 0.0f, 0.0f, 1.0f);
-    return (inverseTransposeMultiplier * m);
 }
