@@ -55,7 +55,8 @@ fn spotLight(light:Light, normal:vec3<f32>, worldPosition:vec3<f32>) -> vec3<f32
 
 @compute @workgroup_size(1, 1, 1)
 fn cs_main(@builtin(global_invocation_id) GlobalInvocationID: vec3<u32>) {
-    var accumulator : vec4<f32> = unpack4x8unorm(textureLoad(accumulatorTexture, GlobalInvocationID.xy));
+    let loadAccumulator : vec4<u32> = (textureLoad(accumulatorTexture, GlobalInvocationID.xy));
+    var accumulator : vec4<f32> = unpack4x8unorm(loadAccumulator.x);
     let worldPosition : vec3<f32> = textureLoad(worldPositionTexture, GlobalInvocationID.xy).xyz;
     let normal : vec3<f32> = textureLoad(normalTexture, GlobalInvocationID.xy).xyz;
 
@@ -64,15 +65,15 @@ fn cs_main(@builtin(global_invocation_id) GlobalInvocationID: vec3<u32>) {
             accumulator = accumulator + vec4<f32>(directionalLight(light, normal), 1.0f);
         }
         case LIGHTTYPE_POINT {
-            accumulator = accumulator + vec4<f32>(pointLight(light, normal), 1.0f);
+            accumulator = accumulator + vec4<f32>(pointLight(light, normal, worldPosition), 1.0f);
         }
         case LIGHTTYPE_SPOT {
-            accumulator = accumulator + vec4<f32>(spotLight(light, normal), 1.0f);
+            accumulator = accumulator + vec4<f32>(spotLight(light, normal, worldPosition), 1.0f);
         }
         case default: {}
     }
     let result : u32 = pack4x8unorm(accumulator);
-    textureStore(accumulatorTexture, GlobalInvocationID.xy, result);
+    textureStore(accumulatorTexture, GlobalInvocationID.xy, vec4<u32>(result, result, result, result));
 }
 
 fn getNDotL(normal:vec3<f32>, lightDir:vec3<f32>) -> f32 {
