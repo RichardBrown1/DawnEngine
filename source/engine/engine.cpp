@@ -105,9 +105,11 @@ Engine::Engine() {
 
 	_ultimateRender = new render::Ultimate(&_wgpuContext);
 	const render::ultimate::descriptor::GenerateGpuObjects ultimateGenerateGpuObjectsDescriptor = {
-		.baseColorTextureFormat = initialRender->baseColorTextureFormat,
-		.baseColorTextureView = initialRender->baseColorTextureView,
-		.shadowMapTextureView = shadowRender->shadowMapTextureView,
+		.baseColorTextureFormat = _initialRender->baseColorTextureFormat,
+		.baseColorTextureView = _initialRender->baseColorTextureView,
+		.lightingTextureFormat = _lightingRender->lightingTextureFormat,
+		.lightingTextureView = _lightingRender->lightingTextureView,
+		.shadowMapTextureView = _shadowRender->shadowMapTextureView,
 	};
 	_ultimateRender->generateGpuObjects(&ultimateGenerateGpuObjectsDescriptor);
 

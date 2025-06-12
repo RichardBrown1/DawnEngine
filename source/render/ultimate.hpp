@@ -14,6 +14,9 @@ namespace render {
 		struct GenerateGpuObjects {
 			wgpu::TextureFormat baseColorTextureFormat;
 			wgpu::TextureView& baseColorTextureView;
+			wgpu::TextureFormat lightingTextureFormat;
+			wgpu::TextureView& lightingTextureView;
+
 			wgpu::TextureView& shadowMapTextureView;
 		};
 
@@ -45,8 +48,14 @@ namespace render {
 		wgpu::BindGroup _bindGroup;
 
 		wgpu::PipelineLayout getPipelineLayout();
-		void createBindGroupLayout(wgpu::TextureFormat baseColorTextureFormat);
+		void createBindGroupLayout(
+			wgpu::TextureFormat baseColorTextureFormat,
+			wgpu::TextureFormat lightingTextureFormat
+		);
 		void createPipeline();
-		void createBindGroup(wgpu::TextureView& baseColorTextureView);
+		void createBindGroup(
+			wgpu::TextureView& baseColorTextureView,
+			wgpu::TextureView& lightingTextureView
+		);
 	};
 }

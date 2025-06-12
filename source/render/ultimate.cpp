@@ -21,10 +21,14 @@ namespace render {
 			.outputTextureView = ultimateTextureView,
 		};
 		texture::createTextureView(&createTextureViewDescriptor);
-		createBindGroupLayout(descriptor->baseColorTextureFormat);
+		createBindGroupLayout(
+			descriptor->baseColorTextureFormat,
+			descriptor->lightingTextureFormat
+		);
 		createPipeline();
 		createBindGroup(
-			descriptor->baseColorTextureView
+			descriptor->baseColorTextureView,
+			descriptor->lightingTextureView
 		);
 	};
 
@@ -55,8 +59,9 @@ namespace render {
 	}
 
 	void Ultimate::createBindGroup(
-		wgpu::TextureView& baseColorTextureView
-	//	wgpu::TextureView& shadowMapTextureView
+		wgpu::TextureView& baseColorTextureView,
+		wgpu::TextureView& lightingTextureView
+		//	wgpu::TextureView& shadowMapTextureView
 	) {
 		const wgpu::BindGroupEntry ultimateBindGroupEntry = {
 			.binding = 0,
@@ -66,10 +71,15 @@ namespace render {
 			.binding = 1,
 			.textureView = baseColorTextureView,
 		};
+		const wgpu::BindGroupEntry lightingBindGroupEntry = {
+			.binding = 2,
+			.textureView = lightingTextureView,
+		};
 
-		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = {
 			ultimateBindGroupEntry,
 			baseColorBindGroupEntry,
+			lightingBindGroupEntry,
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 			.label = "ultimate bind group",
@@ -80,7 +90,10 @@ namespace render {
 		_bindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
 	}
 
-	void Ultimate::createBindGroupLayout(wgpu::TextureFormat baseColorTextureFormat) {
+	void Ultimate::createBindGroupLayout(
+		wgpu::TextureFormat baseColorTextureFormat,
+		wgpu::TextureFormat lightingTextureFormat
+	) {
 		const wgpu::BindGroupLayoutEntry ultimateBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Compute,
@@ -101,9 +114,20 @@ namespace render {
 			},
 		};
 
-		std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
+		const wgpu::BindGroupLayoutEntry lightingBindGroupLayoutEntry = {
+			.binding = 2,
+			.visibility = wgpu::ShaderStage::Compute,
+			.storageTexture = {
+				.access = wgpu::StorageTextureAccess::ReadOnly,
+				.format = lightingTextureFormat,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
+			},
+		};
+
+		std::array<wgpu::BindGroupLayoutEntry, 3> bindGroupLayoutEntries = {
 			ultimateBindGroupLayoutEntry,
 			baseColorBindGroupLayoutEntry,
+			lightingBindGroupLayoutEntry,
 		};
 
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
