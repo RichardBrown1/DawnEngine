@@ -120,6 +120,14 @@ Engine::Engine() {
 		.surfaceTextureFormat = _wgpuContext.surfaceFormat,
 	};
 	_toSurfaceRender->generateGpuObjects(&toSurfaceGenerateGpuObjectsDescriptor);
+
+	render::Clear* clearLightingRender = new render::Clear(&_wgpuContext);
+	_clearLightingRender = clearLightingRender;
+	const render::clear::descriptor::GenerateGpuObjects clearLightingRenderDescriptor = {
+		.textureFormat = _lightingRender->lightingTextureFormat,
+		.textureView = _lightingRender->lightingTextureView,
+	};
+	_clearLightingRender->generateGpuObjects(&clearLightingRenderDescriptor);
 }
 
 void Engine::run() {
@@ -165,6 +173,11 @@ void Engine::draw() {
 		.label = "My command encoder"
 	};
 	wgpu::CommandEncoder commandEncoder = _wgpuContext.device.CreateCommandEncoder(&commandEncoderDescriptor);
+
+	const render::clear::descriptor::DoCommands doLightingClearRenderCommandsDescriptor = {
+		.commandEncoder = commandEncoder,
+	};
+	_clearLightingRender->doCommands(&doLightingClearRenderCommandsDescriptor);
 
 	const render::initial::descriptor::DoCommands doInitialRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,

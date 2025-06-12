@@ -7,6 +7,7 @@
 #include "../render/ultimate.hpp"
 #include "../render/toSurface.hpp"
 #include "../render/lighting.hpp"
+#include "../render/clear.hpp"
 
 class Engine {
 
@@ -27,6 +28,7 @@ private:
 	render::Lighting* _lightingRender;
 	render::Ultimate* _ultimateRender;
 	render::ToSurface* _toSurfaceRender;
+	render::Clear* _clearLightingRender;
 	std::vector<structs::host::DrawCall> _drawCalls;
 
 	void draw();
