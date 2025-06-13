@@ -9,6 +9,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <unordered_map>
 #include <dawn/webgpu_cpp.h>
+#include <format>
 
 namespace host {
 	SceneResources::SceneResources(
@@ -85,12 +86,17 @@ namespace host {
 			"instance properties",
 			wgpu::BufferUsage::Storage
 		);
-		d_objects.lights = device::createBuffer<structs::Light>(
-			wgpuContext,
-			this->lights,
-			"lights",
-			wgpu::BufferUsage::Storage
-		);
+		for (uint32_t i = 0; auto & light : this->lights) {
+			const std::string lightLabel = std::format("light {0}", i);
+			d_objects.lights.emplace_back(
+				device::createBuffer(
+					wgpuContext,
+					light,
+					lightLabel,
+					wgpu::BufferUsage::Uniform)
+			);
+			++i;
+		}
 		d_objects.materials = device::createBuffer<structs::Material>(
 			wgpuContext,
 			this->materials,

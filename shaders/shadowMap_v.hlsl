@@ -1,6 +1,6 @@
 #include "shadowMap.hlsli"
 StructuredBuffer<float4x4> transforms : register(t0, space0);
-StructuredBuffer<Light> lights : register(t1, space0);
+ConstantBuffer<Light> light : register(b1, space0);
 
 struct VSInput
 {
@@ -14,7 +14,7 @@ VSOutput vs_main(VSInput input, uint VertexIndex : SV_VertexID, uint InstanceInd
     VSOutput output = (VSOutput) 0;    
     
     output.Position = (float3) mul(transforms[InstanceIndex], float4(input.Position, 1.0));
-    output.ClipPosition = mul(lights[0].lightSpaceMatrix, float4(output.Position, 1.0));
+    output.ClipPosition = mul(light.lightSpaceMatrix, float4(output.Position, 1.0));
     
     return output;
 }

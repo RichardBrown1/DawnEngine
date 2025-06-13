@@ -91,7 +91,7 @@ Engine::Engine() {
 		.worldTextureView = _initialRender->worldPositionTextureView,
 		.normalTextureFormat = _initialRender->normalTextureFormat,
 		.normalTextureView = _initialRender->normalTextureView,
-		.lights = h_objects.lights,
+		.lightBuffers = _deviceSceneResources.lights,
 	};
 	_lightingRender->generateGpuObjects(&lightingGenerateGpuObjectsDescriptor);
 
@@ -99,7 +99,7 @@ Engine::Engine() {
 	_shadowRender = shadowRender;
 	const render::shadow::descriptor::GenerateGpuObjects shadowGenerateGpuObjectsDescriptor = {
 		.transformBuffer = _deviceSceneResources.transforms,
-		.lightBuffer = _deviceSceneResources.lights,
+		.lightBuffer = _deviceSceneResources.lights[0],
 	};
 	_shadowRender->generateGpuObjects(&shadowGenerateGpuObjectsDescriptor);
 

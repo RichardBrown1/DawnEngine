@@ -11,7 +11,7 @@ namespace device {
 		wgpu::Buffer indices;
 		wgpu::Buffer instanceProperties;
 
-		wgpu::Buffer lights;
+		std::vector<wgpu::Buffer> lights;
 		wgpu::Buffer cameras;
 
 		wgpu::Buffer materials;

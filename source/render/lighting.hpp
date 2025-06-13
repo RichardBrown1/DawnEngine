@@ -14,7 +14,7 @@ namespace render {
 			wgpu::TextureFormat normalTextureFormat;
 			wgpu::TextureView& normalTextureView;
 
-			std::vector<structs::Light> lights;
+			std::vector<wgpu::Buffer> lightBuffers;
 		};
 
 		struct DoCommands {

@@ -33,11 +33,7 @@ namespace render {
 			descriptor->normalTextureView
 		);
 		
-		std::vector<wgpu::Buffer> lightBuffers;
-		for (auto& light : descriptor->lights) {
-			lightBuffers.emplace_back(device::createBuffer(*_wgpuContext, light, "lights", wgpu::BufferUsage::Uniform));
-		}
-		for (auto& buffer : lightBuffers) {
+		for (auto& buffer : descriptor->lightBuffers) {
 			insertInputBindGroup(buffer);
 		}
 	}

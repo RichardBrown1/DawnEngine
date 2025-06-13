@@ -123,7 +123,7 @@ namespace render {
 			.binding = 1,
 			.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
 			.buffer = {
-				.type = wgpu::BufferBindingType::ReadOnlyStorage,
+				.type = wgpu::BufferBindingType::Uniform,
 				.minBindingSize = sizeof(structs::Light),
 			}
 		};
