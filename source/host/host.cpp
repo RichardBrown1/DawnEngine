@@ -28,7 +28,7 @@ namespace host {
 			cameras.push_back(structs::host::H_Camera{
 				.projection = glm::perspectiveRH_ZO(45.0f, screenDimensions[0] / (float)screenDimensions[1], 0.00001f, 1024.0f),
 				.position = { 0.0f, 0.0f, -0.1f },
-				.forward = { 0.0f, 0.0f, 1.0f },
+				.forward = { 0.0f, 0.0f, 0.1f },
 				});
 		}
 		if (lights.size() == 0) {
@@ -55,6 +55,16 @@ namespace host {
 			if (normalStpId != UINT32_MAX) {
 				normalStpIds.emplace_back(normalStpId);
 			}
+		}
+		constexpr glm::f32mat4x4 xMirror = {
+			  1.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 1.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f,
+				0.0f, 0.0f, 0.0f, 1.0f,
+		};
+
+		for (auto& c : cameras) {
+			c.projection *= xMirror;
 		}
 	}
 
@@ -118,7 +128,7 @@ namespace host {
 				this->cameras[i].position + this->cameras[i].forward,
 				constants::UP
 			);
-			projectionViews.push_back(this->cameras[0].projection * view);
+			projectionViews.push_back(this->cameras[i].projection * view);
 		}
 		d_objects.cameras = device::createBuffer<glm::f32mat4x4>(
 			wgpuContext,

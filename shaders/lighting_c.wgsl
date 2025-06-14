@@ -106,7 +106,7 @@ fn computeLightDirection(eulerRadians: vec3<f32>) -> vec3<f32> {
     let finalRot = rotZ * (rotY * rotX);
 
     // Default forward direction in left-handed systems: positive Z
-    let forward = vec3<f32>(0.0, 0.0, -1.0); //TODO: revisit this should be vec3<f32>(0.0, 0.0, 1.0);
+    let forward = vec3<f32>(0.0, 0.0, 1.0);
 
     return normalize(finalRot * forward);
 }

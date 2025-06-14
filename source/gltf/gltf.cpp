@@ -54,13 +54,16 @@ namespace {
 			);
 
 			//texcoord_0
-			fastgltf::Attribute& texcoordAttribute = *primitive.findAttribute("TEXCOORD_0");
-			fastgltf::Accessor& texcoordAccessor = asset.accessors[texcoordAttribute.accessorIndex];
-			fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec2>(
-				asset, texcoordAccessor, [&](fastgltf::math::f32vec2 texcoord, size_t i) {
-					memcpy(&objects.vbo[i + vbosOffset].texcoord, &texcoord, sizeof(glm::f32vec2));
-				}
-			);
+			//fastgltf::Attribute& texcoordAttribute = 
+			fastgltf::Attribute* p_texcoordAttribute = primitive.findAttribute("TEXCOORD_0");
+			if (!p_texcoordAttribute->name.empty()) {
+				fastgltf::Accessor& texcoordAccessor = asset.accessors[p_texcoordAttribute->accessorIndex];
+				fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec2>(
+					asset, texcoordAccessor, [&](fastgltf::math::f32vec2 texcoord, size_t i) {
+						memcpy(&objects.vbo[i + vbosOffset].texcoord, &texcoord, sizeof(glm::f32vec2));
+					}
+				);
+			}
 
 			//indice
 			if (!primitive.indicesAccessor.has_value()) {
@@ -131,7 +134,7 @@ namespace {
 		fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera);
 		fastgltf::Camera::Orthographic* orthographicCamera = std::get_if<fastgltf::Camera::Orthographic>(&asset.cameras[cameraIndex].camera);
 		if (orthographicCamera != nullptr) {
-			throw std::runtime_error("orthographic camera not supported");
+			LOG(ERROR) << "orthographic camera not supported";
 		}
 
 		structs::host::H_Camera h_camera = {
@@ -147,14 +150,8 @@ namespace {
 		const size_t sceneIndex = asset.defaultScene.value_or(0);
 		fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 			[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
-				constexpr glm::f32mat4x4 zMirror = {
-					1.0f, 0.0f, 0.0f, 0.0f,
-					0.0f, 1.0f, 0.0f, 0.0f,
-					0.0f, 0.0f, -1.0f, 0.0f,
-					0.0f, 0.0f, 0.0f, 1.0f,
-				};
 				glm::f32mat4x4 matrix = reinterpret_cast<glm::f32mat4x4&>(m);
-				matrix *= zMirror;
+				//matrix = glm::rotate(matrix, glm::half_pi<float>(), glm::vec3(0.0, 1.0, 0.0));
 
 				if (node.meshIndex.has_value()) {
 					addMeshData(object, asset, matrix, static_cast<uint32_t>(node.meshIndex.value()));
@@ -174,8 +171,8 @@ namespace {
 
 	void addMaterial(const fastgltf::Material& inputMaterial, structs::Material& outputMaterial) {
 		memcpy(&outputMaterial.pbrMetallicRoughness, &inputMaterial.pbrData, sizeof(glm::f32vec4) + sizeof(float) * 2);
-		
-	  gltf::convert::textureInfo(
+
+		gltf::convert::textureInfo(
 			inputMaterial.pbrData.baseColorTexture,
 			outputMaterial.pbrMetallicRoughness.baseColorTextureInfo
 		);
@@ -237,11 +234,11 @@ namespace gltf {
 		if (wholeGltf.error() != fastgltf::Error::None) {
 			LOG(ERROR) << "can't load whole gltf";
 		}
-		
+
 		return std::move(wholeGltf.get());
 	}
 
-	void processAsset(host::SceneResources &hostObjects, fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
+	void processAsset(host::SceneResources& hostObjects, fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
 		processNodes(hostObjects, asset, screenDimensions);
 
 		hostObjects.materials.resize(asset.materials.size());
