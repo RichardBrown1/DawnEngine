@@ -56,16 +56,6 @@ namespace host {
 				normalStpIds.emplace_back(normalStpId);
 			}
 		}
-		constexpr glm::f32mat4x4 xMirror = {
-			  1.0f, 0.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f, 0.0f,
-				0.0f, 0.0f, 1.0f, 0.0f,
-				0.0f, 0.0f, 0.0f, 1.0f,
-		};
-
-		for (auto& c : cameras) {
-			c.projection *= xMirror;
-		}
 	}
 
 	device::SceneResources SceneResources::ToDevice(
