@@ -11,11 +11,14 @@
 
 namespace render {
 	Initial::Initial(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {
+		textureIdBufferSize = 0;
 		_vertexShaderModule = device::createShaderModule(_wgpuContext->device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
 		_fragmentShaderModule = device::createShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	};
 
 	void Initial::generateGpuObjects(const render::initial::descriptor::GenerateGpuObjects* descriptor) {
+		textureIdBufferSize = sizeof(float) * _wgpuContext->screenDimensions.width * _wgpuContext->screenDimensions.height;
+
 		createBindGroupLayout();
 		createPipeline();
 		createBindGroup(
@@ -65,26 +68,19 @@ namespace render {
 		};
 		texture::createTextureView(&texCoordTextureViewDescriptor);
 
-		texture::descriptor::CreateTextureView baseColorTextureIdTextureViewDescriptor = {
-					.label = _baseColorTextureIdLabel,
-					.device = &_wgpuContext->device,
-					.textureUsage = _baseColorTextureIdTextureUsage,
-					.textureDimensions = _wgpuContext->screenDimensions,
-					.textureFormat = baseColorTextureIdTextureFormat,
-					.outputTextureView = baseColorTextureIdTextureView,
+		wgpu::BufferDescriptor baseColorTextureIdBufferDescriptor = {
+			.label = _baseColorTextureIdLabel,
+			.usage = _baseColorTextureIdBufferUsage,
+			.size = textureIdBufferSize,
 		};
-		texture::createTextureView(&baseColorTextureIdTextureViewDescriptor);
+		baseColorTextureIdBuffer = _wgpuContext->device.CreateBuffer(&baseColorTextureIdBufferDescriptor);
 
-		texture::descriptor::CreateTextureView normalTextureIdTextureViewDescriptor = {
-					.label = _normalTextureIdLabel,
-					.device = &_wgpuContext->device,
-					.textureUsage = _normalTextureIdTextureUsage,
-					.textureDimensions = _wgpuContext->screenDimensions,
-					.textureFormat = normalTextureIdTextureFormat,
-					.outputTextureView = normalTextureIdTextureView,
+		wgpu::BufferDescriptor normalIdBufferDescriptor = {
+			.label = _normalTextureIdLabel,
+			.usage = _normalTextureIdBufferUsage,
+			.size = textureIdBufferSize,
 		};
-		texture::createTextureView(&normalTextureIdTextureViewDescriptor);
-
+		normalTextureIdBuffer = _wgpuContext->device.CreateBuffer(&normalIdBufferDescriptor);
 
 		_renderPassColorAttachments = {
 			wgpu::RenderPassColorAttachment {
@@ -110,18 +106,6 @@ namespace render {
 				.loadOp = wgpu::LoadOp::Clear,
 				.storeOp = wgpu::StoreOp::Store,
 				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
-			},
-			wgpu::RenderPassColorAttachment {
-				.view = baseColorTextureIdTextureView,
-				.loadOp = wgpu::LoadOp::Clear,
-				.storeOp = wgpu::StoreOp::Store,
-				.clearValue = wgpu::Color(UINT32_MAX),
-			},
-			wgpu::RenderPassColorAttachment {
-				.view = normalTextureIdTextureView,
-				.loadOp = wgpu::LoadOp::Clear,
-				.storeOp = wgpu::StoreOp::Store,
-				.clearValue = wgpu::Color(UINT32_MAX),
 			},
 		};
 
@@ -197,20 +181,12 @@ namespace render {
 		const wgpu::ColorTargetState texCoordColorTargetState = {
 			.format = texCoordTextureFormat,
 		};
-		const wgpu::ColorTargetState baseColorTextureIdColorTargetState = {
-			.format = baseColorTextureIdTextureFormat,
-		};
-		const wgpu::ColorTargetState normalTextureIdColorTargetState = {
-			.format = normalTextureIdTextureFormat,
-		};
 
-		const std::array<wgpu::ColorTargetState, 6> colorTargetStates = {
+		const std::array<wgpu::ColorTargetState, 4> colorTargetStates = {
 			worldPositionColorTargetState,
 			baseColorColorTargetState,
 			normalColorTargetState,
 			texCoordColorTargetState,
-			baseColorTextureIdColorTargetState,
-			normalTextureIdColorTargetState,
 		};
 		const wgpu::FragmentState fragmentState = {
 			.module = _fragmentShaderModule,
