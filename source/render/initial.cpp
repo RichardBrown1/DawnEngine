@@ -10,14 +10,27 @@
 #include "../render/ultimate.hpp"
 
 namespace render {
-	Initial::Initial(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {
-		textureIdBufferSize = 0;
+	Initial::Initial(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext), _textureIdBufferSize(0) {
 		_vertexShaderModule = device::createShaderModule(_wgpuContext->device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
 		_fragmentShaderModule = device::createShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	};
 
 	void Initial::generateGpuObjects(const render::initial::descriptor::GenerateGpuObjects* descriptor) {
-		textureIdBufferSize = sizeof(float) * _wgpuContext->screenDimensions.width * _wgpuContext->screenDimensions.height;
+		_textureIdBufferSize = sizeof(float) * _wgpuContext->screenDimensions.width * _wgpuContext->screenDimensions.height;
+
+		wgpu::BufferDescriptor baseColorTextureIdBufferDescriptor = {
+			.label = _baseColorTextureIdLabel,
+			.usage = _baseColorTextureIdBufferUsage,
+			.size = _textureIdBufferSize,
+		};
+		baseColorTextureIdBuffer = _wgpuContext->device.CreateBuffer(&baseColorTextureIdBufferDescriptor);
+
+		wgpu::BufferDescriptor normalIdBufferDescriptor = {
+			.label = _normalTextureIdLabel,
+			.usage = _normalTextureIdBufferUsage,
+			.size = _textureIdBufferSize,
+		};
+		normalTextureIdBuffer = _wgpuContext->device.CreateBuffer(&normalIdBufferDescriptor);
 
 		createBindGroupLayout();
 		createPipeline();
@@ -67,20 +80,6 @@ namespace render {
 			.outputTextureView = texCoordTextureView,
 		};
 		texture::createTextureView(&texCoordTextureViewDescriptor);
-
-		wgpu::BufferDescriptor baseColorTextureIdBufferDescriptor = {
-			.label = _baseColorTextureIdLabel,
-			.usage = _baseColorTextureIdBufferUsage,
-			.size = textureIdBufferSize,
-		};
-		baseColorTextureIdBuffer = _wgpuContext->device.CreateBuffer(&baseColorTextureIdBufferDescriptor);
-
-		wgpu::BufferDescriptor normalIdBufferDescriptor = {
-			.label = _normalTextureIdLabel,
-			.usage = _normalTextureIdBufferUsage,
-			.size = textureIdBufferSize,
-		};
-		normalTextureIdBuffer = _wgpuContext->device.CreateBuffer(&normalIdBufferDescriptor);
 
 		_renderPassColorAttachments = {
 			wgpu::RenderPassColorAttachment {
@@ -239,11 +238,23 @@ namespace render {
 			.buffer = materialBuffer,
 			.size = materialBuffer.GetSize(),
 		};
-		std::array<wgpu::BindGroupEntry, 4> bindGroupEntries = {
+		const wgpu::BindGroupEntry baseColorTextureIdBindGroupEntry = {
+			.binding = 4,
+			.buffer = baseColorTextureIdBuffer,
+			.size = baseColorTextureIdBuffer.GetSize(),
+		};
+		const wgpu::BindGroupEntry normalIdTextureIdBindGroupEntry = {
+			.binding = 5,
+			.buffer = normalTextureIdBuffer,
+			.size = normalTextureIdBuffer.GetSize(),
+		};
+		std::array<wgpu::BindGroupEntry, 6> bindGroupEntries = {
 			cameraBindGroupEntry,
 			transformBindGroupEntry,
 			instancePropertiesBindGroupEntry,
 			materialBindGroupEntry,
+			baseColorTextureIdBindGroupEntry,
+			normalIdTextureIdBindGroupEntry
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 			.label = "initial render group",
@@ -287,12 +298,30 @@ namespace render {
 				.minBindingSize = sizeof(structs::Material),
 			},
 		};
+		const wgpu::BindGroupLayoutEntry baseColorTextureIdBindGroupLayoutEntry = {
+			.binding = 4,
+			.visibility = wgpu::ShaderStage::Fragment,
+			.buffer = {
+				.type = wgpu::BufferBindingType::Storage,
+				.minBindingSize = baseColorTextureIdBuffer.GetSize(),
+			},
+		};
+		const wgpu::BindGroupLayoutEntry normalTextureIdBindGroupLayoutEntry = {
+			.binding = 5,
+			.visibility = wgpu::ShaderStage::Fragment,
+			.buffer = {
+				.type = wgpu::BufferBindingType::Storage,
+				.minBindingSize = normalTextureIdBuffer.GetSize(),
+			},
+		};
 
-		std::array<wgpu::BindGroupLayoutEntry, 4> bindGroupLayoutEntries = {
+		std::array<wgpu::BindGroupLayoutEntry, 6> bindGroupLayoutEntries = {
 			cameraBindGroupLayoutEntry,
 			transformBindGroupLayoutEntry,
 			instancePropertiesBindGroupLayoutEntry,
 			materialBindGroupLayoutEntry,
+			baseColorTextureIdBindGroupLayoutEntry,
+			normalTextureIdBindGroupLayoutEntry,
 		};
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
 			.label = "initial render bind group layout",

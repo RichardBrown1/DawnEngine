@@ -36,7 +36,6 @@ namespace render {
 		const wgpu::TextureFormat normalTextureFormat = wgpu::TextureFormat::BGRA8Unorm; //normal texture can tangent-ized	if I need it
 		const wgpu::TextureFormat texCoordTextureFormat = wgpu::TextureFormat::RG32Float; //I would prefer unorm but I think its bugged
 		const wgpu::TextureFormat depthTextureFormat = constants::DEPTH_FORMAT;
-		uint32_t textureIdBufferSize = 0;
 
 		wgpu::TextureView worldPositionTextureView;
 		wgpu::TextureView baseColorTextureView;
@@ -47,6 +46,7 @@ namespace render {
 	  wgpu::Buffer normalTextureIdBuffer;
 
 	private:
+		uint32_t _textureIdBufferSize = 0;
 		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
 		const std::string VERTEX_SHADER_PATH = "shaders/initialRender_v.spv";
 
