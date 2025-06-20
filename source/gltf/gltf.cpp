@@ -78,11 +78,8 @@ namespace {
 				}
 			);
 
-			//instanceProperty
-			const structs::InstanceProperty instanceProperty = {
-				.materialIndex = static_cast<uint32_t>(primitive.materialIndex.value_or(asset.materials.size())),
-			};
-			objects.instanceProperties.push_back(instanceProperty);
+			//material indices
+			objects.materialIndices.emplace_back(static_cast<uint32_t>(primitive.materialIndex.value_or(UINT32_MAX)));
 
 			//drawCall
 			const structs::host::DrawCall drawCall = {

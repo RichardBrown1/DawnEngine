@@ -15,7 +15,7 @@ namespace host {
 		std::vector<structs::VBO> vbo;
 		std::vector<uint16_t> indices;
 		std::vector<glm::f32mat4x4> transforms;
-		std::vector<structs::InstanceProperty> instanceProperties;
+		std::vector<uint32_t> materialIndices;
 		std::vector<structs::host::DrawCall> drawCalls;
 
 		//Other data

@@ -9,7 +9,7 @@ namespace device {
 		wgpu::Buffer vbo;
 		wgpu::Buffer transforms;
 		wgpu::Buffer indices;
-		wgpu::Buffer instanceProperties;
+		wgpu::Buffer materialIndices; //MaterialId for each instance
 
 		std::vector<wgpu::Buffer> lights;
 		wgpu::Buffer cameras;

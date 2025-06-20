@@ -11,8 +11,8 @@
 
 namespace render {
 	Initial::Initial(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext), _textureIdBufferSize(0) {
-		_vertexShaderModule = device::createShaderModule(_wgpuContext->device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
-		_fragmentShaderModule = device::createShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
+		_vertexShaderModule = device::createWGSLShaderModule(_wgpuContext->device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
+		_fragmentShaderModule = device::createWGSLShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	};
 
 	void Initial::generateGpuObjects(const render::initial::descriptor::GenerateGpuObjects* descriptor) {
@@ -287,7 +287,7 @@ namespace render {
 			.visibility = wgpu::ShaderStage::Fragment,
 			.buffer = {
 				.type = wgpu::BufferBindingType::ReadOnlyStorage,
-				.minBindingSize = sizeof(structs::InstanceProperty),
+				.minBindingSize = sizeof(uint32_t),
 			}
 		};
 		const wgpu::BindGroupLayoutEntry materialBindGroupLayoutEntry = {

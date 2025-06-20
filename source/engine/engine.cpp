@@ -50,7 +50,7 @@ Engine::Engine() {
 	const render::initial::descriptor::GenerateGpuObjects initialGenerateGpuObjectsDescriptor = {
 		.cameraBuffer = _deviceSceneResources.cameras,
 		.transformBuffer = _deviceSceneResources.transforms,
-		.instancePropertiesBuffer = _deviceSceneResources.instanceProperties,
+		.instancePropertiesBuffer = _deviceSceneResources.materialIndices,
 		.materialBuffer = _deviceSceneResources.materials,
 	};
 	_initialRender->generateGpuObjects(&initialGenerateGpuObjectsDescriptor);

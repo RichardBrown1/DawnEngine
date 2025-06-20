@@ -48,10 +48,10 @@ namespace render {
 	private:
 		uint32_t _textureIdBufferSize = 0;
 		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
-		const std::string VERTEX_SHADER_PATH = "shaders/initialRender_v.spv";
+		const std::string VERTEX_SHADER_PATH = "shaders/initialRender_vf.wgsl";
 
 		const wgpu::StringView FRAGMENT_SHADER_LABEL = "initial render fragment shader";
-		const std::string FRAGMENT_SHADER_PATH = "shaders/initialRender_f.spv";
+		const std::string FRAGMENT_SHADER_PATH = "shaders/initialRender_vf.wgsl";
 
 		const std::string _worldPositionLabel = std::string("world position info");
 		const std::string _baseColorLabel = std::string("base color");

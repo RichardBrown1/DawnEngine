@@ -80,10 +80,10 @@ namespace host {
 			"transforms",
 			wgpu::BufferUsage::Storage
 		);
-		d_objects.instanceProperties = device::createBuffer<structs::InstanceProperty>(
+		d_objects.materialIndices = device::createBuffer<uint32_t>(
 			wgpuContext,
-			this->instanceProperties,
-			"instance properties",
+			this->materialIndices,
+			"materialIndices",
 			wgpu::BufferUsage::Storage
 		);
 		for (uint32_t i = 0; auto & light : this->lights) {
