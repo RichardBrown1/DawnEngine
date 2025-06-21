@@ -40,7 +40,7 @@ Engine::Engine() {
 	host::SceneResources h_objects = host::SceneResources(
 		gltfDirectory,
 		gltfFileName,
-		std::array<uint32_t, 2>{_wgpuContext.screenDimensions.width, _wgpuContext.screenDimensions.height}
+		std::array<uint32_t, 2>{_wgpuContext.getScreenDimensions().width, _wgpuContext.getScreenDimensions().height}
 	);
 	_drawCalls = h_objects.drawCalls;
 	_deviceSceneResources = h_objects.ToDevice(_wgpuContext);

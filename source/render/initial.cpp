@@ -16,7 +16,7 @@ namespace render {
 	};
 
 	void Initial::generateGpuObjects(const render::initial::descriptor::GenerateGpuObjects* descriptor) {
-		_textureIdBufferSize = sizeof(float) * _wgpuContext->screenDimensions.width * _wgpuContext->screenDimensions.height;
+		_textureIdBufferSize = sizeof(float) * _wgpuContext->getScreenDimensions().width * _wgpuContext->getScreenDimensions().height;
 
 		wgpu::BufferDescriptor baseColorTextureIdBufferDescriptor = {
 			.label = _baseColorTextureIdLabel,
@@ -45,7 +45,7 @@ namespace render {
 			.label = _worldPositionLabel,
 			.device = &_wgpuContext->device,
 			.textureUsage = _worldPositionTextureUsage,
-			.textureDimensions = _wgpuContext->screenDimensions,
+			.textureDimensions = _wgpuContext->getScreenDimensions(),
 			.textureFormat = worldPositionTextureFormat,
 			.outputTextureView = worldPositionTextureView,
 		};
@@ -55,7 +55,7 @@ namespace render {
 			.label = _baseColorLabel,
 			.device = &_wgpuContext->device,
 			.textureUsage = _baseColorTextureUsage,
-			.textureDimensions = _wgpuContext->screenDimensions,
+			.textureDimensions = _wgpuContext->getScreenDimensions(),
 			.textureFormat = baseColorTextureFormat,
 			.outputTextureView = baseColorTextureView,
 		};
@@ -65,7 +65,7 @@ namespace render {
 			.label = _normalLabel,
 			.device = &_wgpuContext->device,
 			.textureUsage = _normalTextureUsage,
-			.textureDimensions = _wgpuContext->screenDimensions,
+			.textureDimensions = _wgpuContext->getScreenDimensions(),
 			.textureFormat = normalTextureFormat,
 			.outputTextureView = normalTextureView,
 		};
@@ -75,7 +75,7 @@ namespace render {
 			.label = _texCoordLabel,
 			.device = &_wgpuContext->device,
 			.textureUsage = _texCoordTextureUsage,
-			.textureDimensions = _wgpuContext->screenDimensions,
+			.textureDimensions = _wgpuContext->getScreenDimensions(),
 			.textureFormat = texCoordTextureFormat,
 			.outputTextureView = texCoordTextureView,
 		};
@@ -112,7 +112,7 @@ namespace render {
 			.label = _depthTextureLabel,
 			.device = &_wgpuContext->device,
 			.textureUsage = _depthTextureUsage,
-			.textureDimensions = _wgpuContext->screenDimensions,
+			.textureDimensions = _wgpuContext->getScreenDimensions(),
 			.textureFormat = depthTextureFormat,
 			.outputTextureView = depthTextureView,
 		};

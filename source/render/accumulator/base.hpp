@@ -83,7 +83,10 @@ namespace render {
 			computePassEncoder.SetBindGroup(0, _accumulatorBindGroup);
 			for (auto& bg : _inputBindGroups) {
 				computePassEncoder.SetBindGroup(1, bg);
-				computePassEncoder.DispatchWorkgroups(_wgpuContext->screenDimensions.width, _wgpuContext->screenDimensions.height);
+				computePassEncoder.DispatchWorkgroups(
+					_wgpuContext->getScreenDimensions().width, 
+					_wgpuContext->getScreenDimensions().height
+				);
 			}
 			computePassEncoder.End();
 		}

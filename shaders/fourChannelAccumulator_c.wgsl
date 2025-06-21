@@ -7,7 +7,7 @@ struct InputInfo {
 
 @group(0) @binding(0) var accumulatorTexture: texture_storage_2d<rgba32float, write>;
 @group(0) @binding(1) var texCoordTexture: texture_storage_2d<rg32float, read>;
-@group(0) @binding(2) var textureIdTexture: texture_storage_2d<r32uint, read>;
+@group(0) @binding(2) var<storage, read> textureIdBuffer : array<u32>;
 
 @group(1) @binding(0) var<uniform> inputInfo: InputInfo;
 @group(1) @binding(1) var inputTexture: texture_2d<f32>;

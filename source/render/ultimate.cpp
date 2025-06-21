@@ -16,7 +16,7 @@ namespace render {
 			.label = "ultimate texture view",
 			.device = &_wgpuContext->device,
 			.textureUsage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding,
-			.textureDimensions = _wgpuContext->screenDimensions,
+			.textureDimensions = _wgpuContext->getScreenDimensions(),
 			.textureFormat = ultimateTextureFormat,
 			.outputTextureView = ultimateTextureView,
 		};
@@ -39,7 +39,7 @@ namespace render {
 		wgpu::ComputePassEncoder computePassEncoder = descriptor->commandEncoder.BeginComputePass(&computePassDescriptor);
 		computePassEncoder.SetPipeline(_computePipeline);
 		computePassEncoder.SetBindGroup(0, _bindGroup);
-		computePassEncoder.DispatchWorkgroups(_wgpuContext->screenDimensions.width, _wgpuContext->screenDimensions.height);
+		computePassEncoder.DispatchWorkgroups(_wgpuContext->getScreenDimensions().width, _wgpuContext->getScreenDimensions().height);
 		computePassEncoder.End();
 	}
 
