@@ -20,12 +20,13 @@ struct Material {
 	PAD1: u32,
 };
 
-@group(0) @binding(0) var<uniform> camera: mat4x4<f32>;
-@group(0) @binding(1) var<storage, read> transforms: array<mat4x4<f32>>;
-@group(0) @binding(2) var<storage, read> materialIds: array<u32>;
-@group(0) @binding(3) var<storage, read> materials: array<Material>;
-@group(0) @binding(4) var<storage, read_write> baseColorTextureIds: array<u32>;
-@group(0) @binding(5) var<storage, read_write> normalTextureIds: array<u32>;
+@group(0) @binding(0) var<uniform> screenDimensions: vec2<u32>;
+@group(0) @binding(1) var<uniform> camera: mat4x4<f32>;
+@group(0) @binding(2) var<storage, read> transforms: array<mat4x4<f32>>;
+@group(0) @binding(3) var<storage, read> materialIds: array<u32>;
+@group(0) @binding(4) var<storage, read> materials: array<Material>;
+@group(0) @binding(5) var<storage, read_write> baseColorTextureIds: array<u32>;
+@group(0) @binding(6) var<storage, read_write> normalTextureIds: array<u32>;
 
 struct VSInput {
 	@location(0) position : vec3<f32>,
@@ -74,8 +75,8 @@ fn fs_main(input : VSOutput) -> FSOutput {
 	output.baseColor = material.pbrMetallicRoughness.baseColor;
 	
 	let screenCoordinates : vec2<u32> = vec2<u32>(input.cameraPosition.xy);
-	baseColorTextureIds[screenCoordinates.y * 1024 + screenCoordinates.x] = material.pbrMetallicRoughness.baseColorTextureInfo.index;
-	normalTextureIds[screenCoordinates.y * 1024 + screenCoordinates.x] = material.normalTextureInfo.index;
+	baseColorTextureIds[screenCoordinates.y * screenDimensions.x + screenCoordinates.x] = material.pbrMetallicRoughness.baseColorTextureInfo.index;
+	normalTextureIds[screenCoordinates.y * screenDimensions.x + screenCoordinates.x] = material.normalTextureInfo.index;
 
 	return output;
 }

@@ -218,37 +218,43 @@ namespace render {
 		const wgpu::Buffer& instancePropertiesBuffer,
 		const wgpu::Buffer& materialBuffer
 	) {
-		const wgpu::BindGroupEntry cameraBindGroupEntry = {
+		const wgpu::BindGroupEntry screenDimensionsBindGroupEntry = {
 			.binding = 0,
+			.buffer = _wgpuContext->getScreenDimensionsBuffer(),
+			.size = sizeof(_wgpuContext->getScreenDimensionsBuffer().GetSize()),
+		};
+		const wgpu::BindGroupEntry cameraBindGroupEntry = {
+			.binding = 1,
 			.buffer = cameraBuffer,
 			.size = cameraBuffer.GetSize(),
 		};
 		const wgpu::BindGroupEntry transformBindGroupEntry = {
-			.binding = 1,
+			.binding = 2,
 			.buffer = transformBuffer,
 			.size = transformBuffer.GetSize(),
 		};
 		const wgpu::BindGroupEntry instancePropertiesBindGroupEntry = {
-			.binding = 2,
+			.binding = 3,
 			.buffer = instancePropertiesBuffer,
 			.size = instancePropertiesBuffer.GetSize(),
 		};
 		const wgpu::BindGroupEntry materialBindGroupEntry = {
-			.binding = 3,
+			.binding = 4,
 			.buffer = materialBuffer,
 			.size = materialBuffer.GetSize(),
 		};
 		const wgpu::BindGroupEntry baseColorTextureIdBindGroupEntry = {
-			.binding = 4,
+			.binding = 5,
 			.buffer = baseColorTextureIdBuffer,
 			.size = baseColorTextureIdBuffer.GetSize(),
 		};
 		const wgpu::BindGroupEntry normalIdTextureIdBindGroupEntry = {
-			.binding = 5,
+			.binding = 6,
 			.buffer = normalTextureIdBuffer,
 			.size = normalTextureIdBuffer.GetSize(),
 		};
-		std::array<wgpu::BindGroupEntry, 6> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 7> bindGroupEntries = {
+			screenDimensionsBindGroupEntry,
 			cameraBindGroupEntry,
 			transformBindGroupEntry,
 			instancePropertiesBindGroupEntry,
@@ -266,8 +272,16 @@ namespace render {
 	}
 
 	void Initial::createBindGroupLayout() {
-		const wgpu::BindGroupLayoutEntry cameraBindGroupLayoutEntry = {
+		const wgpu::BindGroupLayoutEntry screenDimensionBindGroupLayoutEntry = {
 			.binding = 0,
+			.visibility = wgpu::ShaderStage::Fragment,
+			.buffer = {
+				.type = wgpu::BufferBindingType::Uniform,
+				.minBindingSize = sizeof(_wgpuContext->getScreenDimensions())
+			},
+		};
+		const wgpu::BindGroupLayoutEntry cameraBindGroupLayoutEntry = {
+			.binding = 1,
 			.visibility = wgpu::ShaderStage::Vertex,
 			.buffer = {
 				.type = wgpu::BufferBindingType::Uniform,
@@ -275,7 +289,7 @@ namespace render {
 			},
 		};
 		const wgpu::BindGroupLayoutEntry transformBindGroupLayoutEntry = {
-			.binding = 1,
+			.binding = 2,
 			.visibility = wgpu::ShaderStage::Vertex,
 			.buffer = {
 				.type = wgpu::BufferBindingType::ReadOnlyStorage,
@@ -283,7 +297,7 @@ namespace render {
 			},
 		};
 		const wgpu::BindGroupLayoutEntry instancePropertiesBindGroupLayoutEntry = {
-			.binding = 2,
+			.binding = 3,
 			.visibility = wgpu::ShaderStage::Fragment,
 			.buffer = {
 				.type = wgpu::BufferBindingType::ReadOnlyStorage,
@@ -291,7 +305,7 @@ namespace render {
 			}
 		};
 		const wgpu::BindGroupLayoutEntry materialBindGroupLayoutEntry = {
-			.binding = 3,
+			.binding = 4,
 			.visibility = wgpu::ShaderStage::Fragment,
 			.buffer = {
 				.type = wgpu::BufferBindingType::ReadOnlyStorage,
@@ -299,7 +313,7 @@ namespace render {
 			},
 		};
 		const wgpu::BindGroupLayoutEntry baseColorTextureIdBindGroupLayoutEntry = {
-			.binding = 4,
+			.binding = 5,
 			.visibility = wgpu::ShaderStage::Fragment,
 			.buffer = {
 				.type = wgpu::BufferBindingType::Storage,
@@ -307,7 +321,7 @@ namespace render {
 			},
 		};
 		const wgpu::BindGroupLayoutEntry normalTextureIdBindGroupLayoutEntry = {
-			.binding = 5,
+			.binding = 6,
 			.visibility = wgpu::ShaderStage::Fragment,
 			.buffer = {
 				.type = wgpu::BufferBindingType::Storage,
@@ -315,7 +329,8 @@ namespace render {
 			},
 		};
 
-		std::array<wgpu::BindGroupLayoutEntry, 6> bindGroupLayoutEntries = {
+		std::array<wgpu::BindGroupLayoutEntry, 7> bindGroupLayoutEntries = {
+			screenDimensionBindGroupLayoutEntry,
 			cameraBindGroupLayoutEntry,
 			transformBindGroupLayoutEntry,
 			instancePropertiesBindGroupLayoutEntry,
