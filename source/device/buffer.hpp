@@ -6,9 +6,12 @@
 namespace device {
 	struct Buffer {
 		wgpu::Buffer buffer;
-		wgpu::ShaderStage visibility;
+		wgpu::BufferBindingType type;
 
-		wgpu::BindGroupLayoutEntry generateBindGroupLayoutEntry(const uint32_t bindingNumber, const wgpu::BufferBindingType type);
+		wgpu::BindGroupLayoutEntry generateBindGroupLayoutEntry(
+			const uint32_t bindingNumber,
+			const wgpu::ShaderStage visibility
+		);
 		wgpu::BindGroupEntry generateBindGroupEntry(const uint32_t bindingNumber);
 		
 		//empty
@@ -17,8 +20,8 @@ namespace device {
 			const uint32_t size,
 			const std::string& label,
 			const wgpu::BufferUsage bufferUsage,
-			const wgpu::ShaderStage visibility
-		) : visibility(visibility) {
+			const wgpu::BufferBindingType type
+		) : type(type) {
 			const wgpu::BufferDescriptor bufferDescriptor = {
 				.label = wgpu::StringView(label + " buffer"),
 				.usage = bufferUsage,
@@ -34,8 +37,8 @@ namespace device {
 			const T& structure,
 			const std::string& label,
 			const wgpu::BufferUsage bufferUsage,
-			const wgpu::ShaderStage visibility
-		) : visibility(visibility) {
+			const wgpu::BufferBindingType type
+		) : type(type) {
 			const wgpu::BufferDescriptor bufferDescriptor = {
 				.label = wgpu::StringView(label + " buffer"),
 				.usage = wgpu::BufferUsage::CopyDst | bufferUsage,
@@ -52,8 +55,8 @@ namespace device {
 			const std::vector<T> vector,
 			const std::string& label,
 			const wgpu::BufferUsage bufferUsage,
-			const wgpu::ShaderStage visibility
-		) : visibility(visibility) {
+			const wgpu::BufferBindingType type
+		) : type(type) {
 			const wgpu::BufferDescriptor bufferDescriptor = {
 				.label = wgpu::StringView(label + " buffer"),
 				.usage = wgpu::BufferUsage::CopyDst | bufferUsage,

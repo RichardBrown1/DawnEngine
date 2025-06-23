@@ -9,7 +9,6 @@ namespace device {
 			wgpu::Extent2D dimensions;
 			wgpu::TextureFormat format;
 
-			wgpu::ShaderStage visibility;
 			wgpu::TextureUsage usage;
 			wgpu::TextureSampleType sampleType;
 		};
@@ -17,7 +16,6 @@ namespace device {
 		struct TextureFromFile {
 			std::string filePath;
 
-			wgpu::ShaderStage visibility;
 			wgpu::TextureUsage usage;
 			wgpu::TextureSampleType sampleType;
 		};
@@ -28,15 +26,21 @@ namespace device {
 		wgpu::Texture texture;
 		wgpu::TextureView view;
 		wgpu::TextureFormat format;
-		wgpu::ShaderStage visibility;
 		wgpu::TextureSampleType sampleType = wgpu::TextureSampleType::UnfilterableFloat;
 		wgpu::TextureViewDimension viewDimension = wgpu::TextureViewDimension::e2D;
 
 		Texture(const wgpu::Device* device, const descriptor::Texture& descriptor);
 		Texture(const wgpu::Device* device, const descriptor::TextureFromFile& descriptor);
 
-		wgpu::BindGroupLayoutEntry generateStorageBindGroupLayoutEntry(const uint32_t bindingNumber, const wgpu::StorageTextureAccess access);
-		wgpu::BindGroupLayoutEntry generateBindGroupLayoutEntry(const uint32_t bindingNumber);
+		wgpu::BindGroupLayoutEntry generateStorageBindGroupLayoutEntry(
+			const uint32_t bindingNumber,
+			const wgpu::StorageTextureAccess access,
+			const wgpu::ShaderStage visibility
+		);
+		wgpu::BindGroupLayoutEntry generateBindGroupLayoutEntry(
+			const uint32_t bindingNumber,
+			const wgpu::ShaderStage visibility
+		);
 		wgpu::BindGroupEntry generateBindGroupEntry(const uint32_t bindingNumber);
 	};
 }

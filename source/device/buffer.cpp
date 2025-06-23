@@ -2,13 +2,16 @@
 #include "buffer.hpp"
 
 namespace device {
-	wgpu::BindGroupLayoutEntry Buffer::generateBindGroupLayoutEntry(const uint32_t bindingNumber, const wgpu::BufferBindingType type )
+	wgpu::BindGroupLayoutEntry Buffer::generateBindGroupLayoutEntry(
+		const uint32_t bindingNumber, 
+		const wgpu::ShaderStage visibility
+	)
 	{
 		return wgpu::BindGroupLayoutEntry{
 			.binding = bindingNumber,
-			.visibility = this->visibility,
+			.visibility = visibility,
 			.buffer = {
-				.type = type,
+				.type = this->type,
 				.minBindingSize = this->buffer.GetSize(),
 			}
 		};

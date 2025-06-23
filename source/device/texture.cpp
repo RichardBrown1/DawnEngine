@@ -111,7 +111,6 @@ namespace {
 namespace device {
 	Texture::Texture(const wgpu::Device* device, const descriptor::Texture& descriptor)
 		: format(descriptor.format),
-		visibility(descriptor.visibility),
 		sampleType(descriptor.sampleType)
 	{
 		createTextureView(
@@ -128,7 +127,7 @@ namespace device {
 	Texture::Texture(
 		const wgpu::Device* device,
 		const descriptor::TextureFromFile& descriptor
-	) : visibility(descriptor.visibility) {
+	)  {
 		//this->sampleType = sampleType;
 		getTextureView(
 			device,
@@ -141,11 +140,12 @@ namespace device {
 
 	wgpu::BindGroupLayoutEntry Texture::generateStorageBindGroupLayoutEntry(
 		const uint32_t bindingNumber, 
-		const wgpu::StorageTextureAccess access
+		const wgpu::StorageTextureAccess access,
+		const wgpu::ShaderStage visibility
 	) {
 		return wgpu::BindGroupLayoutEntry{
 			.binding = bindingNumber,
-			.visibility = this->visibility,
+			.visibility = visibility,
 			.storageTexture = {
 				.access = access,
 				.format = this->format,
@@ -154,10 +154,12 @@ namespace device {
 		};
 	}
 
-	wgpu::BindGroupLayoutEntry Texture::generateBindGroupLayoutEntry(const uint32_t bindingNumber) {
+	wgpu::BindGroupLayoutEntry Texture::generateBindGroupLayoutEntry(
+		const uint32_t bindingNumber,
+		const wgpu::ShaderStage visibility) {
 		return wgpu::BindGroupLayoutEntry{
 			.binding = bindingNumber,
-			.visibility = this->visibility,
+			.visibility = visibility,
 			.texture = {
 				.sampleType = this->sampleType,
 				.viewDimension = this->viewDimension,
