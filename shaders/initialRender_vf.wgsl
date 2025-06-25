@@ -61,7 +61,7 @@ struct FSOutput {
 	@location(0) worldPosition : vec4<f32>,
 	@location(1) baseColor : vec4<f32>,
 	@location(2) normal : vec4<f32>,
-	@location(3) texCoord : vec2<f32>,
+	@location(3) texCoord : u32,
 };
 
 @fragment
@@ -69,7 +69,7 @@ fn fs_main(input : VSOutput) -> FSOutput {
 	var output : FSOutput;
 	output.worldPosition = input.worldPosition;
 	output.normal = vec4<f32>(input.normal, 1.0);
-	output.texCoord = input.texCoord;
+	output.texCoord = pack2x16unorm(input.texCoord);
 
 	let material : Material = materials[materialIds[input.instanceIndex]];
 	output.baseColor = material.pbrMetallicRoughness.baseColor;
