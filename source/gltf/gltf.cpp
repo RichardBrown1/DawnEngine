@@ -135,17 +135,9 @@ namespace {
 		}
 
 		view = glm::rotate(view, glm::pi<float>(), glm::f32vec3{0.0, 1.0, 0.0});
-		//auto& rotation = view[2];
-
-		constexpr glm::f32mat4x4 zMirror = {
-			1.0,  0.0,  0.0,  0.0,
-			0.0,  1.0,  0.0,  0.0,
-			0.0,  0.0, -1.0,  0.0,
-			0.0,  0.0,  0.0,  1.0,
-		};
 
 		structs::host::H_Camera h_camera = {
-			.projection = zMirror * glm::perspectiveRH_ZO(perspectiveCamera->yfov, screenDimensions[0] / (float)screenDimensions[1], perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f)),
+			.projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, screenDimensions[0] / (float)screenDimensions[1], perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f)),
 			.position = glm::f32vec3(transform[3]),
 			.forward = glm::normalize(glm::f32vec3(view[2])) * 8.0f,
 		};
@@ -158,7 +150,6 @@ namespace {
 		fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 			[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
 				glm::f32mat4x4 matrix = reinterpret_cast<glm::f32mat4x4&>(m);
-				//matrix = glm::rotate(matrix, glm::half_pi<float>(), glm::vec3(0.0, 1.0, 0.0));
 
 				if (node.meshIndex.has_value()) {
 					addMeshData(object, asset, matrix, static_cast<uint32_t>(node.meshIndex.value()));

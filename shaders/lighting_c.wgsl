@@ -18,7 +18,7 @@ struct Light {
 
 @group(0) @binding(0) var accumulatorTexture: texture_storage_2d<r32uint, read_write>;
 @group(0) @binding(1) var worldPositionTexture: texture_storage_2d<rgba32float, read>;
-@group(0) @binding(2) var normalTexture: texture_storage_2d<bgra8unorm, read>;
+@group(0) @binding(2) var normalTexture: texture_storage_2d<rgba32float>, read>;
 
 @group(1) @binding(0) var<uniform> light: Light;
 
