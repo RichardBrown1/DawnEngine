@@ -6,7 +6,7 @@
 
 namespace device {
 	struct RenderResources {
-		RenderResources(const WGPUContext& wgpuContext);
+		RenderResources(WGPUContext* wgpuContext);
 
 		const wgpu::TextureFormat worldPositionTextureFormat = wgpu::TextureFormat::RGBA32Float;
 		const wgpu::TextureFormat baseColorTextureFormat = wgpu::TextureFormat::RGBA32Float;
