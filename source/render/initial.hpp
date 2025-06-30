@@ -7,28 +7,23 @@
 #include "../constants.hpp"
 #include "../structs/host.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
+#include "../device/resources.hpp"
 
 namespace render {
 	namespace initial::descriptor {
-		struct GenerateGpuObjects {
-			wgpu::Buffer& cameraBuffer;
-			wgpu::Buffer& transformBuffer;
-			wgpu::Buffer& instancePropertiesBuffer;
-			wgpu::Buffer& materialBuffer;
-		};
-
 		struct DoCommands {
 			wgpu::CommandEncoder& commandEncoder;
 			wgpu::Buffer& vertexBuffer;
 			wgpu::Buffer& indexBuffer;
 			std::vector<structs::host::DrawCall>& drawCalls;
+			wgpu::TextureView& depthTextureView;
 		};
 	}
 
 	class Initial {
 	public:
 		Initial(WGPUContext* wgpuContext);
-		void generateGpuObjects(const render::initial::descriptor::GenerateGpuObjects* descriptor);
+		void generateGpuObjects(const DeviceResources* deviceResources);
 		void doCommands(const render::initial::descriptor::DoCommands* descriptor);
 
 	private:
@@ -48,16 +43,11 @@ namespace render {
 		wgpu::ShaderModule _vertexShaderModule;
 		wgpu::ShaderModule _fragmentShaderModule;
 
-		std::array<wgpu::RenderPassColorAttachment, 4> _renderPassColorAttachments;
+		std::array<wgpu::RenderPassColorAttachment, 0> _renderPassColorAttachments;
 
 		wgpu::PipelineLayout getPipelineLayout();
-		void createBindGroupLayout();
-		void createPipeline();
-		void createBindGroup(
-			const wgpu::Buffer& cameraBuffer,
-			const wgpu::Buffer& transformBuffer,
-			const wgpu::Buffer& instancePropertiesBuffer,
-			const wgpu::Buffer& materialBuffer
-		);
+		void createBindGroupLayout(const DeviceResources* deviceResources);
+		void createPipeline(const wgpu::TextureFormat depthTextureFormat);
+		void createBindGroup(const DeviceResources* deviceResources);
 	};
 }

@@ -15,20 +15,17 @@ namespace render {
 		_fragmentShaderModule = device::createWGSLShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	};
 
-	void Initial::generateGpuObjects(const render::initial::descriptor::GenerateGpuObjects* descriptor) {
-		createBindGroupLayout();
-		createPipeline();
-		createBindGroup(
-			descriptor->cameraBuffer,
-			descriptor->transformBuffer,
-			descriptor->instancePropertiesBuffer,
-			descriptor->materialBuffer
-		);
+	void Initial::generateGpuObjects(
+		const DeviceResources* deviceResources
+	) {
+		createBindGroupLayout(deviceResources);
+		createPipeline(deviceResources->render.depthTextureFormat);
+		createBindGroup(deviceResources);
 	};
 
 	void Initial::doCommands(const render::initial::descriptor::DoCommands* descriptor) {
 		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
-			.view = depthTextureView,
+			.view = descriptor->depthTextureView,
 			.depthLoadOp = wgpu::LoadOp::Clear,
 			.depthStoreOp = wgpu::StoreOp::Store,
 			.depthClearValue = 1.0f,
@@ -58,7 +55,7 @@ namespace render {
 		renderPassEncoder.End();
 	}
 
-	void Initial::createPipeline() {
+	void Initial::createPipeline(const wgpu::TextureFormat depthTextureFormat) {
 		const wgpu::PipelineLayout pipelineLayout = getPipelineLayout();
 
 		const wgpu::VertexState vertexState = {
@@ -74,13 +71,8 @@ namespace render {
 			.depthCompare = wgpu::CompareFunction::Less,
 		};
 
-		const wgpu::ColorTargetState texCoordColorTargetState = {
-			.format = texCoordTextureFormat,
-		};
+		const std::array<wgpu::ColorTargetState, 0> colorTargetStates = {};
 
-		const std::array<wgpu::ColorTargetState, 1> colorTargetStates = {
-			texCoordColorTargetState,
-		};
 		const wgpu::FragmentState fragmentState = {
 			.module = _fragmentShaderModule,
 			.entryPoint = enums::EntryPoint::FRAGMENT,
@@ -107,10 +99,7 @@ namespace render {
 	}
 
 	void Initial::createBindGroup(
-		const wgpu::Buffer& cameraBuffer,
-		const wgpu::Buffer& transformBuffer,
-		const wgpu::Buffer& instancePropertiesBuffer,
-		const wgpu::Buffer& materialBuffer
+		const DeviceResources* deviceResources
 	) {
 		const wgpu::BindGroupEntry screenDimensionsBindGroupEntry = {
 			.binding = 0,
@@ -119,42 +108,41 @@ namespace render {
 		};
 		const wgpu::BindGroupEntry cameraBindGroupEntry = {
 			.binding = 1,
-			.buffer = cameraBuffer,
-			.size = cameraBuffer.GetSize(),
+			.buffer = deviceResources->scene.cameras,
+			.size = deviceResources->scene.cameras.GetSize(),
 		};
 		const wgpu::BindGroupEntry transformBindGroupEntry = {
 			.binding = 2,
-			.buffer = transformBuffer,
-			.size = transformBuffer.GetSize(),
+			.buffer = deviceResources->scene.transforms,
+			.size = deviceResources->scene.transforms.GetSize(),
 		};
-		const wgpu::BindGroupEntry instancePropertiesBindGroupEntry = {
+		const wgpu::BindGroupEntry materialIndicesBindGroupEntry = {
 			.binding = 3,
-			.buffer = instancePropertiesBuffer,
-			.size = instancePropertiesBuffer.GetSize(),
+			.buffer = deviceResources->scene.materialIndices,
+			.size = deviceResources->scene.materialIndices.GetSize(),
 		};
 		const wgpu::BindGroupEntry materialBindGroupEntry = {
 			.binding = 4,
-			.buffer = materialBuffer,
-			.size = materialBuffer.GetSize(),
+			.buffer = deviceResources->scene.materials,
+			.size = deviceResources->scene.materials.GetSize(),
 		};
-		const wgpu::BindGroupEntry baseColorTextureIdBindGroupEntry = {
+		const wgpu::BindGroupEntry baseColorIdBindGroupEntry = {
 			.binding = 5,
-			.buffer = baseColorTextureIdBuffer,
-			.size = baseColorTextureIdBuffer.GetSize(),
+			.textureView = deviceResources->render.baseColorIdTextureView,
 		};
-		const wgpu::BindGroupEntry normalIdTextureIdBindGroupEntry = {
+		const wgpu::BindGroupEntry normalIdBindGroupEntry = {
 			.binding = 6,
-			.buffer = normalTextureIdBuffer,
-			.size = normalTextureIdBuffer.GetSize(),
+			.textureView = deviceResources->render.normalIdTextureView,
 		};
+
 		std::array<wgpu::BindGroupEntry, 7> bindGroupEntries = {
 			screenDimensionsBindGroupEntry,
 			cameraBindGroupEntry,
 			transformBindGroupEntry,
-			instancePropertiesBindGroupEntry,
+			materialIndicesBindGroupEntry,
 			materialBindGroupEntry,
-			baseColorTextureIdBindGroupEntry,
-			normalIdTextureIdBindGroupEntry
+			baseColorIdBindGroupEntry,
+			normalIdBindGroupEntry,
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 			.label = "initial render group",
@@ -165,7 +153,7 @@ namespace render {
 		_bindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
 	}
 
-	void Initial::createBindGroupLayout() {
+	void Initial::createBindGroupLayout(const DeviceResources* deviceResources) {
 		const wgpu::BindGroupLayoutEntry screenDimensionBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Fragment,
@@ -206,21 +194,23 @@ namespace render {
 				.minBindingSize = sizeof(structs::Material),
 			},
 		};
-		const wgpu::BindGroupLayoutEntry baseColorTextureIdBindGroupLayoutEntry = {
+		const wgpu::BindGroupLayoutEntry baseColorIdBindGroupLayoutEntry = {
 			.binding = 5,
 			.visibility = wgpu::ShaderStage::Fragment,
-			.buffer = {
-				.type = wgpu::BufferBindingType::Storage,
-				.minBindingSize = baseColorTextureIdBuffer.GetSize(),
-			},
+			.storageTexture = {
+				.access = wgpu::StorageTextureAccess::WriteOnly,
+				.format = deviceResources->render.baseColorIdTextureFormat,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
+			}
 		};
-		const wgpu::BindGroupLayoutEntry normalTextureIdBindGroupLayoutEntry = {
+		const wgpu::BindGroupLayoutEntry normalIdBindGroupLayoutEntry = {
 			.binding = 6,
 			.visibility = wgpu::ShaderStage::Fragment,
-			.buffer = {
-				.type = wgpu::BufferBindingType::Storage,
-				.minBindingSize = normalTextureIdBuffer.GetSize(),
-			},
+			.storageTexture = {
+				.access = wgpu::StorageTextureAccess::WriteOnly,
+				.format = deviceResources->render.normalIdTextureFormat,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
+			}
 		};
 
 		std::array<wgpu::BindGroupLayoutEntry, 7> bindGroupLayoutEntries = {
@@ -229,9 +219,10 @@ namespace render {
 			transformBindGroupLayoutEntry,
 			instancePropertiesBindGroupLayoutEntry,
 			materialBindGroupLayoutEntry,
-			baseColorTextureIdBindGroupLayoutEntry,
-			normalTextureIdBindGroupLayoutEntry,
+			baseColorIdBindGroupLayoutEntry,
+			normalIdBindGroupLayoutEntry,
 		};
+
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
 			.label = "initial render bind group layout",
 			.entryCount = bindGroupLayoutEntries.size(),

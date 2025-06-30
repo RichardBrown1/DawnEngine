@@ -1,0 +1,50 @@
+#pragma once
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <dawn/webgpu_cpp.h>
+#include "../wgpuContext/wgpuContext.hpp"
+#include "../constants.hpp"
+
+struct DeviceResources {
+	RenderResources render;
+	SceneResources scene;
+};
+
+struct RenderResources {
+	RenderResources(WGPUContext* wgpuContext);
+
+	const wgpu::TextureFormat worldPositionTextureFormat = wgpu::TextureFormat::RGBA32Float;
+	const wgpu::TextureFormat baseColorTextureFormat = wgpu::TextureFormat::RGBA32Float;
+	const wgpu::TextureFormat normalTextureFormat = wgpu::TextureFormat::RGBA32Float; //normal texture can tangent-ized	if I need it
+	const wgpu::TextureFormat texCoordTextureFormat = wgpu::TextureFormat::R32Uint; //Packed Unorm16x2
+	const wgpu::TextureFormat baseColorIdTextureFormat = wgpu::TextureFormat::R32Uint;
+	const wgpu::TextureFormat normalIdTextureFormat = wgpu::TextureFormat::R32Uint;
+	const wgpu::TextureFormat depthTextureFormat = constants::DEPTH_FORMAT;
+
+	wgpu::TextureView worldPositionTextureView;
+	wgpu::TextureView baseColorTextureView;
+	wgpu::TextureView normalTextureView;
+	wgpu::TextureView texCoordTextureView;
+	wgpu::TextureView depthTextureView;
+	wgpu::TextureView baseColorIdTextureView;
+	wgpu::TextureView normalIdTextureView;
+};
+
+struct SceneResources {
+	wgpu::Buffer vbo;
+	wgpu::Buffer transforms;
+	wgpu::Buffer indices;
+	wgpu::Buffer materialIndices; //MaterialId for each instance
+
+	std::vector<wgpu::Buffer> lights;
+	wgpu::Buffer cameras;
+
+	wgpu::Buffer materials;
+	wgpu::Buffer samplerTexturePairs;
+
+	std::unordered_map<uint32_t, wgpu::Sampler> samplers;
+	std::vector<wgpu::Texture> textures;
+	std::vector<wgpu::TextureView> textureViews;
+};
+
