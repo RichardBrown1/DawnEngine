@@ -19,7 +19,7 @@ namespace render {
 		const DeviceResources* deviceResources
 	) {
 		createBindGroupLayout(deviceResources);
-		createPipeline(deviceResources->render.depthTextureFormat);
+		createPipeline(deviceResources->render->depthTextureFormat);
 		createBindGroup(deviceResources);
 	};
 
@@ -108,31 +108,31 @@ namespace render {
 		};
 		const wgpu::BindGroupEntry cameraBindGroupEntry = {
 			.binding = 1,
-			.buffer = deviceResources->scene.cameras,
-			.size = deviceResources->scene.cameras.GetSize(),
+			.buffer = deviceResources->scene->cameras,
+			.size = deviceResources->scene->cameras.GetSize(),
 		};
 		const wgpu::BindGroupEntry transformBindGroupEntry = {
 			.binding = 2,
-			.buffer = deviceResources->scene.transforms,
-			.size = deviceResources->scene.transforms.GetSize(),
+			.buffer = deviceResources->scene->transforms,
+			.size = deviceResources->scene->transforms.GetSize(),
 		};
 		const wgpu::BindGroupEntry materialIndicesBindGroupEntry = {
 			.binding = 3,
-			.buffer = deviceResources->scene.materialIndices,
-			.size = deviceResources->scene.materialIndices.GetSize(),
+			.buffer = deviceResources->scene->materialIndices,
+			.size = deviceResources->scene->materialIndices.GetSize(),
 		};
 		const wgpu::BindGroupEntry materialBindGroupEntry = {
 			.binding = 4,
-			.buffer = deviceResources->scene.materials,
-			.size = deviceResources->scene.materials.GetSize(),
+			.buffer = deviceResources->scene->materials,
+			.size = deviceResources->scene->materials.GetSize(),
 		};
 		const wgpu::BindGroupEntry baseColorIdBindGroupEntry = {
 			.binding = 5,
-			.textureView = deviceResources->render.baseColorIdTextureView,
+			.textureView = deviceResources->render->baseColorIdTextureView,
 		};
 		const wgpu::BindGroupEntry normalIdBindGroupEntry = {
 			.binding = 6,
-			.textureView = deviceResources->render.normalIdTextureView,
+			.textureView = deviceResources->render->normalIdTextureView,
 		};
 
 		std::array<wgpu::BindGroupEntry, 7> bindGroupEntries = {
@@ -199,7 +199,7 @@ namespace render {
 			.visibility = wgpu::ShaderStage::Fragment,
 			.storageTexture = {
 				.access = wgpu::StorageTextureAccess::WriteOnly,
-				.format = deviceResources->render.baseColorIdTextureFormat,
+				.format = deviceResources->render->baseColorIdTextureFormat,
 				.viewDimension = wgpu::TextureViewDimension::e2D,
 			}
 		};
@@ -208,7 +208,7 @@ namespace render {
 			.visibility = wgpu::ShaderStage::Fragment,
 			.storageTexture = {
 				.access = wgpu::StorageTextureAccess::WriteOnly,
-				.format = deviceResources->render.normalIdTextureFormat,
+				.format = deviceResources->render->normalIdTextureFormat,
 				.viewDimension = wgpu::TextureViewDimension::e2D,
 			}
 		};

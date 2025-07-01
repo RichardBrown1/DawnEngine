@@ -13,11 +13,13 @@ namespace render {
 
 	void Ultimate::generateGpuObjects(const DeviceResources* deviceResources) {
 		createBindGroupLayout(
+			deviceResources->render->ultimateTextureFormat,
 			deviceResources->render->baseColorTextureFormat,
 			deviceResources->render->lightingTextureFormat
 		);
 		createPipeline();
 		createBindGroup(
+			deviceResources->render->ultimateTextureView,
 			deviceResources->render->baseColorTextureView,
 			deviceResources->render->lightingTextureView
 		);
@@ -50,6 +52,7 @@ namespace render {
 	}
 
 	void Ultimate::createBindGroup(
+		wgpu::TextureView& ultimateTextureView,
 		wgpu::TextureView& baseColorTextureView,
 		wgpu::TextureView& lightingTextureView
 		//	wgpu::TextureView& shadowMapTextureView
@@ -82,6 +85,7 @@ namespace render {
 	}
 
 	void Ultimate::createBindGroupLayout(
+		wgpu::TextureFormat ultimateTextureFormat,
 		wgpu::TextureFormat baseColorTextureFormat,
 		wgpu::TextureFormat lightingTextureFormat
 	) {

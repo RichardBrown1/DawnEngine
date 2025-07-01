@@ -47,11 +47,13 @@ namespace render {
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createBindGroupLayout(
+			wgpu::TextureFormat ultimateTextureFormat,
 			wgpu::TextureFormat baseColorTextureFormat,
 			wgpu::TextureFormat lightingTextureFormat
 		);
 		void createPipeline();
 		void createBindGroup(
+			wgpu::TextureView& ultimateTextureView,
 			wgpu::TextureView& baseColorTextureView,
 			wgpu::TextureView& lightingTextureView
 		);

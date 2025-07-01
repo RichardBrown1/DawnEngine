@@ -39,7 +39,6 @@ class HostSceneResources {
 			const std::string& gltfFileName,
 			const std::array<uint32_t, 2> screenDimensions
 		);
-		SceneResources ToDevice(WGPUContext& wgpuContext);
 
 	private:
 		void addDefaults(std::array<uint32_t, 2> screenDimensions);

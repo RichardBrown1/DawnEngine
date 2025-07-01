@@ -5,6 +5,7 @@
 #include <dawn/webgpu_cpp.h>
 #include "../wgpuContext/wgpuContext.hpp"
 #include "../constants.hpp"
+#include "../host/host.hpp"
 
 struct RenderResources {
 	RenderResources(WGPUContext* wgpuContext);
@@ -34,6 +35,8 @@ struct RenderResources {
 };
 
 struct SceneResources {
+	SceneResources(WGPUContext* wgpuContext, HostSceneResources& host);
+
 	wgpu::Buffer vbo;
 	wgpu::Buffer transforms;
 	wgpu::Buffer indices;

@@ -45,7 +45,7 @@ Engine::Engine() {
 	_drawCalls = h_objects.drawCalls;
 
 	_deviceResources->render = new RenderResources(&_wgpuContext);
-	_deviceResources->scene =  h_objects.ToDevice(_wgpuContext);
+	//_deviceResources->scene = new SceneResources(&_wgpuContext, h_objects);
 
 	render::Initial* initialRender = new render::Initial(&_wgpuContext);
 	_initialRender = initialRender;
