@@ -12,7 +12,7 @@
 #include <format>
 
 namespace host {
-	SceneResources::SceneResources(
+	HostSceneResources::HostSceneResources(
 	const std::string& gltfDirectory,
 	const std::string& gltfFileName,
   const std::array<uint32_t, 2> screenDimensions) {
@@ -23,7 +23,7 @@ namespace host {
 	};
 	
 	//defaults if none found
-	void SceneResources::addDefaults(const std::array<uint32_t, 2> screenDimensions) {
+	void HostSceneResources::addDefaults(const std::array<uint32_t, 2> screenDimensions) {
 		if (cameras.size() == 0) {
 			cameras.push_back(structs::host::H_Camera{
 				.projection = glm::perspectiveRH_ZO(45.0f, screenDimensions[0] / (float)screenDimensions[1], 0.00001f, 1024.0f),
@@ -41,7 +41,7 @@ namespace host {
 		}
 	}
 
-	void SceneResources::postProcessData() {
+	void HostSceneResources::postProcessData() {
 		for (auto& m : materials) {
 			const uint32_t baseColorStpId = m.pbrMetallicRoughness.baseColorTextureInfo.index;
 			if (baseColorStpId != UINT32_MAX) {
@@ -58,7 +58,7 @@ namespace host {
 		}
 	}
 
-	device::SceneResources SceneResources::ToDevice(
+	HostSceneResources HostSceneResources::ToDevice(
 		WGPUContext& wgpuContext
 	) {
 		device::SceneResources d_objects;

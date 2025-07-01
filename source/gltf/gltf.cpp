@@ -21,7 +21,7 @@
 #include "../enums.hpp"
 
 namespace {
-	void addMeshData(host::SceneResources& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
+	void addMeshData(HostSceneResources& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
 		//		if (_meshIndexToDrawInfoMap.count(meshIndex)) {
 		//			++_meshIndexToDrawInfoMap[meshIndex]->instanceCount;
 		//			return;
@@ -93,7 +93,7 @@ namespace {
 		}
 	}
 
-	void addLightData(host::SceneResources& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
+	void addLightData(HostSceneResources& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
 		structs::Light l = {};
 		glm::f32quat quaterion;
 		glm::f32vec3 scale, skew;
@@ -118,7 +118,7 @@ namespace {
 	}
 
 	void addCameraData(
-		host::SceneResources& objects,
+		HostSceneResources& objects,
 		fastgltf::Asset& asset,
 		glm::f32mat4x4& transform,
 		uint32_t cameraIndex,
@@ -145,7 +145,7 @@ namespace {
 		objects.cameras.push_back(h_camera);
 	}
 
-	void processNodes(host::SceneResources& object, fastgltf::Asset& asset, const std::array<uint32_t, 2> screenDimensions) {
+	void processNodes(HostSceneResources& object, fastgltf::Asset& asset, const std::array<uint32_t, 2> screenDimensions) {
 		const size_t sceneIndex = asset.defaultScene.value_or(0);
 		fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 			[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
@@ -236,7 +236,7 @@ namespace gltf {
 		return std::move(wholeGltf.get());
 	}
 
-	void processAsset(host::SceneResources& hostObjects, fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
+	void processAsset(HostSceneResources& hostObjects, fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
 		processNodes(hostObjects, asset, screenDimensions);
 
 		hostObjects.materials.resize(asset.materials.size());

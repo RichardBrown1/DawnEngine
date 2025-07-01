@@ -37,7 +37,7 @@ namespace {
 }
 
 Engine::Engine() {
-	host::SceneResources h_objects = host::SceneResources(
+	HostSceneResources h_objects = HostSceneResources(
 		gltfDirectory,
 		gltfFileName,
 		std::array<uint32_t, 2>{_wgpuContext.getScreenDimensions().width, _wgpuContext.getScreenDimensions().height}
