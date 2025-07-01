@@ -9,6 +9,7 @@ const std::string texCoordLabel = "texcoord";
 const std::string depthTextureLabel = "depth texture";
 const std::string baseColorIdLabel = "base color id";
 const std::string normalIdLabel = "normal id";
+const std::string lightingLabel = "lighting";
 
 const wgpu::TextureUsage worldPositionTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 const wgpu::TextureUsage baseColorTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
@@ -17,6 +18,7 @@ const wgpu::TextureUsage texCoordTextureUsage = wgpu::TextureUsage::RenderAttach
 const wgpu::TextureUsage baseColorIdTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 const wgpu::TextureUsage normalIdTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 const wgpu::TextureUsage depthTextureUsage = wgpu::TextureUsage::RenderAttachment;
+const wgpu::TextureUsage lightingTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 
 RenderResources::RenderResources(WGPUContext* wgpuContext) {
 	texture::descriptor::CreateTextureView worldPositionTextureViewDescriptor = {
@@ -88,4 +90,14 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 		.outputTextureView = depthTextureView,
 	};
 	texture::createTextureView(&depthTextureViewDescriptor);
+
+	texture::descriptor::CreateTextureView lightingTextureViewDescriptor = {
+		.label = lightingLabel,
+		.device = &wgpuContext->device,
+		.textureUsage = lightingTextureUsage,
+		.textureDimensions = wgpuContext->getScreenDimensions(),
+		.textureFormat = lightingTextureFormat,
+		.outputTextureView = lightingTextureView,
+	};
+	texture::createTextureView(&lightingTextureViewDescriptor);
 }
