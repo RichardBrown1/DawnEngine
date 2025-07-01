@@ -6,11 +6,6 @@
 #include "../wgpuContext/wgpuContext.hpp"
 #include "../constants.hpp"
 
-struct DeviceResources {
-	RenderResources render;
-	SceneResources scene;
-};
-
 struct RenderResources {
 	RenderResources(WGPUContext* wgpuContext);
 
@@ -48,3 +43,7 @@ struct SceneResources {
 	std::vector<wgpu::TextureView> textureViews;
 };
 
+struct DeviceResources {
+	RenderResources render;
+	SceneResources scene;
+};

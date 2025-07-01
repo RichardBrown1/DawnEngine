@@ -88,6 +88,4 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 		.outputTextureView = depthTextureView,
 	};
 	texture::createTextureView(&depthTextureViewDescriptor);
-
-}
 }
