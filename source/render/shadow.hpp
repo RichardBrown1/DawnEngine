@@ -4,6 +4,7 @@
 #include <string>
 #include "../structs/host.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
+#include "../device/resources.hpp"
 
 namespace render {
 	namespace shadow {
@@ -18,6 +19,7 @@ namespace render {
 				wgpu::Buffer& vertexBuffer;
 				wgpu::Buffer& indexBuffer;
 				std::vector<structs::host::DrawCall>& drawCalls;
+				wgpu::TextureView shadowMapTextureView;
 			};
 		}
 	}
@@ -25,10 +27,9 @@ namespace render {
 	class Shadow {
 	public:
 		Shadow(WGPUContext* wgpuContext);
-		void generateGpuObjects(const render::shadow::descriptor::GenerateGpuObjects* descriptor);
+		void generateGpuObjects(const DeviceResources* deviceResources);
 		void doCommands(const render::shadow::descriptor::DoCommands* descriptor);
 
-		wgpu::TextureView shadowMapTextureView;
 	private:
 		const wgpu::StringView VERTEX_SHADER_LABEL = "shadow render vertex shader";
 		const std::string VERTEX_SHADER_PATH = "shaders/shadowMap_v.spv";
@@ -50,7 +51,9 @@ namespace render {
 		wgpu::PipelineLayout getPipelineLayout();
 		void createBindGroupLayout();
 		void createPipeline();
-		void createBindGroup(wgpu::Buffer& transformBuffer, wgpu::Buffer& lightBuffer);
-		void createShadowMapTextureView();
+		void createBindGroup(
+			const wgpu::Buffer transformBuffer,
+			const wgpu::Buffer lightBuffer
+		);
 	};
 }

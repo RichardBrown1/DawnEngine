@@ -9,6 +9,7 @@
 #include "../../enums.hpp"
 #include <array>
 #include <cstdint>
+#include "../../device/resources.hpp"
 
 namespace render {
 	namespace accumulator {
@@ -18,8 +19,8 @@ namespace render {
 				wgpu::TextureFormat accumulatorTextureFormat;
 				wgpu::TextureView& texCoordTextureView;
 				wgpu::TextureFormat texCoordTextureFormat;
-				wgpu::Buffer textureIdBuffer; //acts like a texture map
-				uint32_t textureIdBufferSize;
+				wgpu::TextureView& textureIdTextureView;
+				wgpu::TextureFormat textureIdTextureFormat;
 
 				//for input bind group
 				std::vector<uint32_t>& stpIds;
@@ -40,11 +41,11 @@ namespace render {
 		BaseAccumulator(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {};
 
 	public:
-		void generateGpuObjects(const render::accumulator::descriptor::GenerateGpuObjects* descriptor) {
+		void generateGpuObjects(const accumulator::descriptor::GenerateGpuObjects* descriptor) {
 			createAccumulatorBindGroupLayout(
 				descriptor->accumulatorTextureFormat,
 				descriptor->texCoordTextureFormat,
-				descriptor->textureIdBufferSize
+				descriptor->textureIdTextureFormat
 			);
 			createInputBindGroupLayout();
 			createComputePipeline();
@@ -52,7 +53,7 @@ namespace render {
 			createAccumulatorBindGroup(
 				descriptor->accumulatorTextureView,
 				descriptor->texCoordTextureView,
-				descriptor->textureIdBuffer
+				descriptor->textureIdTextureView
 			);
 
 			std::vector<wgpu::Buffer> inputInfoBuffers;

@@ -17,16 +17,18 @@ namespace render {
 		_fragmentShaderModule = device::createShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	}
 
-	void Shadow::generateGpuObjects(const render::shadow::descriptor::GenerateGpuObjects* descriptor) {
+	void Shadow::generateGpuObjects(const DeviceResources* deviceResources) {
 		createBindGroupLayout();
 		createPipeline();
-		createBindGroup(descriptor->transformBuffer, descriptor->lightBuffer);
-		createShadowMapTextureView();
+		createBindGroup(
+			deviceResources->scene.transforms,
+			deviceResources->scene.lights.at(0)
+		);
 	}
 
 	void Shadow::doCommands(const render::shadow::descriptor::DoCommands* descriptor) {
 		const wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
-			.view = shadowMapTextureView,
+			.view = descriptor->shadowMapTextureView,
 			.depthLoadOp = wgpu::LoadOp::Clear,
 			.depthStoreOp = wgpu::StoreOp::Store,
 			.depthClearValue = 1.0f,
@@ -140,7 +142,10 @@ namespace render {
 		_bindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
-	void Shadow::createBindGroup(wgpu::Buffer& transformBuffer, wgpu::Buffer& lightBuffer) {
+	void Shadow::createBindGroup(
+		const wgpu::Buffer transformBuffer, 
+		const wgpu::Buffer lightBuffer
+	) {
 		const wgpu::BindGroupEntry transformBindGroupEntry = {
 			.binding = 0,
 			.buffer = transformBuffer,
@@ -164,15 +169,4 @@ namespace render {
 		_bindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
 	}
 
-	void Shadow::createShadowMapTextureView() {
-		const texture::descriptor::CreateTextureView createTextureViewDescriptor = {
-			.label = "shadow texture view",
-			.device = &_wgpuContext->device,
-			.textureUsage = _shadowTextureUsage,
-			.textureDimensions = _shadowDimensions,
-			.textureFormat = constants::DEPTH_FORMAT,
-			.outputTextureView = shadowMapTextureView,
-		};
-		texture::createTextureView(&createTextureViewDescriptor);
-	}
 }

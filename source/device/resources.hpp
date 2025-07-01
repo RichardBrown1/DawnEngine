@@ -18,6 +18,7 @@ struct RenderResources {
 	const wgpu::TextureFormat depthTextureFormat = constants::DEPTH_FORMAT;
 
 	const wgpu::TextureFormat lightingTextureFormat = wgpu::TextureFormat::R32Uint;
+	const wgpu::TextureFormat shadowTextureFormat = constants::DEPTH_FORMAT;
 
 	wgpu::TextureView worldPositionTextureView;
 	wgpu::TextureView baseColorTextureView;
@@ -27,6 +28,7 @@ struct RenderResources {
 	wgpu::TextureView normalIdTextureView;
 	wgpu::TextureView depthTextureView;
 	wgpu::TextureView lightingTextureView;
+	wgpu::TextureView shadowTextureView;
 };
 
 struct SceneResources {

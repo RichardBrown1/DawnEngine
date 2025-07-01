@@ -10,6 +10,7 @@ const std::string depthTextureLabel = "depth texture";
 const std::string baseColorIdLabel = "base color id";
 const std::string normalIdLabel = "normal id";
 const std::string lightingLabel = "lighting";
+const std::string shadowLabel = "shadow";
 
 const wgpu::TextureUsage worldPositionTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 const wgpu::TextureUsage baseColorTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
@@ -19,9 +20,12 @@ const wgpu::TextureUsage baseColorIdTextureUsage = wgpu::TextureUsage::RenderAtt
 const wgpu::TextureUsage normalIdTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 const wgpu::TextureUsage depthTextureUsage = wgpu::TextureUsage::RenderAttachment;
 const wgpu::TextureUsage lightingTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+const wgpu::TextureUsage shadowTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+
+wgpu::Extent2D shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
 
 RenderResources::RenderResources(WGPUContext* wgpuContext) {
-	texture::descriptor::CreateTextureView worldPositionTextureViewDescriptor = {
+	const texture::descriptor::CreateTextureView worldPositionTextureViewDescriptor = {
 		.label = worldPositionLabel,
 		.device = &wgpuContext->device,
 		.textureUsage = worldPositionTextureUsage,
@@ -31,7 +35,7 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 	};
 	texture::createTextureView(&worldPositionTextureViewDescriptor);
 
-	texture::descriptor::CreateTextureView baseColorTextureViewDescriptor = {
+	const texture::descriptor::CreateTextureView baseColorTextureViewDescriptor = {
 		.label = baseColorLabel,
 		.device = &wgpuContext->device,
 		.textureUsage = baseColorTextureUsage,
@@ -41,7 +45,7 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 	};
 	texture::createTextureView(&baseColorTextureViewDescriptor);
 
-	texture::descriptor::CreateTextureView normalTextureViewDescriptor = {
+	const texture::descriptor::CreateTextureView normalTextureViewDescriptor = {
 		.label = normalLabel,
 		.device = &wgpuContext->device,
 		.textureUsage = normalTextureUsage,
@@ -51,7 +55,7 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 	};
 	texture::createTextureView(&normalTextureViewDescriptor);
 
-	texture::descriptor::CreateTextureView texCoordTextureViewDescriptor = {
+	const texture::descriptor::CreateTextureView texCoordTextureViewDescriptor = {
 		.label = texCoordLabel,
 		.device = &wgpuContext->device,
 		.textureUsage = texCoordTextureUsage,
@@ -61,7 +65,7 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 	};
 	texture::createTextureView(&texCoordTextureViewDescriptor);
 
-	texture::descriptor::CreateTextureView baseColorIdTextureViewDescriptor = {
+	const texture::descriptor::CreateTextureView baseColorIdTextureViewDescriptor = {
 		.label = baseColorIdLabel,
 		.device = &wgpuContext->device,
 		.textureUsage = baseColorIdTextureUsage,
@@ -71,7 +75,7 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 	};
 	texture::createTextureView(&baseColorIdTextureViewDescriptor);
 
-	texture::descriptor::CreateTextureView normalIdTextureViewDescriptor = {
+	const texture::descriptor::CreateTextureView normalIdTextureViewDescriptor = {
 		.label = normalIdLabel,
 		.device = &wgpuContext->device,
 		.textureUsage = normalIdTextureUsage,
@@ -81,7 +85,7 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 	};
 	texture::createTextureView(&normalIdTextureViewDescriptor);
 
-	texture::descriptor::CreateTextureView depthTextureViewDescriptor = {
+	const texture::descriptor::CreateTextureView depthTextureViewDescriptor = {
 		.label = depthTextureLabel,
 		.device = &wgpuContext->device,
 		.textureUsage = depthTextureUsage,
@@ -91,7 +95,7 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 	};
 	texture::createTextureView(&depthTextureViewDescriptor);
 
-	texture::descriptor::CreateTextureView lightingTextureViewDescriptor = {
+	const texture::descriptor::CreateTextureView lightingTextureViewDescriptor = {
 		.label = lightingLabel,
 		.device = &wgpuContext->device,
 		.textureUsage = lightingTextureUsage,
@@ -100,4 +104,15 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 		.outputTextureView = lightingTextureView,
 	};
 	texture::createTextureView(&lightingTextureViewDescriptor);
+
+	const texture::descriptor::CreateTextureView createTextureViewDescriptor = {
+		.label = shadowLabel,
+		.device = &wgpuContext->device,
+		.textureUsage = shadowTextureUsage,
+		.textureDimensions = shadowDimensions,
+		.textureFormat = constants::DEPTH_FORMAT,
+		.outputTextureView = shadowTextureView,
+	};
+	texture::createTextureView(&createTextureViewDescriptor);
+
 }
