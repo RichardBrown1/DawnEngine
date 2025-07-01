@@ -21,8 +21,8 @@ namespace render {
 		createBindGroupLayout();
 		createPipeline();
 		createBindGroup(
-			deviceResources->scene.transforms,
-			deviceResources->scene.lights.at(0)
+			deviceResources->scene->transforms,
+			deviceResources->scene->lights.at(0)
 		);
 	}
 
