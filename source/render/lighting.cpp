@@ -12,20 +12,20 @@ namespace render {
 
 	void Lighting::generateGpuObjects(const DeviceResources* deviceResources) {
 		createAccumulatorBindGroupLayout(
-			deviceResources->render.lightingTextureFormat,
-			deviceResources->render.worldPositionTextureFormat,
-			deviceResources->render.normalTextureFormat
+			deviceResources->render->lightingTextureFormat,
+			deviceResources->render->worldPositionTextureFormat,
+			deviceResources->render->normalTextureFormat
 		);
 		createInputBindGroupLayout();
 		createComputePipeline();
 
 		createAccumulatorBindGroup(
-			deviceResources->render.lightingTextureView,
-			deviceResources->render.worldPositionTextureView,
-			deviceResources->render.normalTextureView
+			deviceResources->render->lightingTextureView,
+			deviceResources->render->worldPositionTextureView,
+			deviceResources->render->normalTextureView
 		);
 		
-		for (auto& buffer : deviceResources->scene.lights) {
+		for (auto& buffer : deviceResources->scene->lights) {
 			insertInputBindGroup(buffer);
 		}
 	}
