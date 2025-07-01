@@ -8,6 +8,7 @@
 #include "../render/toSurface.hpp"
 #include "../render/lighting.hpp"
 #include "../render/clear.hpp"
+#include "../device/resources.hpp"
 
 class Engine {
 
@@ -24,7 +25,7 @@ private:
 //	const std::string gltfFileName = "BoomBoxWithAxes.gltf";
 
 	WGPUContext _wgpuContext;
-	device::SceneResources _deviceSceneResources;
+	DeviceResources* _deviceResources;
 	render::Initial* _initialRender;
 	render::Shadow* _shadowRender;
 	render::FourChannel* _baseColorAccumulatorRender;

@@ -58,10 +58,10 @@ namespace host {
 		}
 	}
 
-	HostSceneResources HostSceneResources::ToDevice(
+	SceneResources HostSceneResources::ToDevice(
 		WGPUContext& wgpuContext
 	) {
-		device::SceneResources d_objects;
+		SceneResources d_objects;
 		d_objects.vbo = device::createBuffer<structs::VBO>(
 			wgpuContext,
 			this->vbo,

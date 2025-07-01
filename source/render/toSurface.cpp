@@ -12,7 +12,7 @@ namespace render {
 		_fragmentShaderModule = device::createShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	};
 
-	void ToSurface::generateGpuObjects(const render::toSurface::descriptor::GenerateGpuObjects* descriptor) {
+	void ToSurface::generateGpuObjects(const DeviceResources* deviceResources) {
 		createSampler();
 		createBindGroupLayout();
 		createPipeline(descriptor->surfaceTextureFormat);

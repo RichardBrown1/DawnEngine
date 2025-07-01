@@ -19,6 +19,7 @@ struct RenderResources {
 
 	const wgpu::TextureFormat lightingTextureFormat = wgpu::TextureFormat::R32Uint;
 	const wgpu::TextureFormat shadowTextureFormat = constants::DEPTH_FORMAT;
+	const wgpu::TextureFormat ultimateTextureFormat = wgpu::TextureFormat::RGBA32Float;
 
 	wgpu::TextureView worldPositionTextureView;
 	wgpu::TextureView baseColorTextureView;
@@ -29,6 +30,7 @@ struct RenderResources {
 	wgpu::TextureView depthTextureView;
 	wgpu::TextureView lightingTextureView;
 	wgpu::TextureView shadowTextureView;
+	wgpu::TextureView ultimateTextureView;
 };
 
 struct SceneResources {
@@ -49,6 +51,6 @@ struct SceneResources {
 };
 
 struct DeviceResources {
-	RenderResources render;
-	SceneResources scene;
+	RenderResources* render;
+	SceneResources* scene;
 };

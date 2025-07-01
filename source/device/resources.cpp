@@ -11,6 +11,7 @@ const std::string baseColorIdLabel = "base color id";
 const std::string normalIdLabel = "normal id";
 const std::string lightingLabel = "lighting";
 const std::string shadowLabel = "shadow";
+const std::string ultimateLabel = "ultimate";
 
 const wgpu::TextureUsage worldPositionTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 const wgpu::TextureUsage baseColorTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
@@ -21,6 +22,7 @@ const wgpu::TextureUsage normalIdTextureUsage = wgpu::TextureUsage::RenderAttach
 const wgpu::TextureUsage depthTextureUsage = wgpu::TextureUsage::RenderAttachment;
 const wgpu::TextureUsage lightingTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 const wgpu::TextureUsage shadowTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+const wgpu::TextureUsage ultimateTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 
 wgpu::Extent2D shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
 
@@ -112,6 +114,16 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 		.textureDimensions = shadowDimensions,
 		.textureFormat = constants::DEPTH_FORMAT,
 		.outputTextureView = shadowTextureView,
+	};
+	texture::createTextureView(&createTextureViewDescriptor);
+
+	const texture::descriptor::CreateTextureView createTextureViewDescriptor = {
+		.label = ultimateLabel,
+		.device = &wgpuContext->device,
+		.textureUsage = ultimateTextureUsage,
+		.textureDimensions = wgpuContext->getScreenDimensions(),
+		.textureFormat = ultimateTextureFormat,
+		.outputTextureView = ultimateTextureView,
 	};
 	texture::createTextureView(&createTextureViewDescriptor);
 

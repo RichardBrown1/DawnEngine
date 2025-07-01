@@ -43,78 +43,57 @@ Engine::Engine() {
 		std::array<uint32_t, 2>{_wgpuContext.getScreenDimensions().width, _wgpuContext.getScreenDimensions().height}
 	);
 	_drawCalls = h_objects.drawCalls;
-	_deviceSceneResources = h_objects.ToDevice(_wgpuContext);
+
+	_deviceResources->render = new RenderResources(&_wgpuContext);
+	_deviceResources->scene =  h_objects.ToDevice(_wgpuContext);
 
 	render::Initial* initialRender = new render::Initial(&_wgpuContext);
 	_initialRender = initialRender;
-	const render::initial::descriptor::GenerateGpuObjects initialGenerateGpuObjectsDescriptor = {
-		.cameraBuffer = _deviceSceneResources.cameras,
-		.transformBuffer = _deviceSceneResources.transforms,
-		.instancePropertiesBuffer = _deviceSceneResources.materialIndices,
-		.materialBuffer = _deviceSceneResources.materials,
-	};
-	_initialRender->generateGpuObjects(&initialGenerateGpuObjectsDescriptor);
+	_initialRender->generateGpuObjects(_deviceResources);
 
 	_baseColorAccumulatorRender = new render::FourChannel(&_wgpuContext);
 	const render::accumulator::descriptor::GenerateGpuObjects baseColorGenerateGpuObjectsDescriptor = {
-		.accumulatorTextureView = _initialRender->baseColorTextureView,
-		.accumulatorTextureFormat = _initialRender->baseColorTextureFormat,
-		.texCoordTextureView = _initialRender->texCoordTextureView,
-		.texCoordTextureFormat = _initialRender->texCoordTextureFormat,
-		.textureIdBuffer = _initialRender->baseColorTextureIdBuffer,
+		.accumulatorTextureView = _deviceResources->render->baseColorTextureView,
+		.accumulatorTextureFormat = _deviceResources->render->baseColorTextureFormat,
+		.texCoordTextureView = _deviceResources->render->texCoordTextureView,
+		.texCoordTextureFormat = _deviceResources->render->texCoordTextureFormat,
+		.textureIdTextureView = _deviceResources->render->baseColorIdTextureView,
+		.textureIdTextureFormat = _deviceResources->render->baseColorIdTextureFormat,
 		.stpIds = h_objects.baseColorStpIds,
 		.inputSTPs = h_objects.samplerTexturePairs,
-		.allTextureViews = _deviceSceneResources.textureViews,
-		.allSamplers = _deviceSceneResources.samplers,
-		};
+		.allTextureViews = _deviceResources->scene->textureViews,
+		.allSamplers = _deviceResources->scene->samplers,
+	};
 	_baseColorAccumulatorRender->generateGpuObjects(&baseColorGenerateGpuObjectsDescriptor);
 	
 	_normalAccumulatorRender = new render::FourChannel(&_wgpuContext);
 	const render::accumulator::descriptor::GenerateGpuObjects normalGenerateGpuObjectsDescriptor = {
-		.accumulatorTextureView = _initialRender->normalTextureView,
-		.accumulatorTextureFormat = _initialRender->normalTextureFormat,
-		.texCoordTextureView = _initialRender->texCoordTextureView,
-		.texCoordTextureFormat = _initialRender->texCoordTextureFormat,
-		.textureIdBuffer = _initialRender->normalTextureIdBuffer,
+		.accumulatorTextureView = _deviceResources->render->normalTextureView,
+		.accumulatorTextureFormat = _deviceResources->render->normalTextureFormat,
+		.texCoordTextureView = _deviceResources->render->texCoordTextureView,
+		.texCoordTextureFormat = _deviceResources->render->texCoordTextureFormat,
+		.textureIdTextureView = _deviceResources->render->normalIdTextureView,
+		.textureIdTextureFormat = _deviceResources->render->normalIdTextureFormat,
 		.stpIds = h_objects.normalStpIds,
 		.inputSTPs = h_objects.samplerTexturePairs,
-		.allTextureViews = _deviceSceneResources.textureViews,
-		.allSamplers = _deviceSceneResources.samplers,
-		};
+		.allTextureViews = _deviceResources->scene->textureViews,
+		.allSamplers = _deviceResources->scene->samplers,
+	};
 	_normalAccumulatorRender->generateGpuObjects(&normalGenerateGpuObjectsDescriptor);
 
 	_lightingRender = new render::Lighting(&_wgpuContext);
-	const render::lighting::descriptor::GenerateGpuObjects lightingGenerateGpuObjectsDescriptor = {
-		.worldTextureFormat = _initialRender->worldPositionTextureFormat,
-		.worldTextureView = _initialRender->worldPositionTextureView,
-		.normalTextureFormat = _initialRender->normalTextureFormat,
-		.normalTextureView = _initialRender->normalTextureView,
-		.lightBuffers = _deviceSceneResources.lights,
-	};
-	_lightingRender->generateGpuObjects(&lightingGenerateGpuObjectsDescriptor);
+	_lightingRender->generateGpuObjects(_deviceResources);
 
-	render::Shadow* shadowRender = new render::Shadow(&_wgpuContext);
-	_shadowRender = shadowRender;
-	const render::shadow::descriptor::GenerateGpuObjects shadowGenerateGpuObjectsDescriptor = {
-		.transformBuffer = _deviceSceneResources.transforms,
-		.lightBuffer = _deviceSceneResources.lights[0],
-	};
-	_shadowRender->generateGpuObjects(&shadowGenerateGpuObjectsDescriptor);
+	_shadowRender = new render::Shadow(&_wgpuContext);
+	_shadowRender->generateGpuObjects(_deviceResources);
 
 	_ultimateRender = new render::Ultimate(&_wgpuContext);
-	const render::ultimate::descriptor::GenerateGpuObjects ultimateGenerateGpuObjectsDescriptor = {
-		.baseColorTextureFormat = _initialRender->baseColorTextureFormat,
-		.baseColorTextureView = _initialRender->baseColorTextureView,
-		.lightingTextureFormat = _lightingRender->lightingTextureFormat,
-		.lightingTextureView = _lightingRender->lightingTextureView,
-		.shadowMapTextureView = _shadowRender->shadowMapTextureView,
-	};
-	_ultimateRender->generateGpuObjects(&ultimateGenerateGpuObjectsDescriptor);
+	_ultimateRender->generateGpuObjects(_deviceResources);
 
 	render::ToSurface* toSurfaceRender = new render::ToSurface(&_wgpuContext);
 	_toSurfaceRender = toSurfaceRender;
 	const render::toSurface::descriptor::GenerateGpuObjects toSurfaceGenerateGpuObjectsDescriptor = {
-		.ultimateTextureView = _ultimateRender->ultimateTextureView,
+		.ultimateTextureView = _deviceResources->render->ultimateTextureView,
 		.surfaceTextureFormat = _wgpuContext.surfaceFormat,
 	};
 	_toSurfaceRender->generateGpuObjects(&toSurfaceGenerateGpuObjectsDescriptor);
@@ -122,8 +101,8 @@ Engine::Engine() {
 	render::Clear* clearLightingRender = new render::Clear(&_wgpuContext);
 	_clearLightingRender = clearLightingRender;
 	const render::clear::descriptor::GenerateGpuObjects clearLightingRenderDescriptor = {
-		.textureFormat = _lightingRender->lightingTextureFormat,
-		.textureView = _lightingRender->lightingTextureView,
+		.textureFormat = _deviceResources->render->lightingTextureFormat,
+		.textureView = _deviceResources->render->lightingTextureView,
 	};
 	_clearLightingRender->generateGpuObjects(&clearLightingRenderDescriptor);
 }
@@ -179,9 +158,10 @@ void Engine::draw() {
 
 	const render::initial::descriptor::DoCommands doInitialRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,
-		.vertexBuffer = _deviceSceneResources.vbo,
-		.indexBuffer = _deviceSceneResources.indices,
+		.vertexBuffer = _deviceResources->scene->vbo,
+		.indexBuffer = _deviceResources->scene->indices,
 		.drawCalls = _drawCalls,
+		.depthTextureView = _deviceResources->render->depthTextureView,
 	};
 	_initialRender->doCommands(&doInitialRenderCommandsDescriptor);
 
@@ -202,8 +182,8 @@ void Engine::draw() {
 
 	const render::shadow::descriptor::DoCommands doShadowRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,
-		.vertexBuffer = _deviceSceneResources.vbo,
-		.indexBuffer = _deviceSceneResources.indices,
+		.vertexBuffer = _deviceResources->scene->vbo,
+		.indexBuffer = _deviceResources->scene->indices,
 		.drawCalls = _drawCalls,
 	};
 	_shadowRender->doCommands(&doShadowRenderCommandsDescriptor);

@@ -11,24 +11,15 @@ namespace render {
 		_computeShaderModule = device::createWGSLShaderModule(wgpuContext->device, ULTIMATE_SHADER_LABEL, ULTIMATE_SHADER_PATH);
 	};
 
-	void Ultimate::generateGpuObjects(const render::ultimate::descriptor::GenerateGpuObjects* descriptor) {
-		const texture::descriptor::CreateTextureView createTextureViewDescriptor = {
-			.label = "ultimate texture view",
-			.device = &_wgpuContext->device,
-			.textureUsage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding,
-			.textureDimensions = _wgpuContext->getScreenDimensions(),
-			.textureFormat = ultimateTextureFormat,
-			.outputTextureView = ultimateTextureView,
-		};
-		texture::createTextureView(&createTextureViewDescriptor);
+	void Ultimate::generateGpuObjects(const DeviceResources* deviceResources) {
 		createBindGroupLayout(
-			descriptor->baseColorTextureFormat,
-			descriptor->lightingTextureFormat
+			deviceResources->render->baseColorTextureFormat,
+			deviceResources->render->lightingTextureFormat
 		);
 		createPipeline();
 		createBindGroup(
-			descriptor->baseColorTextureView,
-			descriptor->lightingTextureView
+			deviceResources->render->baseColorTextureView,
+			deviceResources->render->lightingTextureView
 		);
 	};
 

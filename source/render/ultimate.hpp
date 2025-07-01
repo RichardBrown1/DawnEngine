@@ -7,6 +7,7 @@
 #include "../constants.hpp"
 #include "../structs/host.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
+#include "../device/resources.hpp"
 
 namespace render {
 	namespace ultimate::descriptor {
@@ -28,11 +29,8 @@ namespace render {
 	class Ultimate {
 	public:
 		Ultimate(WGPUContext* wgpuContext);
-		void generateGpuObjects(const render::ultimate::descriptor::GenerateGpuObjects* descriptor);
+		void generateGpuObjects(const DeviceResources* deviceResources);
 		void doCommands(const render::ultimate::descriptor::DoCommands* descriptor);
-
-		wgpu::TextureView ultimateTextureView;
-		wgpu::TextureFormat ultimateTextureFormat = wgpu::TextureFormat::RGBA32Float;
 
 	private:
 		const std::string _displayTextureViewLabel = "display ";

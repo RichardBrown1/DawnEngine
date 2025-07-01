@@ -5,6 +5,7 @@
 #include <glm/fwd.hpp>
 #include "../structs/host.hpp"
 #include "../device/device.hpp"
+#include "../device/resources.hpp"
 
 //Objects for the wgpu::Device but in RAM waiting to be processed
 //This data should be in a format that can be consumed by the shader if its written into the device as is
@@ -38,7 +39,7 @@ class HostSceneResources {
 			const std::string& gltfFileName,
 			const std::array<uint32_t, 2> screenDimensions
 		);
-		HostSceneResources ToDevice(WGPUContext& wgpuContext);
+		SceneResources ToDevice(WGPUContext& wgpuContext);
 
 	private:
 		void addDefaults(std::array<uint32_t, 2> screenDimensions);
