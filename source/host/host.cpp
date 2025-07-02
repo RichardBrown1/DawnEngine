@@ -1,15 +1,8 @@
 #pragma once
 #include "host.hpp"
-#include <glm/glm.hpp>
-#include <glm/ext/matrix_transform.hpp>
 #include "../device/device.hpp"
-#include "../texture/texture.hpp"
-#include "../constants.hpp"
 #include "../gltf/gltf.hpp"
 #include <glm/ext/matrix_clip_space.hpp>
-#include <unordered_map>
-#include <dawn/webgpu_cpp.h>
-#include <format>
 
 HostSceneResources::HostSceneResources(
 	const std::string& gltfDirectory,

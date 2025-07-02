@@ -108,7 +108,7 @@ namespace render {
 		void createAccumulatorBindGroupLayout(
 			const wgpu::TextureFormat accumulatorTextureFormat,
 			const wgpu::TextureFormat texCoordTextureFormat,
-			const uint32_t textureIdBufferSize
+			const wgpu::TextureFormat textureIdTextureFormat
 		) {
 			const wgpu::BindGroupLayoutEntry accumulatorBindGroupLayoutEntry = {
 				.binding = 0,
@@ -130,13 +130,14 @@ namespace render {
 				},
 			};
 
-			const wgpu::BindGroupLayoutEntry textureIdBindGroupLayoutEntry = {
+				const wgpu::BindGroupLayoutEntry textureIdBindGroupLayoutEntry = {
 				.binding = 2,
 				.visibility = wgpu::ShaderStage::Compute,
-				.buffer = {
-					.type = wgpu::BufferBindingType::ReadOnlyStorage,
-					.minBindingSize = textureIdBufferSize,
-				}
+				.storageTexture = {
+					.access = wgpu::StorageTextureAccess::ReadOnly,
+					.format = textureIdTextureFormat,
+					.viewDimension = wgpu::TextureViewDimension::e2D,
+				},
 			};
 
 			const wgpu::BindGroupLayoutEntry screenDimensionsBindGroupLayoutEntry = {
@@ -234,7 +235,7 @@ namespace render {
 		void createAccumulatorBindGroup(
 			const wgpu::TextureView& accumulatorTextureView,
 			const wgpu::TextureView& texCoordTextureView,
-			const wgpu::Buffer& textureIdBuffer
+			const wgpu::TextureView& textureIdTextureView
 		) {
 			const wgpu::BindGroupEntry accumulatorBindGroupEntry = {
 				.binding = 0,
@@ -246,7 +247,7 @@ namespace render {
 			};
 			const wgpu::BindGroupEntry textureIdBindGroupEntry = {
 				.binding = 2,
-				.buffer = textureIdBuffer,
+				.textureView = textureIdTextureView,
 			};
 			const wgpu::BindGroupEntry screenDimensionsBindGroupEntry = {
 				.binding = 3,
