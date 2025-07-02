@@ -44,6 +44,7 @@ Engine::Engine() {
 	);
 	_drawCalls = h_objects.drawCalls;
 
+	_deviceResources = new DeviceResources();
 	_deviceResources->render = new RenderResources(&_wgpuContext);
 	_deviceResources->scene = new SceneResources(&_wgpuContext, h_objects);
 
