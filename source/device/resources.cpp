@@ -210,7 +210,7 @@ SceneResources::SceneResources(WGPUContext* wgpuContext, HostSceneResources& hos
 		this->samplers[i] = wgpuContext->device.CreateSampler(&host.samplers[i]);
 	}
 	const wgpu::SamplerDescriptor defaultSamplerDescriptor = {
-		.label = "default label",
+		.label = "default sampler",
 		.addressModeU = wgpu::AddressMode::Repeat,
 		.addressModeV = wgpu::AddressMode::Repeat,
 		.magFilter = wgpu::FilterMode::Linear,
