@@ -37,8 +37,10 @@ namespace render {
 		WGPUContext* _wgpuContext;
 
 		wgpu::RenderPipeline _renderPipeline;
-		wgpu::BindGroupLayout _bindGroupLayout;
-		wgpu::BindGroup _bindGroup;
+		wgpu::BindGroupLayout _inputBindGroupLayout;
+		wgpu::BindGroupLayout _outputBindGroupLayout;
+		wgpu::BindGroup _inputBindGroup;
+		wgpu::BindGroup _outputBindGroup;
 
 		wgpu::ShaderModule _vertexShaderModule;
 		wgpu::ShaderModule _fragmentShaderModule;
@@ -46,8 +48,10 @@ namespace render {
 		std::array<wgpu::RenderPassColorAttachment, 0> _renderPassColorAttachments;
 
 		wgpu::PipelineLayout getPipelineLayout();
-		void createBindGroupLayout(const DeviceResources* deviceResources);
+		void createInputBindGroupLayout();
+		void createOutputBindGroupLayout(const DeviceResources* deviceResources);
 		void createPipeline(const wgpu::TextureFormat depthTextureFormat);
-		void createBindGroup(const DeviceResources* deviceResources);
+		void createInputBindGroup(const DeviceResources* deviceResources);
+		void createOutputBindGroup(const DeviceResources* deviceResources);
 	};
 }

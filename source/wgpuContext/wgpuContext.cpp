@@ -68,7 +68,8 @@ WGPUContext::WGPUContext() {
 	};
 	
 	constexpr wgpu::Limits requiredLimits = {
-		.maxColorAttachmentBytesPerSample = 64,
+		//.maxColorAttachmentBytesPerSample = 64,
+		.maxStorageTexturesInFragmentStage = 8,
 	};
 
 	wgpu::DeviceDescriptor deviceDescriptor = {};

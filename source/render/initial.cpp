@@ -18,9 +18,11 @@ namespace render {
 	void Initial::generateGpuObjects(
 		const DeviceResources* deviceResources
 	) {
-		createBindGroupLayout(deviceResources);
+		createInputBindGroupLayout();
+		createOutputBindGroupLayout(deviceResources);
 		createPipeline(deviceResources->render->depthTextureFormat);
-		createBindGroup(deviceResources);
+		createInputBindGroup(deviceResources);
+		createOutputBindGroup(deviceResources);
 	};
 
 	void Initial::doCommands(const render::initial::descriptor::DoCommands* descriptor) {
@@ -47,7 +49,8 @@ namespace render {
 			0,
 			descriptor->indexBuffer.GetSize()
 		);
-		renderPassEncoder.SetBindGroup(0, _bindGroup);
+		renderPassEncoder.SetBindGroup(0, _inputBindGroup);
+		renderPassEncoder.SetBindGroup(1, _outputBindGroup);
 
 		for (const auto& dc : descriptor->drawCalls) {
 			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
@@ -98,7 +101,7 @@ namespace render {
 		_renderPipeline = _wgpuContext->device.CreateRenderPipeline(&renderPipelineDescriptor);
 	}
 
-	void Initial::createBindGroup(
+	void Initial::createInputBindGroup(
 		const DeviceResources* deviceResources
 	) {
 		const wgpu::BindGroupEntry screenDimensionsBindGroupEntry = {
@@ -126,34 +129,70 @@ namespace render {
 			.buffer = deviceResources->scene->materials,
 			.size = deviceResources->scene->materials.GetSize(),
 		};
-		const wgpu::BindGroupEntry baseColorIdBindGroupEntry = {
-			.binding = 5,
-			.textureView = deviceResources->render->baseColorIdTextureView,
-		};
-		const wgpu::BindGroupEntry normalIdBindGroupEntry = {
-			.binding = 6,
-			.textureView = deviceResources->render->normalIdTextureView,
-		};
 
-		std::array<wgpu::BindGroupEntry, 7> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 5> bindGroupEntries = {
 			screenDimensionsBindGroupEntry,
 			cameraBindGroupEntry,
 			transformBindGroupEntry,
 			materialIndicesBindGroupEntry,
 			materialBindGroupEntry,
-			baseColorIdBindGroupEntry,
-			normalIdBindGroupEntry,
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
-			.label = "initial render group",
-			.layout = _bindGroupLayout,
+			.label = "initial render input bind group",
+			.layout = _inputBindGroupLayout,
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		_bindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
+		_inputBindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
 	}
 
-	void Initial::createBindGroupLayout(const DeviceResources* deviceResources) {
+	void Initial::createOutputBindGroup(
+		const DeviceResources* deviceResources
+	) {
+		const wgpu::BindGroupEntry worldPositionTextureView = {
+			.binding = 0,
+			.textureView = deviceResources->render->worldPositionTextureView,
+		};
+		const wgpu::BindGroupEntry baseColorTextureView = {
+			.binding = 1,
+			.textureView = deviceResources->render->baseColorTextureView,
+		};
+		const wgpu::BindGroupEntry normalTextureView = {
+			.binding = 2,
+			.textureView = deviceResources->render->normalTextureView,
+		};
+		const wgpu::BindGroupEntry texCoordsTextureView = {
+			.binding = 3,
+			.textureView = deviceResources->render->texCoordTextureView,
+		};
+		const wgpu::BindGroupEntry baseColorIdTextureView = {
+			.binding = 4,
+			.textureView = deviceResources->render->baseColorIdTextureView,
+		};
+		const wgpu::BindGroupEntry normalIdTextureView = {
+			.binding = 5,
+			.textureView = deviceResources->render->normalIdTextureView,
+		};
+
+		std::array<wgpu::BindGroupEntry, 6> bindGroupEntries = {
+			worldPositionTextureView,
+			baseColorTextureView,
+			normalTextureView,
+			texCoordsTextureView,
+			baseColorIdTextureView,
+			normalIdTextureView,
+		};
+
+		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
+			.label = "initial render output bind group",
+			.layout = _outputBindGroupLayout,
+			.entryCount = bindGroupEntries.size(),
+			.entries = bindGroupEntries.data(),
+		};
+		_inputBindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
+	}
+
+	void Initial::createInputBindGroupLayout() {
 		const wgpu::BindGroupLayoutEntry screenDimensionBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Fragment,
@@ -194,8 +233,64 @@ namespace render {
 				.minBindingSize = sizeof(structs::Material),
 			},
 		};
-		const wgpu::BindGroupLayoutEntry baseColorIdBindGroupLayoutEntry = {
-			.binding = 5,
+
+		std::array<wgpu::BindGroupLayoutEntry, 5> bindGroupLayoutEntries = {
+			screenDimensionBindGroupLayoutEntry,
+			cameraBindGroupLayoutEntry,
+			transformBindGroupLayoutEntry,
+			instancePropertiesBindGroupLayoutEntry,
+			materialBindGroupLayoutEntry,
+		};
+
+		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
+			.label = "initial render input bind group layout",
+			.entryCount = bindGroupLayoutEntries.size(),
+			.entries = bindGroupLayoutEntries.data(),
+		};
+		_inputBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+	};
+
+	void Initial::createOutputBindGroupLayout(const DeviceResources* deviceResources) {
+		const wgpu::BindGroupLayoutEntry worldPositionBindGroupLayoutEntry = {
+			.binding = 0,
+			.visibility = wgpu::ShaderStage::Fragment,
+			.storageTexture = {
+				.access = wgpu::StorageTextureAccess::WriteOnly,
+				.format = deviceResources->render->worldPositionTextureFormat,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
+			}
+		};
+	const wgpu::BindGroupLayoutEntry baseColorBindGroupLayoutEntry = {
+			.binding = 1,
+			.visibility = wgpu::ShaderStage::Fragment,
+			.storageTexture = {
+				.access = wgpu::StorageTextureAccess::WriteOnly,
+				.format = deviceResources->render->baseColorTextureFormat,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
+			}
+		};
+
+	const wgpu::BindGroupLayoutEntry normalBindGroupLayoutEntry = {
+			.binding = 2,
+			.visibility = wgpu::ShaderStage::Fragment,
+			.storageTexture = {
+				.access = wgpu::StorageTextureAccess::WriteOnly,
+				.format = deviceResources->render->normalTextureFormat,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
+			}
+		};
+
+	const wgpu::BindGroupLayoutEntry texCoordsBindGroupLayoutEntry = {
+			.binding = 3,
+			.visibility = wgpu::ShaderStage::Fragment,
+			.storageTexture = {
+				.access = wgpu::StorageTextureAccess::WriteOnly,
+				.format = deviceResources->render->texCoordTextureFormat,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
+			}
+		};
+		const wgpu::BindGroupLayoutEntry baseColorIdsBindGroupLayoutEntry = {
+			.binding = 4,
 			.visibility = wgpu::ShaderStage::Fragment,
 			.storageTexture = {
 				.access = wgpu::StorageTextureAccess::WriteOnly,
@@ -204,7 +299,7 @@ namespace render {
 			}
 		};
 		const wgpu::BindGroupLayoutEntry normalIdBindGroupLayoutEntry = {
-			.binding = 6,
+			.binding = 5,
 			.visibility = wgpu::ShaderStage::Fragment,
 			.storageTexture = {
 				.access = wgpu::StorageTextureAccess::WriteOnly,
@@ -213,30 +308,30 @@ namespace render {
 			}
 		};
 
-		std::array<wgpu::BindGroupLayoutEntry, 7> bindGroupLayoutEntries = {
-			screenDimensionBindGroupLayoutEntry,
-			cameraBindGroupLayoutEntry,
-			transformBindGroupLayoutEntry,
-			instancePropertiesBindGroupLayoutEntry,
-			materialBindGroupLayoutEntry,
-			baseColorIdBindGroupLayoutEntry,
+		std::array<wgpu::BindGroupLayoutEntry, 6> bindGroupLayoutEntries = {
+			worldPositionBindGroupLayoutEntry,
+			baseColorBindGroupLayoutEntry,
+			normalBindGroupLayoutEntry,
+			texCoordsBindGroupLayoutEntry,
+			baseColorIdsBindGroupLayoutEntry,
 			normalIdBindGroupLayoutEntry,
 		};
 
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-			.label = "initial render bind group layout",
+			.label = "initial render output bind group layout",
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		_bindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+		_outputBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
 	wgpu::PipelineLayout Initial::getPipelineLayout() {
+		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = { _inputBindGroupLayout, _outputBindGroupLayout };
 
 		const wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
 			.label = "initial render pipeline layout",
-			.bindGroupLayoutCount = 1,
-			.bindGroupLayouts = &_bindGroupLayout,
+			.bindGroupLayoutCount = bindGroupLayouts.size(),
+			.bindGroupLayouts = bindGroupLayouts.data(),
 		};
 		return _wgpuContext->device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};

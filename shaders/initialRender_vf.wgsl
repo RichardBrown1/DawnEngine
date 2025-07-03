@@ -25,8 +25,6 @@ struct Material {
 @group(0) @binding(2) var<storage, read> transforms: array<mat4x4<f32>>;
 @group(0) @binding(3) var<storage, read> materialIds: array<u32>;
 @group(0) @binding(4) var<storage, read> materials: array<Material>;
-@group(0) @binding(5) var<storage, read_write> baseColorTextureIds: array<u32>;
-@group(0) @binding(6) var<storage, read_write> normalTextureIds: array<u32>;
 
 struct VSInput {
 	@location(0) position : vec3<f32>,
@@ -57,26 +55,36 @@ fn vs_main(
 	return output;
 }
 
-struct FSOutput {
-	@location(0) worldPosition : vec4<f32>,
-	@location(1) baseColor : vec4<f32>,
-	@location(2) normal : vec4<f32>,
-	@location(3) texCoord : u32,
-};
+//struct FSOutput {
+//	@location(0) worldPosition : vec4<f32>,
+//	@location(1) baseColor : vec4<f32>,
+//	@location(2) normal : vec4<f32>,
+//	@location(3) texCoord : u32,
+//};
+
+fn copyFour(input: u32) -> vec4<u32> {
+	let output = vec4<u32>(input, input, input, input);
+	return output;
+}
+
+@group(1) @binding(0) var worldPosition: texture_storage_2d<rgba32float, write>;
+@group(1) @binding(1) var baseColor: texture_storage_2d<rgba32float, write>;
+@group(1) @binding(2) var normal: texture_storage_2d<rgba32float, write>;
+@group(1) @binding(3) var texCoords: texture_storage_2d<r32uint, write>;
+@group(1) @binding(4) var baseColorId: texture_storage_2d<r32uint, write>;
+@group(1) @binding(5) var normalId: texture_storage_2d<r32uint, write>;
 
 @fragment
-fn fs_main(input : VSOutput) -> FSOutput {
-	var output : FSOutput;
-	output.worldPosition = input.worldPosition;
-	output.normal = vec4<f32>(input.normal, 1.0);
-	output.texCoord = pack2x16unorm(input.texCoord);
+fn fs_main(input : VSOutput) {
+	let coords : vec2<u32> = vec2<u32>(input.cameraPosition.xy);
+	textureStore(worldPosition, coords, input.worldPosition);
+	textureStore(normal, coords, vec4<f32>(input.normal, 1.0));
+
+	let packedTexCoords: u32 = pack2x16unorm(input.texCoord);
+	textureStore(texCoords, coords, copyFour(packedTexCoords));
 
 	let material : Material = materials[materialIds[input.instanceIndex]];
-	output.baseColor = material.pbrMetallicRoughness.baseColor;
-	
-	let screenCoordinates : vec2<u32> = vec2<u32>(input.cameraPosition.xy);
-	baseColorTextureIds[screenCoordinates.y * screenDimensions.x + screenCoordinates.x] = material.pbrMetallicRoughness.baseColorTextureInfo.index;
-	normalTextureIds[screenCoordinates.y * screenDimensions.x + screenCoordinates.x] = material.normalTextureInfo.index;
-
-	return output;
+	textureStore(baseColor, coords, material.pbrMetallicRoughness.baseColor);
+	textureStore(baseColorId, coords, copyFour(material.pbrMetallicRoughness.baseColorTextureInfo.index));
+	textureStore(normalId, coords, copyFour(material.normalTextureInfo.index));
 }
