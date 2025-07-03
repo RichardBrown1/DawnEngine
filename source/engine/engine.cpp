@@ -186,6 +186,7 @@ void Engine::draw() {
 		.vertexBuffer = _deviceResources->scene->vbo,
 		.indexBuffer = _deviceResources->scene->indices,
 		.drawCalls = _drawCalls,
+		.shadowMapTextureView = _deviceResources->render->shadowTextureView,
 	};
 	_shadowRender->doCommands(&doShadowRenderCommandsDescriptor);
 

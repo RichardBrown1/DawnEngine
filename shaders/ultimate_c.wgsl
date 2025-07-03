@@ -1,5 +1,5 @@
 @binding(0) @group(0) var surfaceTexture : texture_storage_2d<rgba32float, write>;
-@binding(1) @group(0) var baseColorTexture : texture_storage_2d<bgra8unorm, read>;
+@binding(1) @group(0) var baseColorTexture : texture_storage_2d<rgba32float, read>;
 @binding(2) @group(0) var lightingTexture : texture_storage_2d<r32uint, read>;
 
 

@@ -189,7 +189,7 @@ namespace render {
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		_inputBindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
+		_outputBindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
 	}
 
 	void Initial::createInputBindGroupLayout() {

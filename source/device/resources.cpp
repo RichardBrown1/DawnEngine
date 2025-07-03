@@ -34,7 +34,7 @@ const wgpu::TextureUsage normalIdTextureUsage = wgpu::TextureUsage::RenderAttach
 const wgpu::TextureUsage depthTextureUsage = wgpu::TextureUsage::RenderAttachment;
 const wgpu::TextureUsage lightingTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 const wgpu::TextureUsage shadowTextureUsage = wgpu::TextureUsage::RenderAttachment;
-const wgpu::TextureUsage ultimateTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+const wgpu::TextureUsage ultimateTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding;
 
 wgpu::Extent2D shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
 
