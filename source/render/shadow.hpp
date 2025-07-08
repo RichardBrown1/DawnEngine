@@ -38,8 +38,7 @@ namespace render {
 		const std::string FRAGMENT_SHADER_PATH = "shaders/shadowMap_f.spv";
 
 		WGPUContext* _wgpuContext;
-		wgpu::Extent2D _shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
-		wgpu::TextureUsage _shadowTextureUsage = wgpu::TextureUsage::RenderAttachment;
+		uint32_t _shadowMapCount = 0;
 
 		wgpu::RenderPipeline _renderPipeline;
 		wgpu::BindGroupLayout _transformBindGroupLayout;

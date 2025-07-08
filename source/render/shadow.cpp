@@ -11,28 +11,28 @@
 namespace render {
 
 	Shadow::Shadow(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {
-		_shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
-
 		_vertexShaderModule = device::createShaderModule(_wgpuContext->device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
 		_fragmentShaderModule = device::createShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	}
 
 	void Shadow::generateGpuObjects(const DeviceResources* deviceResources) {
+		const uint32_t maxShadowMapCount = static_cast<uint32_t>(deviceResources->render->shadowMapTextureViews.size());
+		const uint32_t lightCount = static_cast<uint32_t>(deviceResources->scene->lights.size());
+		_shadowMapCount = maxShadowMapCount > lightCount ? lightCount : maxShadowMapCount;
+
 		createTransformBindGroupLayout();
 		createLightBindGroupLayout();
 		createPipeline();
 		createTransformBindGroup(
 			deviceResources->scene->transforms
 		);
-		for (auto& light : deviceResources->scene->lights) {
-			insertLightBindGroup(
-				light
-			);
+		for (uint32_t i = 0; i < _shadowMapCount; ++i) {
+			insertLightBindGroup(deviceResources->scene->lights[i]);
 		}
 	}
 
 	void Shadow::doCommands(const render::shadow::descriptor::DoCommands* descriptor) {
-		for (uint32_t i = 0; i < descriptor->shadowMapTextureViews.size(); ++i) {
+		for (uint32_t i = 0; i < _shadowMapCount; ++i) {
 			const wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
 				.view = descriptor->shadowMapTextureViews[i],
 				.depthLoadOp = wgpu::LoadOp::Clear,
@@ -145,7 +145,7 @@ namespace render {
 		_transformBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
-	void Shadow::createTransformBindGroupLayout() {
+	void Shadow::createLightBindGroupLayout() {
 		const wgpu::BindGroupLayoutEntry lightBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,

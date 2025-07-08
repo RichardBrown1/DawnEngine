@@ -1,6 +1,6 @@
 #include "shadowMap.hlsli"
 
-ConstantBuffer<Light> light : register(b1, space0);
+ConstantBuffer<Light> light : register(b0, space1);
 
 float4 fs_main(VSOutput input) : SV_Target
 {

@@ -1,6 +1,6 @@
 #include "shadowMap.hlsli"
 StructuredBuffer<float4x4> transforms : register(t0, space0);
-ConstantBuffer<Light> light : register(b1, space0);
+ConstantBuffer<Light> light : register(b0, space1);
 
 struct VSInput
 {

@@ -25,18 +25,19 @@ const std::string lightingLabel = "lighting";
 const std::string shadowLabel = "shadow";
 const std::string ultimateLabel = "ultimate";
 
-const wgpu::TextureUsage worldPositionTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-const wgpu::TextureUsage baseColorTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-const wgpu::TextureUsage normalTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-const wgpu::TextureUsage texCoordTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-const wgpu::TextureUsage baseColorIdTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-const wgpu::TextureUsage normalIdTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-const wgpu::TextureUsage depthTextureUsage = wgpu::TextureUsage::RenderAttachment;
-const wgpu::TextureUsage lightingTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-const wgpu::TextureUsage shadowTextureUsage = wgpu::TextureUsage::RenderAttachment;
-const wgpu::TextureUsage ultimateTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding;
+constexpr wgpu::TextureUsage worldPositionTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+constexpr wgpu::TextureUsage baseColorTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+constexpr wgpu::TextureUsage normalTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+constexpr wgpu::TextureUsage texCoordTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+constexpr wgpu::TextureUsage baseColorIdTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+constexpr wgpu::TextureUsage normalIdTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+constexpr wgpu::TextureUsage depthTextureUsage = wgpu::TextureUsage::RenderAttachment;
+constexpr wgpu::TextureUsage lightingTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
+constexpr wgpu::TextureUsage shadowTextureUsage = wgpu::TextureUsage::RenderAttachment;
+constexpr wgpu::TextureUsage ultimateTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding;
 
-wgpu::Extent2D shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
+constexpr wgpu::Extent2D shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
+constexpr uint32_t maxShadowMaps = 5;
 
 RenderResources::RenderResources(WGPUContext* wgpuContext) {
 	const texture::descriptor::CreateTextureView worldPositionTextureViewDescriptor = {
@@ -119,15 +120,18 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 	};
 	texture::createTextureView(&lightingTextureViewDescriptor);
 
-	const texture::descriptor::CreateTextureView shadowTextureViewDescriptor = {
-		.label = shadowLabel,
-		.device = &wgpuContext->device,
-		.textureUsage = shadowTextureUsage,
-		.textureDimensions = shadowDimensions,
-		.textureFormat = constants::DEPTH_FORMAT,
-		.outputTextureView = shadowTextureView,
-	};
-	texture::createTextureView(&shadowTextureViewDescriptor);
+	shadowMapTextureViews.resize(maxShadowMaps);
+	for (uint32_t i = 0; i < maxShadowMaps; i++) {
+		const texture::descriptor::CreateTextureView shadowTextureViewDescriptor = {
+			.label = shadowLabel,
+			.device = &wgpuContext->device,
+			.textureUsage = shadowTextureUsage,
+			.textureDimensions = shadowDimensions,
+			.textureFormat = constants::DEPTH_FORMAT,
+			.outputTextureView = shadowMapTextureViews[i],
+		};
+		texture::createTextureView(&shadowTextureViewDescriptor);
+	}
 
 	const texture::descriptor::CreateTextureView ultimateTextureViewDescriptor = {
 		.label = ultimateLabel,
