@@ -30,7 +30,7 @@ struct RenderResources {
 	wgpu::TextureView normalIdTextureView;
 	wgpu::TextureView depthTextureView;
 	wgpu::TextureView lightingTextureView;
-	wgpu::TextureView shadowTextureView;
+	std::vector<wgpu::TextureView> shadowMapTextureViews;
 	wgpu::TextureView ultimateTextureView;
 };
 

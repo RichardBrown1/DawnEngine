@@ -18,44 +18,52 @@ namespace render {
 	}
 
 	void Shadow::generateGpuObjects(const DeviceResources* deviceResources) {
-		createBindGroupLayout();
+		createTransformBindGroupLayout();
+		createLightBindGroupLayout();
 		createPipeline();
-		createBindGroup(
-			deviceResources->scene->transforms,
-			deviceResources->scene->lights.at(0)
+		createTransformBindGroup(
+			deviceResources->scene->transforms
 		);
+		for (auto& light : deviceResources->scene->lights) {
+			insertLightBindGroup(
+				light
+			);
+		}
 	}
 
 	void Shadow::doCommands(const render::shadow::descriptor::DoCommands* descriptor) {
-		const wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
-			.view = descriptor->shadowMapTextureView,
-			.depthLoadOp = wgpu::LoadOp::Clear,
-			.depthStoreOp = wgpu::StoreOp::Store,
-			.depthClearValue = 1.0f,
-		};
+		for (uint32_t i = 0; i < descriptor->shadowMapTextureViews.size(); ++i) {
+			const wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+				.view = descriptor->shadowMapTextureViews[i],
+				.depthLoadOp = wgpu::LoadOp::Clear,
+				.depthStoreOp = wgpu::StoreOp::Store,
+				.depthClearValue = 1.0f,
+			};
 
-		const wgpu::RenderPassDescriptor renderPassDescriptor = {
-			.label = "shadow render pass",
-			.depthStencilAttachment = &renderPassDepthStencilAttachment,
-		};
-		wgpu::RenderPassEncoder renderPassEncoder = descriptor->commandEncoder.BeginRenderPass(&renderPassDescriptor);
-		renderPassEncoder.SetPipeline(_renderPipeline);
-		renderPassEncoder.SetBindGroup(0, _bindGroup);
-		renderPassEncoder.SetVertexBuffer(0, descriptor->vertexBuffer, 0, descriptor->vertexBuffer.GetSize());
-		renderPassEncoder.SetIndexBuffer(descriptor->indexBuffer, wgpu::IndexFormat::Uint16, 0, descriptor->indexBuffer.GetSize());
+			const wgpu::RenderPassDescriptor renderPassDescriptor = {
+				.label = "shadow render pass #" + i,
+				.depthStencilAttachment = &renderPassDepthStencilAttachment,
+			};
+			wgpu::RenderPassEncoder renderPassEncoder = descriptor->commandEncoder.BeginRenderPass(&renderPassDescriptor);
+			renderPassEncoder.SetPipeline(_renderPipeline);
+			renderPassEncoder.SetBindGroup(0, _transformBindGroup);
+			renderPassEncoder.SetBindGroup(1, _lightBindGroups[i]);
+			renderPassEncoder.SetVertexBuffer(0, descriptor->vertexBuffer, 0, descriptor->vertexBuffer.GetSize());
+			renderPassEncoder.SetIndexBuffer(descriptor->indexBuffer, wgpu::IndexFormat::Uint16, 0, descriptor->indexBuffer.GetSize());
 
-		for (auto& dc : descriptor->drawCalls) {
-			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+			for (auto& dc : descriptor->drawCalls) {
+				renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+			}
+			renderPassEncoder.End();
 		}
-		renderPassEncoder.End();
 	}
 
 	void Shadow::createPipeline() {
 		const wgpu::VertexState vertexState = {
-			.module = _vertexShaderModule,
-			.entryPoint = enums::EntryPoint::VERTEX,
-			.bufferCount = 1,
-			.buffers = &render::vertexBufferLayout,
+				.module = _vertexShaderModule,
+				.entryPoint = enums::EntryPoint::VERTEX,
+				.bufferCount = 1,
+				.buffers = &render::vertexBufferLayout,
 		};
 
 		constexpr wgpu::BlendState blendState = {
@@ -104,15 +112,19 @@ namespace render {
 	}
 
 	wgpu::PipelineLayout Shadow::getPipelineLayout() {
+		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = {
+			_transformBindGroupLayout,
+			_lightBindGroupLayout
+		};
 		const wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
 			.label = "shadow render pipeline layout",
-			.bindGroupLayoutCount = 1,
-			.bindGroupLayouts = &_bindGroupLayout,
+			.bindGroupLayoutCount = bindGroupLayouts.size(),
+			.bindGroupLayouts = bindGroupLayouts.data(),
 		};
 		return _wgpuContext->device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};
 
-	void Shadow::createBindGroupLayout() {
+	void Shadow::createTransformBindGroupLayout() {
 		const wgpu::BindGroupLayoutEntry transformBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Vertex,
@@ -121,52 +133,76 @@ namespace render {
 				.minBindingSize = sizeof(glm::f32mat4x4),
 			},
 		};
+
+		std::array<wgpu::BindGroupLayoutEntry, 1> bindGroupLayoutEntries = {
+			transformBindGroupLayoutEntry,
+		};
+		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
+			.label = "shadow render transform bind group layout",
+			.entryCount = bindGroupLayoutEntries.size(),
+			.entries = bindGroupLayoutEntries.data(),
+		};
+		_transformBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+	};
+
+	void Shadow::createTransformBindGroupLayout() {
 		const wgpu::BindGroupLayoutEntry lightBindGroupLayoutEntry = {
-			.binding = 1,
+			.binding = 0,
 			.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
 			.buffer = {
 				.type = wgpu::BufferBindingType::Uniform,
 				.minBindingSize = sizeof(structs::Light),
 			}
 		};
-
-		std::array<wgpu::BindGroupLayoutEntry, 2> bindGroupLayoutEntries = {
-			transformBindGroupLayoutEntry,
+		std::array<wgpu::BindGroupLayoutEntry, 1> bindGroupLayoutEntries = {
 			lightBindGroupLayoutEntry,
 		};
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-			.label = "shadow render bind group layout",
+			.label = "shadow render light bind group layout",
 			.entryCount = bindGroupLayoutEntries.size(),
 			.entries = bindGroupLayoutEntries.data(),
 		};
-		_bindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
+		_lightBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
-	void Shadow::createBindGroup(
-		const wgpu::Buffer transformBuffer, 
-		const wgpu::Buffer lightBuffer
+	void Shadow::createTransformBindGroup(
+		const wgpu::Buffer& transformBuffer
 	) {
 		const wgpu::BindGroupEntry transformBindGroupEntry = {
 			.binding = 0,
 			.buffer = transformBuffer,
 			.size = transformBuffer.GetSize(),
 		};
-		const wgpu::BindGroupEntry lightBindGroupEntry = {
-			.binding = 1,
-			.buffer = lightBuffer,
-			.size = lightBuffer.GetSize(),
-		};
-		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
-			transformBindGroupEntry,
-			lightBindGroupEntry,
+		std::array<wgpu::BindGroupEntry, 1> bindGroupEntries = {
+			transformBindGroupEntry
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
-			.label = "shadow render group",
-			.layout = _bindGroupLayout,
+			.label = "shadow transform render group",
+			.layout = _transformBindGroupLayout,
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data(),
 		};
-		_bindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
+		_transformBindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
+	}
+
+	void Shadow::insertLightBindGroup(
+		const wgpu::Buffer& lightBuffer
+	) {
+		const wgpu::BindGroupEntry lightBindGroupEntry = {
+			.binding = 0,
+			.buffer = lightBuffer,
+			.size = lightBuffer.GetSize(),
+		};
+		std::array<wgpu::BindGroupEntry, 1> bindGroupEntries = {
+			lightBindGroupEntry
+		};
+		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
+			.label = "shadow light render group",
+			.layout = _lightBindGroupLayout,
+			.entryCount = bindGroupEntries.size(),
+			.entries = bindGroupEntries.data(),
+		};
+		_lightBindGroups.emplace_back(_wgpuContext->device.CreateBindGroup(&bindGroupDescriptor));
 	}
 
 }

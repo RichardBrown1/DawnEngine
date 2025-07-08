@@ -11,7 +11,7 @@ namespace render {
 		namespace descriptor {
 			struct GenerateGpuObjects {
 				wgpu::Buffer& transformBuffer;
-				wgpu::Buffer& lightBuffer;
+				std::vector<wgpu::Buffer>& lightBuffers;
 			};
 
 			struct DoCommands {
@@ -19,7 +19,7 @@ namespace render {
 				wgpu::Buffer& vertexBuffer;
 				wgpu::Buffer& indexBuffer;
 				std::vector<structs::host::DrawCall>& drawCalls;
-				wgpu::TextureView shadowMapTextureView;
+				std::vector<wgpu::TextureView>& shadowMapTextureViews;
 			};
 		}
 	}
@@ -42,18 +42,23 @@ namespace render {
 		wgpu::TextureUsage _shadowTextureUsage = wgpu::TextureUsage::RenderAttachment;
 
 		wgpu::RenderPipeline _renderPipeline;
-		wgpu::BindGroupLayout _bindGroupLayout;
-		wgpu::BindGroup _bindGroup;
+		wgpu::BindGroupLayout _transformBindGroupLayout;
+		wgpu::BindGroupLayout _lightBindGroupLayout;
+		wgpu::BindGroup _transformBindGroup;
+		std::vector<wgpu::BindGroup> _lightBindGroups;
 
 		wgpu::ShaderModule _vertexShaderModule;
 		wgpu::ShaderModule _fragmentShaderModule;
 
 		wgpu::PipelineLayout getPipelineLayout();
-		void createBindGroupLayout();
+		void createTransformBindGroupLayout();
+		void createLightBindGroupLayout();
 		void createPipeline();
-		void createBindGroup(
-			const wgpu::Buffer transformBuffer,
-			const wgpu::Buffer lightBuffer
+		void createTransformBindGroup(
+			const wgpu::Buffer& transformBuffer
+		);
+		void insertLightBindGroup(
+			const wgpu::Buffer& lightBuffer
 		);
 	};
 }
