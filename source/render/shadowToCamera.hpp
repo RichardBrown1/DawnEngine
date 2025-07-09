@@ -1,7 +1,7 @@
 #pragma once
 #include "../wgpuContext/wgpuContext.hpp"
 #include "../device/resources.hpp"
-/*
+
 namespace render {
 	namespace shadowToCamera {
 		namespace descriptor {
@@ -26,28 +26,31 @@ namespace render {
 
 		WGPUContext* _wgpuContext;
 
+		wgpu::BindGroupLayout _inputBindGroupLayout;
+		wgpu::BindGroupLayout _accumulatorBindGroupLayout;
 		wgpu::ComputePipeline _computePipeline;
-		wgpu::BindGroupLayout _bindGroupLayout;
-		wgpu::BindGroup _bindGroup;
+
+		std::vector<wgpu::BindGroup> _inputBindGroups;
+		wgpu::BindGroup _accumulatorBindGroup;
 
 		wgpu::PipelineLayout getPipelineLayout();
-		void createBindGroupLayout(
-			wgpu::TextureFormat ultimateTextureFormat,
-			wgpu::TextureFormat baseColorTextureFormat,
-			wgpu::TextureFormat lightingTextureFormat
+		void createAccumulatorBindGroupLayout(
+			wgpu::TextureFormat shadowMapTextureFormat,
+			wgpu::TextureFormat worldPositionTextureFormat,
+			wgpu::TextureFormat normalTextureFormat
 		);
+		void createInputBindGroupLayout();
 		void createPipeline();
-		void createBindGroup(
+		void createAccumulatorBindGroup(
+			wgpu::Sampler& shadowMapSampler,
 			wgpu::TextureView& shadowTextureView,
-			wgpu::TextureView& lightingTextureView
+			wgpu::TextureView& worldPositionTextureFormat,
+			wgpu::TextureView& normalTextureFormat
 		);
-
-		void createInputBindGroup() {
-			wgpu::TextureView& shadowMapTextureView,
-			wgpu::Buffer 
-		}
+		void insertInputBindGroup(
+			wgpu::TextureView& shadowMapTextureView
+		);
 
 
 	};
 }
-*/

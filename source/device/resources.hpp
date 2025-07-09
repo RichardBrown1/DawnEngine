@@ -19,7 +19,8 @@ struct RenderResources {
 	const wgpu::TextureFormat depthTextureFormat = constants::DEPTH_FORMAT;
 
 	const wgpu::TextureFormat lightingTextureFormat = wgpu::TextureFormat::R32Uint;
-	const wgpu::TextureFormat shadowTextureFormat = constants::DEPTH_FORMAT;
+	const wgpu::TextureFormat shadowMapTextureFormat = constants::DEPTH_FORMAT;
+	const wgpu::TextureFormat shadowTextureFormat = wgpu::TextureFormat::R32Uint;
 	const wgpu::TextureFormat ultimateTextureFormat = wgpu::TextureFormat::RGBA32Float;
 
 	wgpu::TextureView worldPositionTextureView;
@@ -31,6 +32,7 @@ struct RenderResources {
 	wgpu::TextureView depthTextureView;
 	wgpu::TextureView lightingTextureView;
 	std::vector<wgpu::TextureView> shadowMapTextureViews;
+	wgpu::TextureView shadowTextureView; //accumulation of all shadowMaps in clip space
 	wgpu::TextureView ultimateTextureView;
 };
 
