@@ -18,8 +18,6 @@ namespace render {
 		void doCommands(const render::shadowToCamera::descriptor::DoCommands* descriptor);
 
 	private:
-		const std::string _displayTextureViewLabel = "display ";
-
 		const wgpu::StringView SHADOWTOCAMERA_SHADER_LABEL = "shadowToCamera render compute shader";
 		const std::string SHADOWTOCAMERA_SHADER_PATH = "shaders/shadowToCamera_c.wgsl";
 		wgpu::ShaderModule _computeShaderModule;
