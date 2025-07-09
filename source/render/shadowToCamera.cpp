@@ -1,6 +1,7 @@
 #include "shadowToCamera.hpp"
-#include "../device/device.hpp"
 #include <array>
+#include "../device/device.hpp"
+#include "../enums.hpp"
 
 namespace render {
 
@@ -143,7 +144,7 @@ namespace render {
 			.layout = getPipelineLayout(),
 			.compute = {
 				.module = _computeShaderModule,
-				.entryPoint = "main"
+				.entryPoint = enums::EntryPoint::COMPUTE
 			}
 		};
 		_computePipeline = _wgpuContext->device.CreateComputePipeline(&descriptor);
