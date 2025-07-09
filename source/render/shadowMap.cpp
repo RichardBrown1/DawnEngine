@@ -1,5 +1,5 @@
 #pragma once
-#include "shadow.hpp"
+#include "shadowMap.hpp"
 #include "vertexBufferLayout.hpp"
 #include "../device/device.hpp"
 #include "../enums.hpp"
@@ -10,12 +10,12 @@
 
 namespace render {
 
-	Shadow::Shadow(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {
+	ShadowMap::ShadowMap(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {
 		_vertexShaderModule = device::createShaderModule(_wgpuContext->device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
 		_fragmentShaderModule = device::createShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
 	}
 
-	void Shadow::generateGpuObjects(const DeviceResources* deviceResources) {
+	void ShadowMap::generateGpuObjects(const DeviceResources* deviceResources) {
 		const uint32_t maxShadowMapCount = static_cast<uint32_t>(deviceResources->render->shadowMapTextureViews.size());
 		const uint32_t lightCount = static_cast<uint32_t>(deviceResources->scene->lights.size());
 		_shadowMapCount = maxShadowMapCount > lightCount ? lightCount : maxShadowMapCount;
@@ -31,7 +31,7 @@ namespace render {
 		}
 	}
 
-	void Shadow::doCommands(const render::shadow::descriptor::DoCommands* descriptor) {
+	void ShadowMap::doCommands(const render::shadowMap::descriptor::DoCommands* descriptor) {
 		for (uint32_t i = 0; i < _shadowMapCount; ++i) {
 			const wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
 				.view = descriptor->shadowMapTextureViews[i],
@@ -58,7 +58,7 @@ namespace render {
 		}
 	}
 
-	void Shadow::createPipeline() {
+	void ShadowMap::createPipeline() {
 		const wgpu::VertexState vertexState = {
 				.module = _vertexShaderModule,
 				.entryPoint = enums::EntryPoint::VERTEX,
@@ -111,7 +111,7 @@ namespace render {
 		_renderPipeline = _wgpuContext->device.CreateRenderPipeline(&renderPipelineDescriptor);
 	}
 
-	wgpu::PipelineLayout Shadow::getPipelineLayout() {
+	wgpu::PipelineLayout ShadowMap::getPipelineLayout() {
 		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = {
 			_transformBindGroupLayout,
 			_lightBindGroupLayout
@@ -124,7 +124,7 @@ namespace render {
 		return _wgpuContext->device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 	};
 
-	void Shadow::createTransformBindGroupLayout() {
+	void ShadowMap::createTransformBindGroupLayout() {
 		const wgpu::BindGroupLayoutEntry transformBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Vertex,
@@ -145,7 +145,7 @@ namespace render {
 		_transformBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
-	void Shadow::createLightBindGroupLayout() {
+	void ShadowMap::createLightBindGroupLayout() {
 		const wgpu::BindGroupLayoutEntry lightBindGroupLayoutEntry = {
 			.binding = 0,
 			.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
@@ -165,7 +165,7 @@ namespace render {
 		_lightBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
-	void Shadow::createTransformBindGroup(
+	void ShadowMap::createTransformBindGroup(
 		const wgpu::Buffer& transformBuffer
 	) {
 		const wgpu::BindGroupEntry transformBindGroupEntry = {
@@ -185,7 +185,7 @@ namespace render {
 		_transformBindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
 	}
 
-	void Shadow::insertLightBindGroup(
+	void ShadowMap::insertLightBindGroup(
 		const wgpu::Buffer& lightBuffer
 	) {
 		const wgpu::BindGroupEntry lightBindGroupEntry = {

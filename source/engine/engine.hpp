@@ -2,7 +2,7 @@
 #include "../device/device.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
 #include "../render/initial.hpp"
-#include "../render/shadow.hpp"
+#include "../render/shadowMap.hpp"
 #include "../render/accumulator/fourChannel.hpp"
 #include "../render/ultimate.hpp"
 #include "../render/toSurface.hpp"
@@ -27,7 +27,7 @@ private:
 	WGPUContext _wgpuContext;
 	DeviceResources* _deviceResources;
 	render::Initial* _initialRender;
-	render::Shadow* _shadowRender;
+	render::ShadowMap* _shadowMapRender;
 	render::FourChannel* _baseColorAccumulatorRender;
 	render::FourChannel* _normalAccumulatorRender;
 	render::Lighting* _lightingRender;

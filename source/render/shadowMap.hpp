@@ -7,7 +7,7 @@
 #include "../device/resources.hpp"
 
 namespace render {
-	namespace shadow {
+	namespace shadowMap {
 		namespace descriptor {
 			struct GenerateGpuObjects {
 				wgpu::Buffer& transformBuffer;
@@ -24,11 +24,11 @@ namespace render {
 		}
 	}
 
-	class Shadow {
+	class ShadowMap {
 	public:
-		Shadow(WGPUContext* wgpuContext);
+		ShadowMap(WGPUContext* wgpuContext);
 		void generateGpuObjects(const DeviceResources* deviceResources);
-		void doCommands(const render::shadow::descriptor::DoCommands* descriptor);
+		void doCommands(const render::shadowMap::descriptor::DoCommands* descriptor);
 
 	private:
 		const wgpu::StringView VERTEX_SHADER_LABEL = "shadow render vertex shader";

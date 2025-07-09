@@ -4,10 +4,6 @@
 #include "../device/device.hpp"
 #include "../enums.hpp"
 #include "vertexBufferLayout.hpp"
-#include "../texture/texture.hpp"
-#include "../render/initial.hpp"
-#include "../render/shadow.hpp"
-#include "../render/ultimate.hpp"
 
 namespace render {
 	Initial::Initial(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {

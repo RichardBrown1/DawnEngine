@@ -85,8 +85,9 @@ Engine::Engine() {
 	_lightingRender = new render::Lighting(&_wgpuContext);
 	_lightingRender->generateGpuObjects(_deviceResources);
 
-	_shadowRender = new render::Shadow(&_wgpuContext);
-	_shadowRender->generateGpuObjects(_deviceResources);
+	_shadowMapRender = new render::ShadowMap(&_wgpuContext);
+	_shadowMapRender->generateGpuObjects(_deviceResources);
+
 
 	_ultimateRender = new render::Ultimate(&_wgpuContext);
 	_ultimateRender->generateGpuObjects(_deviceResources);
@@ -181,14 +182,14 @@ void Engine::draw() {
 	};
 	_lightingRender->doCommands(&doLightingAccumulatorRenderCommandsDescriptor);
 
-	const render::shadow::descriptor::DoCommands doShadowRenderCommandsDescriptor = {
+	const render::shadowMap::descriptor::DoCommands doShadowRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,
 		.vertexBuffer = _deviceResources->scene->vbo,
 		.indexBuffer = _deviceResources->scene->indices,
 		.drawCalls = _drawCalls,
 		.shadowMapTextureViews = _deviceResources->render->shadowMapTextureViews,
 	};
-	_shadowRender->doCommands(&doShadowRenderCommandsDescriptor);
+	_shadowMapRender->doCommands(&doShadowRenderCommandsDescriptor);
 
 	const render::ultimate::descriptor::DoCommands doUltimateRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,
