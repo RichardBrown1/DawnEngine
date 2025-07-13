@@ -88,6 +88,8 @@ Engine::Engine() {
 	_shadowMapRender = new render::ShadowMap(&_wgpuContext);
 	_shadowMapRender->generateGpuObjects(_deviceResources);
 
+	_shadowToCamera = new render::ShadowToCamera(&_wgpuContext);
+	_shadowToCamera->generateGpuObjects(_deviceResources);
 
 	_ultimateRender = new render::Ultimate(&_wgpuContext);
 	_ultimateRender->generateGpuObjects(_deviceResources);
@@ -140,7 +142,6 @@ void Engine::run() {
 
 		this->draw();
 	}
-	this->destroy();
 }
 
 void Engine::draw() {
@@ -182,14 +183,19 @@ void Engine::draw() {
 	};
 	_lightingRender->doCommands(&doLightingAccumulatorRenderCommandsDescriptor);
 
-	const render::shadowMap::descriptor::DoCommands doShadowRenderCommandsDescriptor = {
+	const render::shadowMap::descriptor::DoCommands doShadowMapRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,
 		.vertexBuffer = _deviceResources->scene->vbo,
 		.indexBuffer = _deviceResources->scene->indices,
 		.drawCalls = _drawCalls,
 		.shadowMapTextureViews = _deviceResources->render->shadowMapTextureViews,
 	};
-	_shadowMapRender->doCommands(&doShadowRenderCommandsDescriptor);
+	_shadowMapRender->doCommands(&doShadowMapRenderCommandsDescriptor);
+
+	const render::shadowToCamera::descriptor::DoCommands doShadowToCameraRenderCommandsDescriptor = {
+		.commandEncoder = commandEncoder,
+	};
+	_shadowToCamera->doCommands(&doShadowToCameraRenderCommandsDescriptor);
 
 	const render::ultimate::descriptor::DoCommands doUltimateRenderCommandsDescriptor = {
 		.commandEncoder = commandEncoder,
@@ -224,7 +230,18 @@ void Engine::draw() {
 
 }
 	
-void Engine::destroy() {
+Engine::~Engine() {
+	delete _deviceResources;
+	delete _initialRender;
+	delete _shadowMapRender;
+	delete _shadowToCamera;
+	delete _baseColorAccumulatorRender;
+	delete _normalAccumulatorRender;
+	delete _lightingRender;
+	delete _ultimateRender;
+	delete _toSurfaceRender;
+	delete _clearLightingRender;
+
 	//device and gpu object destruction is done by dawn destructor
 	_wgpuContext.surface.Unconfigure();
 	SDL_Quit();

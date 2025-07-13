@@ -2,6 +2,7 @@
 #include "../device/device.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
 #include "../render/initial.hpp"
+#include "../render/shadowToCamera.hpp"
 #include "../render/shadowMap.hpp"
 #include "../render/accumulator/fourChannel.hpp"
 #include "../render/ultimate.hpp"
@@ -14,6 +15,7 @@ class Engine {
 
 public:
 	Engine();
+	~Engine();
 	void run();
 
 private:
@@ -28,6 +30,7 @@ private:
 	DeviceResources* _deviceResources;
 	render::Initial* _initialRender;
 	render::ShadowMap* _shadowMapRender;
+	render::ShadowToCamera* _shadowToCamera;
 	render::FourChannel* _baseColorAccumulatorRender;
 	render::FourChannel* _normalAccumulatorRender;
 	render::Lighting* _lightingRender;
@@ -37,5 +40,4 @@ private:
 	std::vector<structs::host::DrawCall> _drawCalls;
 
 	void draw();
-	void destroy();
 };
