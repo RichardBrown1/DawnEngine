@@ -8,7 +8,7 @@ namespace render {
 	ShadowToCamera::ShadowToCamera(WGPUContext* wgpuContext)
 		: _wgpuContext(wgpuContext) {
 		// Load compute shader module
-		_computeShaderModule = device::createShaderModule(
+		_computeShaderModule = device::createWGSLShaderModule(
 			_wgpuContext->device,
 			SHADOWTOCAMERA_SHADER_LABEL,
 			SHADOWTOCAMERA_SHADER_PATH
@@ -19,7 +19,7 @@ namespace render {
 		// Create bind group layouts for input and accumulator
 		createInputBindGroupLayout();
 		createAccumulatorBindGroupLayout(
-			deviceResources->render->shadowMapTextureFormat,
+			deviceResources->render->shadowTextureFormat,
 			deviceResources->render->worldPositionTextureFormat,
 			deviceResources->render->normalTextureFormat
 		);
@@ -74,7 +74,7 @@ namespace render {
 	}
 
 	void ShadowToCamera::createAccumulatorBindGroupLayout(
-		wgpu::TextureFormat shadowMapTextureFormat,
+		wgpu::TextureFormat shadowTextureFormat,
 		wgpu::TextureFormat worldPositionTextureFormat,
 		wgpu::TextureFormat normalTextureFormat
 	) {
@@ -90,7 +90,8 @@ namespace render {
 				.binding = 1,
 				.visibility = wgpu::ShaderStage::Compute,
 				.storageTexture = { 
-					.format = shadowMapTextureFormat,
+					.access = wgpu::StorageTextureAccess::WriteOnly,
+					.format = shadowTextureFormat,
 					.viewDimension = wgpu::TextureViewDimension::e2D
 				}
 			},
@@ -98,6 +99,7 @@ namespace render {
 				.binding = 2,
 				.visibility = wgpu::ShaderStage::Compute,
 				.storageTexture = { 
+					.access = wgpu::StorageTextureAccess::ReadOnly,
 					.format = worldPositionTextureFormat,
 					.viewDimension = wgpu::TextureViewDimension::e2D
 				}
@@ -106,6 +108,7 @@ namespace render {
 				.binding = 3,
 				.visibility = wgpu::ShaderStage::Compute,
 				.storageTexture = {
+					.access = wgpu::StorageTextureAccess::ReadOnly,
 					.format = normalTextureFormat,
 					.viewDimension = wgpu::TextureViewDimension::e2D
 				}
