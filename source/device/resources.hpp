@@ -20,7 +20,7 @@ struct RenderResources {
 
 	const wgpu::TextureFormat lightingTextureFormat = wgpu::TextureFormat::R32Uint;
 	const wgpu::TextureFormat shadowMapTextureFormat = constants::DEPTH_FORMAT;
-	const wgpu::TextureFormat shadowTextureFormat = wgpu::TextureFormat::R32Uint;
+	const wgpu::TextureFormat shadowTextureFormat = wgpu::TextureFormat::R32Float;
 	const wgpu::TextureFormat ultimateTextureFormat = wgpu::TextureFormat::RGBA32Float;
 
 	wgpu::TextureView worldPositionTextureView;
