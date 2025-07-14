@@ -46,7 +46,8 @@ namespace render {
 			wgpu::TextureView& normalTextureFormat
 		);
 		void insertInputBindGroup(
-			wgpu::TextureView& shadowMapTextureView
+			wgpu::TextureView& shadowMapTextureView,
+			wgpu::Buffer& light
 		);
 
 

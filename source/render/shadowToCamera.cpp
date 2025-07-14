@@ -28,8 +28,11 @@ namespace render {
 		createPipeline();
 
 		// Create bind groups for input and accumulator
-		for (auto& shadowMap : deviceResources->render->shadowMapTextureViews) {
-			insertInputBindGroup(shadowMap);
+		for (uint32_t i = 0; i < deviceResources->render->shadowMapTextureViews.size(); ++i) {
+			insertInputBindGroup(
+				deviceResources->render->shadowMapTextureViews[i],
+				deviceResources->scene->lights[i]
+			);
 		}
 		createAccumulatorBindGroup(
 			deviceResources->scene->samplers.at(UINT32_MAX),
@@ -44,7 +47,7 @@ namespace render {
 		wgpu::ComputePassDescriptor computePassDesc = {
 		 .label = "shadowToCamera compute pass",
 		};
-	  wgpu::ComputePassEncoder computePass = descriptor->commandEncoder.BeginComputePass(&computePassDesc);
+		wgpu::ComputePassEncoder computePass = descriptor->commandEncoder.BeginComputePass(&computePassDesc);
 
 		computePass.SetPipeline(_computePipeline);
 		computePass.SetBindGroup(0, _accumulatorBindGroup);
@@ -53,7 +56,7 @@ namespace render {
 			computePass.SetBindGroup(1, bg);
 			computePass.DispatchWorkgroups(
 				_wgpuContext->getScreenDimensions().width,
-		  	_wgpuContext->getScreenDimensions().height,
+				_wgpuContext->getScreenDimensions().height,
 				1
 			);
 		}
@@ -89,7 +92,7 @@ namespace render {
 			wgpu::BindGroupLayoutEntry{
 				.binding = 1,
 				.visibility = wgpu::ShaderStage::Compute,
-				.storageTexture = { 
+				.storageTexture = {
 					.access = wgpu::StorageTextureAccess::WriteOnly,
 					.format = shadowTextureFormat,
 					.viewDimension = wgpu::TextureViewDimension::e2D
@@ -98,7 +101,7 @@ namespace render {
 			wgpu::BindGroupLayoutEntry{
 				.binding = 2,
 				.visibility = wgpu::ShaderStage::Compute,
-				.storageTexture = { 
+				.storageTexture = {
 					.access = wgpu::StorageTextureAccess::ReadOnly,
 					.format = worldPositionTextureFormat,
 					.viewDimension = wgpu::TextureViewDimension::e2D
@@ -120,37 +123,6 @@ namespace render {
 			.entries = entries.data()
 		};
 		_accumulatorBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&descriptor);
-	}
-
-	void ShadowToCamera::createInputBindGroupLayout() {
-		std::array<wgpu::BindGroupLayoutEntry, 1> entries = {
-			wgpu::BindGroupLayoutEntry{
-				.binding = 0,
-				.visibility = wgpu::ShaderStage::Compute,
-				.texture = { 
-					.sampleType = wgpu::TextureSampleType::Depth, 
-					.viewDimension = wgpu::TextureViewDimension::e2D
-				}
-			}
-		};
-		const wgpu::BindGroupLayoutDescriptor descriptor = {
-			.label = "shadowToCamera input bind group layout",
-			.entryCount = entries.size(),
-			.entries = entries.data()
-		};
-		_inputBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&descriptor);
-	}
-
-	void ShadowToCamera::createPipeline() {
-		const wgpu::ComputePipelineDescriptor descriptor = {
-			.label = SHADOWTOCAMERA_SHADER_LABEL,
-			.layout = getPipelineLayout(),
-			.compute = {
-				.module = _computeShaderModule,
-				.entryPoint = enums::EntryPoint::COMPUTE
-			}
-		};
-		_computePipeline = _wgpuContext->device.CreateComputePipeline(&descriptor);
 	}
 
 	void ShadowToCamera::createAccumulatorBindGroup(
@@ -186,15 +158,57 @@ namespace render {
 		_accumulatorBindGroup = _wgpuContext->device.CreateBindGroup(&descriptor);
 	}
 
+	void ShadowToCamera::createPipeline() {
+		const wgpu::ComputePipelineDescriptor descriptor = {
+			.label = SHADOWTOCAMERA_SHADER_LABEL,
+			.layout = getPipelineLayout(),
+			.compute = {
+				.module = _computeShaderModule,
+				.entryPoint = enums::EntryPoint::COMPUTE
+			}
+		};
+		_computePipeline = _wgpuContext->device.CreateComputePipeline(&descriptor);
+	}
+
+	void ShadowToCamera::createInputBindGroupLayout() {
+		std::array<wgpu::BindGroupLayoutEntry, 2> entries = {
+			wgpu::BindGroupLayoutEntry{
+				.binding = 0,
+				.visibility = wgpu::ShaderStage::Compute,
+				.texture = {
+					.sampleType = wgpu::TextureSampleType::Depth,
+					.viewDimension = wgpu::TextureViewDimension::e2D
+				}
+			},
+			wgpu::BindGroupLayoutEntry{
+				.binding = 1,
+				.visibility = wgpu::ShaderStage::Compute,
+				.buffer = {
+						.type = wgpu::BufferBindingType::Uniform,
+						.minBindingSize = sizeof(glm::mat4x4)
+				},
+			},
+		};
+		const wgpu::BindGroupLayoutDescriptor descriptor = {
+			.label = "shadowToCamera input bind group layout",
+			.entryCount = entries.size(),
+			.entries = entries.data()
+		};
+		_inputBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&descriptor);
+	}
+
 	void ShadowToCamera::insertInputBindGroup(
-		wgpu::TextureView& shadowMapTextureView
+		wgpu::TextureView& shadowMapTextureView,
+		wgpu::Buffer& light
 	) {
-		// Assumes default sampler is available at UINT32_MAX
-		wgpu::Sampler sampler = _wgpuContext->device.CreateSampler();
-		std::array<wgpu::BindGroupEntry, 1> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 2> bindGroupEntries = {
 			wgpu::BindGroupEntry{
 				.binding = 0,
 				.textureView = shadowMapTextureView,
+			},
+			wgpu::BindGroupEntry{
+				.binding = 1,
+				.buffer = light,
 			},
 		};
 		const wgpu::BindGroupDescriptor descriptor = {
@@ -203,7 +217,7 @@ namespace render {
 			.entryCount = bindGroupEntries.size(),
 			.entries = bindGroupEntries.data()
 		};
-		_inputBindGroups.emplace_back( _wgpuContext->device.CreateBindGroup(&descriptor));
+		_inputBindGroups.emplace_back(_wgpuContext->device.CreateBindGroup(&descriptor));
 	}
 
 } // namespace render

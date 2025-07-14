@@ -9,10 +9,16 @@ struct Light {
     position: vec3<f32>,
 };
 
-@group(0) @binding(0) var shadowMap: texture_depth_2d;
-@group(0) @binding(1) var depthSampler: sampler_comparison;
+@group(0) @binding(0) var depthSampler: sampler_comparison;
+@group(0) @binding(1) var shadow: texture_storage_2d<r32float, readwrite>;
+@group(0) @binding(2) var worldPosition: texture_storage_2d<rgba32float, read>;
+@group(0) @binding(3) var normalPosition: texture_storage_2d<rgba32float, write>;
 
-fn calculateShadow(input: VSOutput, light: Light) -> f32 {
+@group(1) @binding(0) var shadowMap: texture_depth_2d;
+@group(1) @binding(1) var<uniform> lightViewProjectionMatrix : mat4x4f;
+
+fn cs_main(@builtin(global_invocation_id) GlobalInvocationID : vec3u) -> f32 {
+    let coords = GlobalInvocationID.xy;
     let shadowMapDimensions = textureDimensions(shadowMap);
     let shadowMapWidth = f32(shadowMapDimensions.x);
 
