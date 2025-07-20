@@ -60,17 +60,8 @@ WGPUContext::WGPUContext() {
 	print::adapter::GetInfo(this->adapter);
 	print::adapter::GetLimits(this->adapter);
 
-	const std::array<wgpu::FeatureName, 4> requiredFeatures = {
-		wgpu::FeatureName::IndirectFirstInstance,
-		wgpu::FeatureName::TextureCompressionBC,
-		wgpu::FeatureName::BGRA8UnormStorage,
-		wgpu::FeatureName::Unorm16TextureFormats,
-	};
-	
-	constexpr wgpu::Limits requiredLimits = {
-		//.maxColorAttachmentBytesPerSample = 64,
-		.maxStorageTexturesInFragmentStage = 6,
-	};
+	constexpr std::array<wgpu::FeatureName, 0> requiredFeatures = {};
+	constexpr wgpu::Limits requiredLimits = {};
 
 	wgpu::DeviceDescriptor deviceDescriptor = {};
 	deviceDescriptor.label = "device";
