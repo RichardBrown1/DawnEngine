@@ -19,6 +19,7 @@ struct Light {
 
 @compute @workgroup_size(1, 1, 1)
 fn cs_main(@builtin(global_invocation_id) GlobalInvocationID : vec3u) {
+    const bias : f32 = 0.0008;
     let coords = GlobalInvocationID.xy;
     
     //compare distance to the light
@@ -32,8 +33,8 @@ fn cs_main(@builtin(global_invocation_id) GlobalInvocationID : vec3u) {
     let sampledShadowDepth : f32 = textureSampleLevel(shadowMapTexture, depthSampler, uv, 0 );
 
     var output : f32 = 1.0;
-    if(depthFromLight > sampledShadowDepth) {
-       output = 0.0;
+    if(depthFromLight > sampledShadowDepth + bias) {
+       output = 0.5;
     }
 
     textureStore(shadowAccumulatorTexture, coords, vec4<f32>(output, output, output, output));
