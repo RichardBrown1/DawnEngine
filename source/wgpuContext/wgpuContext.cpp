@@ -61,7 +61,9 @@ WGPUContext::WGPUContext() {
 	print::adapter::GetLimits(this->adapter);
 
 	constexpr std::array<wgpu::FeatureName, 0> requiredFeatures = {};
-	constexpr wgpu::Limits requiredLimits = {};
+	constexpr wgpu::Limits requiredLimits = {
+		.maxStorageTexturesInFragmentStage = 6
+	};
 
 	wgpu::DeviceDescriptor deviceDescriptor = {};
 	deviceDescriptor.label = "device";

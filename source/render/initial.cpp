@@ -15,10 +15,8 @@ namespace render {
 		const DeviceResources* deviceResources
 	) {
 		createInputBindGroupLayout();
-		createOutputBindGroupLayout(deviceResources);
-		createPipeline(deviceResources->render->depthTextureFormat);
+		createPipelines(deviceResources);
 		createInputBindGroup(deviceResources);
-		createOutputBindGroup(deviceResources);
 	};
 
 	void Initial::doCommands(const render::initial::descriptor::DoCommands* descriptor) {
@@ -46,7 +44,6 @@ namespace render {
 			descriptor->indexBuffer.GetSize()
 		);
 		renderPassEncoder.SetBindGroup(0, _inputBindGroup);
-		renderPassEncoder.SetBindGroup(1, _outputBindGroup);
 
 		for (const auto& dc : descriptor->drawCalls) {
 			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
@@ -54,7 +51,7 @@ namespace render {
 		renderPassEncoder.End();
 	}
 
-	void Initial::createPipeline(const wgpu::TextureFormat depthTextureFormat) {
+	void Initial::createPipelines(const DeviceResources* deviceResources) {
 		const wgpu::PipelineLayout pipelineLayout = getPipelineLayout();
 
 		const wgpu::VertexState vertexState = {
@@ -65,21 +62,12 @@ namespace render {
 		};
 
 		const wgpu::DepthStencilState depthStencilState = {
-			.format = depthTextureFormat,
+			.format = deviceResources->render->depthTextureFormat,
 			.depthWriteEnabled = true,
 			.depthCompare = wgpu::CompareFunction::Less,
 		};
 
-		const std::array<wgpu::ColorTargetState, 0> colorTargetStates = {};
-
-		const wgpu::FragmentState fragmentState = {
-			.module = _fragmentShaderModule,
-			.entryPoint = enums::EntryPoint::FRAGMENT,
-			.targetCount = colorTargetStates.size(),
-			.targets = colorTargetStates.data(),
-		};
-		const wgpu::RenderPipelineDescriptor renderPipelineDescriptor = {
-			.label = "initial render pipeline",
+		wgpu::RenderPipelineDescriptor renderPipelineDescriptor = {
 			.layout = pipelineLayout,
 			.vertex = vertexState,
 			.primitive = wgpu::PrimitiveState {
@@ -92,9 +80,25 @@ namespace render {
 				.mask = ~0u,
 				.alphaToCoverageEnabled = false,
 			},
-			.fragment = &fragmentState,
 		};
-		_renderPipeline = _wgpuContext->device.CreateRenderPipeline(&renderPipelineDescriptor);
+
+		{
+			renderPipelineDescriptor.label = "initial render pipeline one";
+			const std::array<wgpu::ColorTargetState, 2> colorTargetStates = {
+				wgpu::ColorTargetState {.format = deviceResources->render->worldPositionTextureFormat},
+				wgpu::ColorTargetState {.format = deviceResources->render->normalTextureFormat}
+			};
+			const wgpu::FragmentState fragmentState = {
+				.module = _oneFragmentShaderModule,
+				.entryPoint = enums::EntryPoint::FRAGMENT,
+				.targetCount = colorTargetStates.size(),
+				.targets = colorTargetStates.data(),
+			};
+			renderPipelineDescriptor.fragment = &fragmentState;
+			_renderPipelineOne = _wgpuContext->device.CreateRenderPipeline(&renderPipelineDescriptor);
+		}
+
+
 	}
 
 	void Initial::createInputBindGroup(
@@ -140,52 +144,6 @@ namespace render {
 			.entries = bindGroupEntries.data(),
 		};
 		_inputBindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
-	}
-
-	void Initial::createOutputBindGroup(
-		const DeviceResources* deviceResources
-	) {
-		const wgpu::BindGroupEntry worldPositionTextureView = {
-			.binding = 0,
-			.textureView = deviceResources->render->worldPositionTextureView,
-		};
-		const wgpu::BindGroupEntry baseColorTextureView = {
-			.binding = 1,
-			.textureView = deviceResources->render->baseColorTextureView,
-		};
-		const wgpu::BindGroupEntry normalTextureView = {
-			.binding = 2,
-			.textureView = deviceResources->render->normalTextureView,
-		};
-		const wgpu::BindGroupEntry texCoordsTextureView = {
-			.binding = 3,
-			.textureView = deviceResources->render->texCoordTextureView,
-		};
-		const wgpu::BindGroupEntry baseColorIdTextureView = {
-			.binding = 4,
-			.textureView = deviceResources->render->baseColorIdTextureView,
-		};
-		const wgpu::BindGroupEntry normalIdTextureView = {
-			.binding = 5,
-			.textureView = deviceResources->render->normalIdTextureView,
-		};
-
-		std::array<wgpu::BindGroupEntry, 6> bindGroupEntries = {
-			worldPositionTextureView,
-			baseColorTextureView,
-			normalTextureView,
-			texCoordsTextureView,
-			baseColorIdTextureView,
-			normalIdTextureView,
-		};
-
-		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
-			.label = "initial render output bind group",
-			.layout = _outputBindGroupLayout,
-			.entryCount = bindGroupEntries.size(),
-			.entries = bindGroupEntries.data(),
-		};
-		_outputBindGroup = _wgpuContext->device.CreateBindGroup(&bindGroupDescriptor);
 	}
 
 	void Initial::createInputBindGroupLayout() {
@@ -246,83 +204,8 @@ namespace render {
 		_inputBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
 	};
 
-	void Initial::createOutputBindGroupLayout(const DeviceResources* deviceResources) {
-		const wgpu::BindGroupLayoutEntry worldPositionBindGroupLayoutEntry = {
-			.binding = 0,
-			.visibility = wgpu::ShaderStage::Fragment,
-			.storageTexture = {
-				.access = wgpu::StorageTextureAccess::WriteOnly,
-				.format = deviceResources->render->worldPositionTextureFormat,
-				.viewDimension = wgpu::TextureViewDimension::e2D,
-			}
-		};
-	const wgpu::BindGroupLayoutEntry baseColorBindGroupLayoutEntry = {
-			.binding = 1,
-			.visibility = wgpu::ShaderStage::Fragment,
-			.storageTexture = {
-				.access = wgpu::StorageTextureAccess::WriteOnly,
-				.format = deviceResources->render->baseColorTextureFormat,
-				.viewDimension = wgpu::TextureViewDimension::e2D,
-			}
-		};
-
-	const wgpu::BindGroupLayoutEntry normalBindGroupLayoutEntry = {
-			.binding = 2,
-			.visibility = wgpu::ShaderStage::Fragment,
-			.storageTexture = {
-				.access = wgpu::StorageTextureAccess::WriteOnly,
-				.format = deviceResources->render->normalTextureFormat,
-				.viewDimension = wgpu::TextureViewDimension::e2D,
-			}
-		};
-
-	const wgpu::BindGroupLayoutEntry texCoordsBindGroupLayoutEntry = {
-			.binding = 3,
-			.visibility = wgpu::ShaderStage::Fragment,
-			.storageTexture = {
-				.access = wgpu::StorageTextureAccess::WriteOnly,
-				.format = deviceResources->render->texCoordTextureFormat,
-				.viewDimension = wgpu::TextureViewDimension::e2D,
-			}
-		};
-		const wgpu::BindGroupLayoutEntry baseColorIdsBindGroupLayoutEntry = {
-			.binding = 4,
-			.visibility = wgpu::ShaderStage::Fragment,
-			.storageTexture = {
-				.access = wgpu::StorageTextureAccess::WriteOnly,
-				.format = deviceResources->render->baseColorIdTextureFormat,
-				.viewDimension = wgpu::TextureViewDimension::e2D,
-			}
-		};
-		const wgpu::BindGroupLayoutEntry normalIdBindGroupLayoutEntry = {
-			.binding = 5,
-			.visibility = wgpu::ShaderStage::Fragment,
-			.storageTexture = {
-				.access = wgpu::StorageTextureAccess::WriteOnly,
-				.format = deviceResources->render->normalIdTextureFormat,
-				.viewDimension = wgpu::TextureViewDimension::e2D,
-			}
-		};
-
-		std::array<wgpu::BindGroupLayoutEntry, 6> bindGroupLayoutEntries = {
-			worldPositionBindGroupLayoutEntry,
-			baseColorBindGroupLayoutEntry,
-			normalBindGroupLayoutEntry,
-			texCoordsBindGroupLayoutEntry,
-			baseColorIdsBindGroupLayoutEntry,
-			normalIdBindGroupLayoutEntry,
-		};
-
-		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
-			.label = "initial render output bind group layout",
-			.entryCount = bindGroupLayoutEntries.size(),
-			.entries = bindGroupLayoutEntries.data(),
-		};
-		_outputBindGroupLayout = _wgpuContext->device.CreateBindGroupLayout(&bindGroupLayoutDescriptor);
-	};
-
 	wgpu::PipelineLayout Initial::getPipelineLayout() {
-		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = { _inputBindGroupLayout, _outputBindGroupLayout };
+		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = { _inputBindGroupLayout };
 
 		const wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
 			.label = "initial render pipeline layout",

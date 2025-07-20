@@ -27,31 +27,39 @@ namespace render {
 		void doCommands(const render::initial::descriptor::DoCommands* descriptor);
 
 	private:
-		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
-		const std::string VERTEX_SHADER_PATH = "shaders/initialRender_vf.wgsl";
-
-		const wgpu::StringView FRAGMENT_SHADER_LABEL = "initial render fragment shader";
-		const std::string FRAGMENT_SHADER_PATH = "shaders/initialRender_vf.wgsl";
-
-
 		WGPUContext* _wgpuContext;
 
-		wgpu::RenderPipeline _renderPipeline;
-		wgpu::BindGroupLayout _inputBindGroupLayout;
-		wgpu::BindGroupLayout _outputBindGroupLayout;
-		wgpu::BindGroup _inputBindGroup;
-		wgpu::BindGroup _outputBindGroup;
-
+		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
+		const std::string VERTEX_SHADER_PATH = "shaders/initialRender_v.wgsl";
 		wgpu::ShaderModule _vertexShaderModule;
-		wgpu::ShaderModule _fragmentShaderModule;
+
+		const wgpu::StringView ONE_FRAGMENT_SHADER_LABEL = "initial render fragment shader ONE";
+		const std::string ONE_FRAGMENT_SHADER_PATH = "shaders/initialRenderOne_f.wgsl";
+		wgpu::ShaderModule _oneFragmentShaderModule;
+		
+		const wgpu::StringView TWO_FRAGMENT_SHADER_LABEL = "initial render fragment shader TWO";
+		const std::string TWO_FRAGMENT_SHADER_PATH = "shaders/initialRenderTwo_f.wgsl";
+		wgpu::ShaderModule _twoFragmentShaderModule;
+
+		const wgpu::StringView THREE_FRAGMENT_SHADER_LABEL = "initial render fragment shader THREE";
+		const std::string THREE_FRAGMENT_SHADER_PATH = "shaders/initialRenderThree_f.wgsl";
+		wgpu::ShaderModule _threeFragmentShaderModule;
+
+		wgpu::RenderPipeline _renderPipelineOne;
+		wgpu::RenderPipeline _renderPipelineTwo;
+		wgpu::RenderPipeline _renderPipelineThree;
+
+		wgpu::BindGroupLayout _inputBindGroupLayout;
+		wgpu::BindGroup _inputBindGroup;
+
+		wgpu::ShaderModule _baseColorTexCoordsFragmentShaderModule;
+		wgpu::ShaderModule _worldNormalFragmentShaderModule;
 
 		std::array<wgpu::RenderPassColorAttachment, 0> _renderPassColorAttachments;
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createInputBindGroupLayout();
-		void createOutputBindGroupLayout(const DeviceResources* deviceResources);
-		void createPipeline(const wgpu::TextureFormat depthTextureFormat);
+		void createPipelines(const DeviceResources* deviceResources);
 		void createInputBindGroup(const DeviceResources* deviceResources);
-		void createOutputBindGroup(const DeviceResources* deviceResources);
 	};
 }
