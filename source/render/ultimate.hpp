@@ -17,8 +17,8 @@ namespace render {
 			wgpu::TextureView& baseColorTextureView;
 			wgpu::TextureFormat lightingTextureFormat;
 			wgpu::TextureView& lightingTextureView;
-
-			wgpu::TextureView& shadowMapTextureView;
+			wgpu::TextureFormat shadowTextureFormat;
+			wgpu::TextureView& shadowTextureView;
 		};
 
 		struct DoCommands {
@@ -49,13 +49,15 @@ namespace render {
 		void createBindGroupLayout(
 			wgpu::TextureFormat ultimateTextureFormat,
 			wgpu::TextureFormat baseColorTextureFormat,
-			wgpu::TextureFormat lightingTextureFormat
+			wgpu::TextureFormat lightingTextureFormat,
+			wgpu::TextureFormat shadowTextureFormat
 		);
 		void createPipeline();
 		void createBindGroup(
 			wgpu::TextureView& ultimateTextureView,
 			wgpu::TextureView& baseColorTextureView,
-			wgpu::TextureView& lightingTextureView
+			wgpu::TextureView& lightingTextureView,
+			wgpu::TextureView& shadowTextureView
 		);
 	};
 }
