@@ -34,6 +34,8 @@ struct RenderResources {
 	std::vector<wgpu::TextureView> shadowMapTextureViews;
 	wgpu::TextureView shadowTextureView; //accumulation of all shadowMaps in clip space
 	wgpu::TextureView ultimateTextureView;
+
+	wgpu::Sampler shadowMapSampler;
 };
 
 struct SceneResources {

@@ -34,16 +34,14 @@ namespace render {
 		wgpu::PipelineLayout getPipelineLayout();
 		void createAccumulatorBindGroupLayout(
 			wgpu::TextureFormat shadowMapTextureFormat,
-			wgpu::TextureFormat worldPositionTextureFormat,
-			wgpu::TextureFormat normalTextureFormat
+			wgpu::TextureFormat worldPositionTextureFormat
 		);
 		void createInputBindGroupLayout();
 		void createPipeline();
 		void createAccumulatorBindGroup(
 			wgpu::Sampler& shadowMapSampler,
 			wgpu::TextureView& shadowTextureView,
-			wgpu::TextureView& worldPositionTextureFormat,
-			wgpu::TextureView& normalTextureFormat
+			wgpu::TextureView& worldPositionTextureFormat
 		);
 		void insertInputBindGroup(
 			wgpu::TextureView& shadowMapTextureView,

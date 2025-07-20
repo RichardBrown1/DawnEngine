@@ -20,25 +20,27 @@ namespace render {
 		createInputBindGroupLayout();
 		createAccumulatorBindGroupLayout(
 			deviceResources->render->shadowTextureFormat,
-			deviceResources->render->worldPositionTextureFormat,
-			deviceResources->render->normalTextureFormat
+			deviceResources->render->worldPositionTextureFormat
 		);
 
 		// Create compute pipeline
 		createPipeline();
 
 		// Create bind groups for input and accumulator
-		for (uint32_t i = 0; i < deviceResources->render->shadowMapTextureViews.size(); ++i) {
+		const uint32_t shadowMapVecSize = static_cast<uint32_t>(deviceResources->render->shadowMapTextureViews.size());
+		const uint32_t lightVecSize = static_cast<uint32_t>(deviceResources->scene->lights.size());
+		const uint32_t numShadowMaps = shadowMapVecSize > lightVecSize ? lightVecSize : shadowMapVecSize;
+
+		for (uint32_t i = 0; i < numShadowMaps; ++i) {
 			insertInputBindGroup(
 				deviceResources->render->shadowMapTextureViews[i],
 				deviceResources->scene->lights[i]
 			);
 		}
 		createAccumulatorBindGroup(
-			deviceResources->scene->samplers.at(UINT32_MAX),
+			deviceResources->render->shadowMapSampler,
 			deviceResources->render->shadowTextureView,
-			deviceResources->render->worldPositionTextureView,
-			deviceResources->render->normalTextureView
+			deviceResources->render->worldPositionTextureView
 		);
 	}
 
@@ -65,8 +67,8 @@ namespace render {
 
 	wgpu::PipelineLayout ShadowToCamera::getPipelineLayout() {
 		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = {
+			_accumulatorBindGroupLayout,
 			_inputBindGroupLayout,
-			_accumulatorBindGroupLayout
 		};
 		const wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor = {
 			.label = "shadowToCamera pipeline layout",
@@ -78,22 +80,21 @@ namespace render {
 
 	void ShadowToCamera::createAccumulatorBindGroupLayout(
 		wgpu::TextureFormat shadowTextureFormat,
-		wgpu::TextureFormat worldPositionTextureFormat,
-		wgpu::TextureFormat normalTextureFormat
+		wgpu::TextureFormat worldPositionTextureFormat
 	) {
-		std::array<wgpu::BindGroupLayoutEntry, 4> entries = {
+		std::array<wgpu::BindGroupLayoutEntry, 3> entries = {
 			wgpu::BindGroupLayoutEntry{
 				.binding = 0,
 				.visibility = wgpu::ShaderStage::Compute,
 				.sampler = {
-					.type = wgpu::SamplerBindingType::Filtering,
+					.type = wgpu::SamplerBindingType::NonFiltering,
 				}
 			},
 			wgpu::BindGroupLayoutEntry{
 				.binding = 1,
 				.visibility = wgpu::ShaderStage::Compute,
 				.storageTexture = {
-					.access = wgpu::StorageTextureAccess::WriteOnly,
+					.access = wgpu::StorageTextureAccess::ReadWrite,
 					.format = shadowTextureFormat,
 					.viewDimension = wgpu::TextureViewDimension::e2D
 				}
@@ -107,15 +108,6 @@ namespace render {
 					.viewDimension = wgpu::TextureViewDimension::e2D
 				}
 			},
-			wgpu::BindGroupLayoutEntry{
-				.binding = 3,
-				.visibility = wgpu::ShaderStage::Compute,
-				.storageTexture = {
-					.access = wgpu::StorageTextureAccess::ReadOnly,
-					.format = normalTextureFormat,
-					.viewDimension = wgpu::TextureViewDimension::e2D
-				}
-			}
 		};
 		const wgpu::BindGroupLayoutDescriptor descriptor = {
 			.label = "shadowToCamera accumulator bind group layout",
@@ -128,10 +120,9 @@ namespace render {
 	void ShadowToCamera::createAccumulatorBindGroup(
 		wgpu::Sampler& shadowMapSampler,
 		wgpu::TextureView& shadowTextureView,
-		wgpu::TextureView& worldPositionTextureView,
-		wgpu::TextureView& normalTextureView
+		wgpu::TextureView& worldPositionTextureView
 	) {
-		std::array<wgpu::BindGroupEntry, 4> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = {
 			wgpu::BindGroupEntry{
 				.binding = 0,
 				.sampler = shadowMapSampler
@@ -143,10 +134,6 @@ namespace render {
 			wgpu::BindGroupEntry{
 				.binding = 2,
 				.textureView = worldPositionTextureView,
-			},
-			wgpu::BindGroupEntry{
-				.binding = 3,
-				.textureView = normalTextureView,
 			},
 		};
 		const wgpu::BindGroupDescriptor descriptor = {

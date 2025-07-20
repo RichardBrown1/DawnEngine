@@ -13,7 +13,6 @@ struct Light {
 @group(0) @binding(0) var depthSampler: sampler;
 @group(0) @binding(1) var shadowAccumulatorTexture: texture_storage_2d<r32float, read_write>;
 @group(0) @binding(2) var worldPositionTexture: texture_storage_2d<rgba32float, read>;
-@group(0) @binding(3) var normalPositionTexture: texture_storage_2d<rgba32float, write>;
 
 @group(1) @binding(0) var shadowMapTexture: texture_depth_2d;
 @group(1) @binding(1) var<uniform> lightViewProjectionMatrix : mat4x4f;

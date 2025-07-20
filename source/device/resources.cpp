@@ -34,7 +34,7 @@ constexpr wgpu::TextureUsage baseColorIdTextureUsage = wgpu::TextureUsage::Rende
 constexpr wgpu::TextureUsage normalIdTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 constexpr wgpu::TextureUsage depthTextureUsage = wgpu::TextureUsage::RenderAttachment;
 constexpr wgpu::TextureUsage lightingTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-constexpr wgpu::TextureUsage shadowMapTextureUsage = wgpu::TextureUsage::RenderAttachment;
+constexpr wgpu::TextureUsage shadowMapTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
 constexpr wgpu::TextureUsage shadowTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 constexpr wgpu::TextureUsage ultimateTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding;
 
@@ -155,6 +155,15 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 	};
 	texture::createTextureView(&ultimateTextureViewDescriptor);
 
+	const wgpu::SamplerDescriptor defaultSamplerDescriptor = {
+		.label = "shadow map sampler",
+		.addressModeU = wgpu::AddressMode::ClampToEdge,
+		.addressModeV = wgpu::AddressMode::ClampToEdge,
+		.magFilter = wgpu::FilterMode::Nearest,
+		.minFilter = wgpu::FilterMode::Nearest,
+		.mipmapFilter = wgpu::MipmapFilterMode::Nearest,
+	};
+	this->shadowMapSampler = wgpuContext->device.CreateSampler(&defaultSamplerDescriptor);
 }
 
 SceneResources::SceneResources(WGPUContext* wgpuContext, HostSceneResources& host) {
