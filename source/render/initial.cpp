@@ -8,7 +8,8 @@
 namespace render {
 	Initial::Initial(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {
 		_vertexShaderModule = device::createWGSLShaderModule(_wgpuContext->device, VERTEX_SHADER_LABEL, VERTEX_SHADER_PATH);
-		_fragmentShaderModule = device::createWGSLShaderModule(_wgpuContext->device, FRAGMENT_SHADER_LABEL, FRAGMENT_SHADER_PATH);
+		_oneFragmentShaderModule = device::createWGSLShaderModule(_wgpuContext->device, ONE_FRAGMENT_SHADER_LABEL, ONE_FRAGMENT_SHADER_PATH);
+		_twoFragmentShaderModule = device::createWGSLShaderModule(_wgpuContext->device, TWO_FRAGMENT_SHADER_LABEL, TWO_FRAGMENT_SHADER_PATH);
 	};
 
 	void Initial::generateGpuObjects(
@@ -17,38 +18,113 @@ namespace render {
 		createInputBindGroupLayout();
 		createPipelines(deviceResources);
 		createInputBindGroup(deviceResources);
+
+		_renderPassOneColorAttachments = {
+			wgpu::RenderPassColorAttachment {
+				.view = deviceResources->render->worldPositionTextureView,
+				.loadOp = wgpu::LoadOp::Clear,
+				.storeOp = wgpu::StoreOp::Store,
+				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
+			},
+			wgpu::RenderPassColorAttachment {
+				.view = deviceResources->render->normalTextureView,
+				.loadOp = wgpu::LoadOp::Clear,
+				.storeOp = wgpu::StoreOp::Store,
+				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
+			},
+			wgpu::RenderPassColorAttachment {
+				.view = deviceResources->render->texCoordTextureView,
+				.loadOp = wgpu::LoadOp::Clear,
+				.storeOp = wgpu::StoreOp::Store,
+				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
+			},
+		};
+
+		_renderPassTwoColorAttachments = {
+			wgpu::RenderPassColorAttachment {
+				.view = deviceResources->render->baseColorTextureView,
+				.loadOp = wgpu::LoadOp::Clear,
+				.storeOp = wgpu::StoreOp::Store,
+				.clearValue = wgpu::Color{0.3f, 0.3f, 1.0f, 1.0f},
+			},
+			wgpu::RenderPassColorAttachment {
+				.view = deviceResources->render->baseColorIdTextureView,
+				.loadOp = wgpu::LoadOp::Clear,
+				.storeOp = wgpu::StoreOp::Store,
+				.clearValue = wgpu::Color(UINT32_MAX),
+			},
+			wgpu::RenderPassColorAttachment {
+				.view = deviceResources->render->normalIdTextureView,
+				.loadOp = wgpu::LoadOp::Clear,
+				.storeOp = wgpu::StoreOp::Store,
+				.clearValue = wgpu::Color(UINT32_MAX),
+			},
+		};
+	
 	};
 
 	void Initial::doCommands(const render::initial::descriptor::DoCommands* descriptor) {
-		wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
-			.view = descriptor->depthTextureView,
-			.depthLoadOp = wgpu::LoadOp::Clear,
-			.depthStoreOp = wgpu::StoreOp::Store,
-			.depthClearValue = 1.0f,
-		};
+		{ //FIRST Render Pass
+			wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+				.view = descriptor->depthTextureView,
+				.depthLoadOp = wgpu::LoadOp::Clear,
+				.depthStoreOp = wgpu::StoreOp::Store,
+				.depthClearValue = 1.0f,
+			};
 
-		//TODO move this to generated gpu objects
-		wgpu::RenderPassDescriptor renderPassDescriptor = {
-			.label = "initial render pass",
-			.colorAttachmentCount = _renderPassColorAttachments.size(),
-			.colorAttachments = _renderPassColorAttachments.data(),
-			.depthStencilAttachment = &renderPassDepthStencilAttachment,
-		};
-		wgpu::RenderPassEncoder renderPassEncoder = descriptor->commandEncoder.BeginRenderPass(&renderPassDescriptor);
-		renderPassEncoder.SetPipeline(_renderPipeline);
-		renderPassEncoder.SetVertexBuffer(0, descriptor->vertexBuffer, 0, descriptor->vertexBuffer.GetSize());
-		renderPassEncoder.SetIndexBuffer(
-			descriptor->indexBuffer,
-			wgpu::IndexFormat::Uint16,
-			0,
-			descriptor->indexBuffer.GetSize()
-		);
-		renderPassEncoder.SetBindGroup(0, _inputBindGroup);
+			//TODO move this to generated gpu objects
+			wgpu::RenderPassDescriptor renderPassDescriptor = {
+				.label = "initial first render pass",
+				.colorAttachmentCount = _renderPassOneColorAttachments.size(),
+				.colorAttachments = _renderPassOneColorAttachments.data(),
+				.depthStencilAttachment = &renderPassDepthStencilAttachment,
+			};
+			wgpu::RenderPassEncoder renderPassEncoder = descriptor->commandEncoder.BeginRenderPass(&renderPassDescriptor);
+			renderPassEncoder.SetPipeline(_renderPipelineOne);
+			renderPassEncoder.SetVertexBuffer(0, descriptor->vertexBuffer, 0, descriptor->vertexBuffer.GetSize());
+			renderPassEncoder.SetIndexBuffer(
+				descriptor->indexBuffer,
+				wgpu::IndexFormat::Uint16,
+				0,
+				descriptor->indexBuffer.GetSize()
+			);
+			renderPassEncoder.SetBindGroup(0, _inputBindGroup);
 
-		for (const auto& dc : descriptor->drawCalls) {
-			renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+			for (const auto& dc : descriptor->drawCalls) {
+				renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+			}
+			renderPassEncoder.End();
 		}
-		renderPassEncoder.End();
+		{ //FIRST Render Pass
+			wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
+				.view = descriptor->depthTextureView,
+				.depthLoadOp = wgpu::LoadOp::Load,
+				.depthStoreOp = wgpu::StoreOp::Store,
+			};
+
+			//TODO move this to generated gpu objects
+			wgpu::RenderPassDescriptor renderPassDescriptor = {
+				.label = "initial second render pass",
+				.colorAttachmentCount = _renderPassTwoColorAttachments.size(),
+				.colorAttachments = _renderPassTwoColorAttachments.data(),
+				.depthStencilAttachment = &renderPassDepthStencilAttachment,
+			};
+			wgpu::RenderPassEncoder renderPassEncoder = descriptor->commandEncoder.BeginRenderPass(&renderPassDescriptor);
+			renderPassEncoder.SetPipeline(_renderPipelineTwo);
+			renderPassEncoder.SetVertexBuffer(0, descriptor->vertexBuffer, 0, descriptor->vertexBuffer.GetSize());
+			renderPassEncoder.SetIndexBuffer(
+				descriptor->indexBuffer,
+				wgpu::IndexFormat::Uint16,
+				0,
+				descriptor->indexBuffer.GetSize()
+			);
+			renderPassEncoder.SetBindGroup(0, _inputBindGroup);
+
+			for (const auto& dc : descriptor->drawCalls) {
+				renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
+			}
+			renderPassEncoder.End();
+		}
 	}
 
 	void Initial::createPipelines(const DeviceResources* deviceResources) {
@@ -61,12 +137,6 @@ namespace render {
 			.buffers = &render::vertexBufferLayout,
 		};
 
-		const wgpu::DepthStencilState depthStencilState = {
-			.format = deviceResources->render->depthTextureFormat,
-			.depthWriteEnabled = true,
-			.depthCompare = wgpu::CompareFunction::Less,
-		};
-
 		wgpu::RenderPipelineDescriptor renderPipelineDescriptor = {
 			.layout = pipelineLayout,
 			.vertex = vertexState,
@@ -74,7 +144,6 @@ namespace render {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
 				.cullMode = wgpu::CullMode::Back,
 			},
-			.depthStencil = &depthStencilState,
 			.multisample = wgpu::MultisampleState {
 				.count = 1,
 				.mask = ~0u,
@@ -84,9 +153,10 @@ namespace render {
 
 		{
 			renderPipelineDescriptor.label = "initial render pipeline one";
-			const std::array<wgpu::ColorTargetState, 2> colorTargetStates = {
+			const std::array<wgpu::ColorTargetState, 3> colorTargetStates = {
 				wgpu::ColorTargetState {.format = deviceResources->render->worldPositionTextureFormat},
-				wgpu::ColorTargetState {.format = deviceResources->render->normalTextureFormat}
+				wgpu::ColorTargetState {.format = deviceResources->render->normalTextureFormat},
+				wgpu::ColorTargetState {.format = deviceResources->render->texCoordTextureFormat},
 			};
 			const wgpu::FragmentState fragmentState = {
 				.module = _oneFragmentShaderModule,
@@ -94,11 +164,42 @@ namespace render {
 				.targetCount = colorTargetStates.size(),
 				.targets = colorTargetStates.data(),
 			};
-			renderPipelineDescriptor.fragment = &fragmentState;
+			renderPipelineDescriptor.fragment = &fragmentState;	
+			
+			const wgpu::DepthStencilState depthStencilState = {
+				.format = deviceResources->render->depthTextureFormat,
+				.depthWriteEnabled = true,
+				.depthCompare = wgpu::CompareFunction::Less,
+			};
+			renderPipelineDescriptor.depthStencil = &depthStencilState;
+
 			_renderPipelineOne = _wgpuContext->device.CreateRenderPipeline(&renderPipelineDescriptor);
 		}
 
+		{
+			renderPipelineDescriptor.label = "initial render pipeline two";
+			const std::array<wgpu::ColorTargetState, 3> colorTargetStates = {
+				wgpu::ColorTargetState {.format = deviceResources->render->baseColorTextureFormat},
+				wgpu::ColorTargetState {.format = deviceResources->render->baseColorIdTextureFormat},
+				wgpu::ColorTargetState {.format = deviceResources->render->normalIdTextureFormat},
+			};
+			const wgpu::FragmentState fragmentState = {
+				.module = _twoFragmentShaderModule,
+				.entryPoint = enums::EntryPoint::FRAGMENT,
+				.targetCount = colorTargetStates.size(),
+				.targets = colorTargetStates.data(),
+			};
+			renderPipelineDescriptor.fragment = &fragmentState;
+			
+			const wgpu::DepthStencilState depthStencilState = {
+				.format = deviceResources->render->depthTextureFormat,
+				.depthWriteEnabled = false,
+				.depthCompare = wgpu::CompareFunction::Less,
+			};
+			renderPipelineDescriptor.depthStencil = &depthStencilState;
 
+			_renderPipelineTwo = _wgpuContext->device.CreateRenderPipeline(&renderPipelineDescriptor);
+		}
 	}
 
 	void Initial::createInputBindGroup(

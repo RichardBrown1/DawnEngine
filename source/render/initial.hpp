@@ -41,13 +41,8 @@ namespace render {
 		const std::string TWO_FRAGMENT_SHADER_PATH = "shaders/initialRenderTwo_f.wgsl";
 		wgpu::ShaderModule _twoFragmentShaderModule;
 
-		const wgpu::StringView THREE_FRAGMENT_SHADER_LABEL = "initial render fragment shader THREE";
-		const std::string THREE_FRAGMENT_SHADER_PATH = "shaders/initialRenderThree_f.wgsl";
-		wgpu::ShaderModule _threeFragmentShaderModule;
-
 		wgpu::RenderPipeline _renderPipelineOne;
 		wgpu::RenderPipeline _renderPipelineTwo;
-		wgpu::RenderPipeline _renderPipelineThree;
 
 		wgpu::BindGroupLayout _inputBindGroupLayout;
 		wgpu::BindGroup _inputBindGroup;
@@ -55,7 +50,8 @@ namespace render {
 		wgpu::ShaderModule _baseColorTexCoordsFragmentShaderModule;
 		wgpu::ShaderModule _worldNormalFragmentShaderModule;
 
-		std::array<wgpu::RenderPassColorAttachment, 0> _renderPassColorAttachments;
+		std::array<wgpu::RenderPassColorAttachment, 3> _renderPassOneColorAttachments;
+		std::array<wgpu::RenderPassColorAttachment, 3> _renderPassTwoColorAttachments;
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createInputBindGroupLayout();
