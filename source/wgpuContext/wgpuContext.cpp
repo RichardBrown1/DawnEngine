@@ -63,7 +63,7 @@ WGPUContext::WGPUContext() {
 
 	constexpr std::array<wgpu::FeatureName, 0> requiredFeatures = {};
 	constexpr wgpu::Limits requiredLimits = {
-			.maxColorAttachmentBytesPerSample = 36,
+			.maxColorAttachmentBytesPerSample = 64
 	};
 
 	wgpu::DeviceDescriptor deviceDescriptor = {};

@@ -38,27 +38,24 @@ namespace render {
 				.storeOp = wgpu::StoreOp::Store,
 				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
 			},
-		};
-
-		_renderPassTwoColorAttachments = {
 			wgpu::RenderPassColorAttachment {
 				.view = deviceResources->render->baseColorTextureView,
 				.loadOp = wgpu::LoadOp::Clear,
 				.storeOp = wgpu::StoreOp::Store,
 				.clearValue = wgpu::Color{0.3f, 0.3f, 1.0f, 1.0f},
 			},
-			wgpu::RenderPassColorAttachment {
-				.view = deviceResources->render->baseColorIdTextureView,
-				.loadOp = wgpu::LoadOp::Clear,
-				.storeOp = wgpu::StoreOp::Store,
-				.clearValue = wgpu::Color(UINT32_MAX),
-			},
-			wgpu::RenderPassColorAttachment {
-				.view = deviceResources->render->normalIdTextureView,
-				.loadOp = wgpu::LoadOp::Clear,
-				.storeOp = wgpu::StoreOp::Store,
-				.clearValue = wgpu::Color(UINT32_MAX),
-			},
+//			wgpu::RenderPassColorAttachment {
+//				.view = deviceResources->render->baseColorIdTextureView,
+//				.loadOp = wgpu::LoadOp::Clear,
+//				.storeOp = wgpu::StoreOp::Store,
+//				.clearValue = wgpu::Color(UINT32_MAX),
+//			},
+		//	wgpu::RenderPassColorAttachment {
+		//		.view = deviceResources->render->normalIdTextureView,
+		//		.loadOp = wgpu::LoadOp::Clear,
+		//		.storeOp = wgpu::StoreOp::Store,
+		//		.clearValue = wgpu::Color(UINT32_MAX),
+		//	},
 		};
 	
 	};
@@ -74,8 +71,8 @@ namespace render {
 
 			//TODO move this to generated gpu objects
 			wgpu::RenderPassDescriptor renderPassDescriptor = {
-				.label = "initial first render pass",
-				.colorAttachmentCount = _renderPassOneColorAttachments.size(),
+				.label = wgpu::StringView("initial first render pass"),
+				.colorAttachmentCount = 5, //_renderPassOneColorAttachments.size(),
 				.colorAttachments = _renderPassOneColorAttachments.data(),
 				.depthStencilAttachment = &renderPassDepthStencilAttachment,
 			};
@@ -90,7 +87,7 @@ namespace render {
 			);
 			renderPassEncoder.SetBindGroup(0, _inputBindGroup);
 
-			for (const auto& dc : descriptor->drawCalls) {
+	  	for (const auto& dc : descriptor->drawCalls) {
 				renderPassEncoder.DrawIndexed(dc.indexCount, dc.instanceCount, dc.firstIndex, dc.baseVertex, dc.firstInstance);
 			}
 			renderPassEncoder.End();
@@ -153,10 +150,13 @@ namespace render {
 
 		{
 			renderPipelineDescriptor.label = "initial render pipeline one";
-			const std::array<wgpu::ColorTargetState, 3> colorTargetStates = {
+			const std::array<wgpu::ColorTargetState, 4> colorTargetStates = {
 				wgpu::ColorTargetState {.format = deviceResources->render->worldPositionTextureFormat},
 				wgpu::ColorTargetState {.format = deviceResources->render->normalTextureFormat},
 				wgpu::ColorTargetState {.format = deviceResources->render->texCoordTextureFormat},
+				wgpu::ColorTargetState {.format = deviceResources->render->baseColorTextureFormat},
+	//			wgpu::ColorTargetState {.format = deviceResources->render->baseColorIdTextureFormat},
+	//			wgpu::ColorTargetState {.format = deviceResources->render->normalIdTextureFormat},
 			};
 			const wgpu::FragmentState fragmentState = {
 				.module = _oneFragmentShaderModule,
@@ -177,11 +177,8 @@ namespace render {
 		}
 
 		{
-			renderPipelineDescriptor.label = "initial render pipeline two";
-			const std::array<wgpu::ColorTargetState, 3> colorTargetStates = {
-				wgpu::ColorTargetState {.format = deviceResources->render->baseColorTextureFormat},
-				wgpu::ColorTargetState {.format = deviceResources->render->baseColorIdTextureFormat},
-				wgpu::ColorTargetState {.format = deviceResources->render->normalIdTextureFormat},
+			renderPipelineDescriptor.label = wgpu::StringView("initial render pipeline two");
+			const std::array<wgpu::ColorTargetState, 0> colorTargetStates = {
 			};
 			const wgpu::FragmentState fragmentState = {
 				.module = _twoFragmentShaderModule,
