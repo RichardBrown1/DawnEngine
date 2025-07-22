@@ -167,24 +167,32 @@ void Engine::draw() {
 		.depthTextureView = _deviceResources->render->depthTextureView,
 	};
 	_initialRender->doCommands(&doInitialRenderCommandsDescriptor);
+	constexpr wgpu::CommandBufferDescriptor commandBufferDescriptor = {
+		.label = "Command Buffer",
+	};
+	wgpu::CommandBuffer commandBuffer = commandEncoder.Finish(&commandBufferDescriptor);
 
+	constexpr wgpu::CommandEncoderDescriptor commandEncoder2Descriptor = {
+		.label = "My command encoder 2"
+	};
+	wgpu::CommandEncoder commandEncoder2 = _wgpuContext.device.CreateCommandEncoder(&commandEncoder2Descriptor);
 	const render::accumulator::descriptor::DoCommands doBaseColorAccumulatorRenderCommandsDescriptor = {
-		.commandEncoder = commandEncoder,
+		.commandEncoder = commandEncoder2,
 	};
 	_baseColorAccumulatorRender->doCommands(&doBaseColorAccumulatorRenderCommandsDescriptor);
 
 	const render::accumulator::descriptor::DoCommands doNormalAccumulatorRenderCommandsDescriptor = {
-		.commandEncoder = commandEncoder,
+		.commandEncoder = commandEncoder2,
 	};
 	_normalAccumulatorRender->doCommands(&doNormalAccumulatorRenderCommandsDescriptor);
 
 	const render::lighting::descriptor::DoCommands doLightingAccumulatorRenderCommandsDescriptor = {
-		.commandEncoder = commandEncoder,
+		.commandEncoder = commandEncoder2,
 	};
 	_lightingRender->doCommands(&doLightingAccumulatorRenderCommandsDescriptor);
 
 	const render::shadowMap::descriptor::DoCommands doShadowMapRenderCommandsDescriptor = {
-		.commandEncoder = commandEncoder,
+		.commandEncoder = commandEncoder2,
 		.vertexBuffer = _deviceResources->scene->vbo,
 		.indexBuffer = _deviceResources->scene->indices,
 		.drawCalls = _drawCalls,
@@ -193,27 +201,32 @@ void Engine::draw() {
 	_shadowMapRender->doCommands(&doShadowMapRenderCommandsDescriptor);
 
 	const render::shadowToCamera::descriptor::DoCommands doShadowToCameraRenderCommandsDescriptor = {
-		.commandEncoder = commandEncoder,
+		.commandEncoder = commandEncoder2,
 	};
 	_shadowToCamera->doCommands(&doShadowToCameraRenderCommandsDescriptor);
 
 	const render::ultimate::descriptor::DoCommands doUltimateRenderCommandsDescriptor = {
-		.commandEncoder = commandEncoder,
+		.commandEncoder = commandEncoder2,
 	};
 	_ultimateRender->doCommands(&doUltimateRenderCommandsDescriptor);
 
 	const render::toSurface::descriptor::DoCommands doToSurfaceRenderCommandsDescriptor = {
-		.commandEncoder = commandEncoder,
+		.commandEncoder = commandEncoder2,
 		.surfaceTextureView = surfaceTextureView,
 	};
 	_toSurfaceRender->doCommands(&doToSurfaceRenderCommandsDescriptor);
 
-	constexpr wgpu::CommandBufferDescriptor commandBufferDescriptor = {
-		.label = "Command Buffer",
+	constexpr wgpu::CommandBufferDescriptor commandBuffer2Descriptor = {
+		.label = "Command Buffer 2",
 	};
-	wgpu::CommandBuffer commandBuffer = commandEncoder.Finish(&commandBufferDescriptor);
+	wgpu::CommandBuffer commandBuffer2 = commandEncoder2.Finish(&commandBuffer2Descriptor);
 
-	_wgpuContext.queue.Submit(1, &commandBuffer);
+	std::array<wgpu::CommandBuffer, 2> commandBuffers = {
+		commandBuffer,
+		commandBuffer2,
+	};
+
+	_wgpuContext.queue.Submit(commandBuffers.size(), commandBuffers.data());
 
 	_wgpuContext.device.Tick();
 
