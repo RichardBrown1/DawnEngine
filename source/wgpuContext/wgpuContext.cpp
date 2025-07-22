@@ -42,6 +42,7 @@ WGPUContext::WGPUContext() {
 	const wgpu::RequestAdapterOptions requestAdapterOptions = {
 //		.nextInChain = &dawnTogglesDescriptor,
 		.powerPreference = wgpu::PowerPreference::HighPerformance,
+		.backendType = wgpu::BackendType::Vulkan,
 	};
 	this->instance.WaitAny(this->instance.RequestAdapter(
 		&requestAdapterOptions,
@@ -62,7 +63,7 @@ WGPUContext::WGPUContext() {
 
 	constexpr std::array<wgpu::FeatureName, 0> requiredFeatures = {};
 	constexpr wgpu::Limits requiredLimits = {
-		.maxColorAttachmentBytesPerSample = 36,
+		//	.maxColorAttachmentBytesPerSample = 36,
 	};
 
 	wgpu::DeviceDescriptor deviceDescriptor = {};

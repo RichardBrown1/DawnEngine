@@ -50,7 +50,7 @@ namespace render {
 		wgpu::ShaderModule _baseColorTexCoordsFragmentShaderModule;
 		wgpu::ShaderModule _worldNormalFragmentShaderModule;
 
-		std::array<wgpu::RenderPassColorAttachment, 3> _renderPassOneColorAttachments;
+		std::array<wgpu::RenderPassColorAttachment, 2> _renderPassOneColorAttachments;
 		std::array<wgpu::RenderPassColorAttachment, 3> _renderPassTwoColorAttachments;
 
 		wgpu::PipelineLayout getPipelineLayout();

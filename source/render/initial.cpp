@@ -32,12 +32,12 @@ namespace render {
 				.storeOp = wgpu::StoreOp::Store,
 				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
 			},
-			wgpu::RenderPassColorAttachment {
-				.view = deviceResources->render->texCoordTextureView,
-				.loadOp = wgpu::LoadOp::Clear,
-				.storeOp = wgpu::StoreOp::Store,
-				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
-			},
+//			wgpu::RenderPassColorAttachment {
+//				.view = deviceResources->render->texCoordTextureView,
+//				.loadOp = wgpu::LoadOp::Clear,
+//				.storeOp = wgpu::StoreOp::Store,
+//				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
+//			},
 		};
 
 		_renderPassTwoColorAttachments = {
@@ -95,7 +95,8 @@ namespace render {
 			}
 			renderPassEncoder.End();
 		}
-		{ //FIRST Render Pass
+		descriptor->commandEncoder.Finish();
+		{ //Second Render Pass
 			wgpu::RenderPassDepthStencilAttachment renderPassDepthStencilAttachment = {
 				.view = descriptor->depthTextureView,
 				.depthLoadOp = wgpu::LoadOp::Load,
@@ -153,10 +154,10 @@ namespace render {
 
 		{
 			renderPipelineDescriptor.label = "initial render pipeline one";
-			const std::array<wgpu::ColorTargetState, 3> colorTargetStates = {
+			const std::array<wgpu::ColorTargetState, 2> colorTargetStates = {
 				wgpu::ColorTargetState {.format = deviceResources->render->worldPositionTextureFormat},
 				wgpu::ColorTargetState {.format = deviceResources->render->normalTextureFormat},
-				wgpu::ColorTargetState {.format = deviceResources->render->texCoordTextureFormat},
+		//		wgpu::ColorTargetState {.format = deviceResources->render->texCoordTextureFormat},
 			};
 			const wgpu::FragmentState fragmentState = {
 				.module = _oneFragmentShaderModule,
@@ -193,7 +194,7 @@ namespace render {
 			
 			const wgpu::DepthStencilState depthStencilState = {
 				.format = deviceResources->render->depthTextureFormat,
-				.depthWriteEnabled = false,
+				.depthWriteEnabled = true,
 				.depthCompare = wgpu::CompareFunction::Less,
 			};
 			renderPipelineDescriptor.depthStencil = &depthStencilState;
