@@ -28,7 +28,7 @@ struct VSOutput {
 	@location(3) @interpolate(flat) instanceIndex : u32,
 };
 
-struct FSOutput {
+struct FSOutput { //THIS IS LIMITED TO 4 OR DX12 TRIANGLE BUG WILL OCCUR
 	@location(0) worldPosition : vec4<f32>,
 	@location(1) normal : vec4<f32>,
 	@location(2) texCoord : u32,

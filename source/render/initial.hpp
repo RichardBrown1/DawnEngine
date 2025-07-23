@@ -33,16 +33,11 @@ namespace render {
 		const std::string VERTEX_SHADER_PATH = "shaders/initialRender_v.wgsl";
 		wgpu::ShaderModule _vertexShaderModule;
 
-		const wgpu::StringView ONE_FRAGMENT_SHADER_LABEL = "initial render fragment shader ONE";
-		const std::string ONE_FRAGMENT_SHADER_PATH = "shaders/initialRenderOne_f.wgsl";
+		const wgpu::StringView FRAGMENT_SHADER_LABEL = "initial render fragment shader";
+		const std::string FRAGMENT_SHADER_PATH = "shaders/initialRender_f.wgsl";
 		wgpu::ShaderModule _oneFragmentShaderModule;
 		
-		const wgpu::StringView TWO_FRAGMENT_SHADER_LABEL = "initial render fragment shader TWO";
-		const std::string TWO_FRAGMENT_SHADER_PATH = "shaders/initialRenderTwo_f.wgsl";
-		wgpu::ShaderModule _twoFragmentShaderModule;
-
-		wgpu::RenderPipeline _renderPipelineOne;
-		wgpu::RenderPipeline _renderPipelineTwo;
+		wgpu::RenderPipeline _renderPipeline;
 
 		wgpu::BindGroupLayout _inputBindGroupLayout;
 		wgpu::BindGroup _inputBindGroup;
@@ -50,8 +45,7 @@ namespace render {
 		wgpu::ShaderModule _baseColorTexCoordsFragmentShaderModule;
 		wgpu::ShaderModule _worldNormalFragmentShaderModule;
 
-		std::array<wgpu::RenderPassColorAttachment, 4> _renderPassOneColorAttachments;
-		std::array<wgpu::RenderPassColorAttachment, 0> _renderPassTwoColorAttachments;
+		std::array<wgpu::RenderPassColorAttachment, 4> _renderPassColorAttachments;
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createInputBindGroupLayout();
