@@ -87,7 +87,7 @@ namespace render {
 				.binding = 0,
 				.visibility = wgpu::ShaderStage::Compute,
 				.sampler = {
-					.type = wgpu::SamplerBindingType::NonFiltering,
+					.type = wgpu::SamplerBindingType::Comparison,
 				}
 			},
 			wgpu::BindGroupLayoutEntry{

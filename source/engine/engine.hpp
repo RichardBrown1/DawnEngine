@@ -19,7 +19,7 @@ public:
 	void run();
 
 private:
-	const std::string gltfDirectory = "models/cornellBox/"; //must end with "/"
+	const std::string gltfDirectory = "models/monoBox/"; //must end with "/"
 	const std::string gltfFileName = "cornellbox.gltf";
 //	const std::string gltfDirectory = "models/avocado/"; // must end with "/"
 // const std::string gltfFileName = "avocado2.gltf";

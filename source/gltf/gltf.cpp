@@ -19,6 +19,7 @@
 #include <dawn/webgpu_cpp.h>
 #include "../host/host.hpp"
 #include "../enums.hpp"
+#include "../constants.hpp"
 
 namespace {
 	void addMeshData(HostSceneResources& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
@@ -110,8 +111,13 @@ namespace {
 		l.type = static_cast<uint32_t>(asset.lights[lightIndex].type);
 		memcpy(&l.intensity, &asset.lights[lightIndex].intensity, sizeof(glm::f32) * 4);
 
-		const glm::mat4x4 lightView = glm::inverse(transform);
+	//	glm::mat4x4 lightView = glm::inverse(transform);
+		//lightView = glm::rotate(lightView, glm::pi<float>(), glm::f32vec3{0.0, 1.0, 0.0});
+		auto position = glm::f32vec3(transform[3]);
+		glm::f32vec3 forward = glm::normalize(glm::f32vec3(-transform[2]));
+	  auto lightView = glm::lookAt(position, position + forward, constants::UP);
 		const glm::mat4x4 lightProjection = glm::perspectiveRH_ZO(l.outerConeAngle, 1.0f, 0.1f, l.range);
+
 		l.lightSpaceMatrix = lightProjection * lightView;
 
 		objects.lights.push_back(l);
@@ -139,7 +145,7 @@ namespace {
 		structs::host::H_Camera h_camera = {
 			.projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, screenDimensions[0] / (float)screenDimensions[1], perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f)),
 			.position = glm::f32vec3(transform[3]),
-			.forward = glm::normalize(glm::f32vec3(view[2])) * 8.0f,
+			.forward = glm::normalize(glm::f32vec3(-transform[2])),
 		};
 
 		objects.cameras.push_back(h_camera);

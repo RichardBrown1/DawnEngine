@@ -162,6 +162,7 @@ RenderResources::RenderResources(WGPUContext* wgpuContext) {
 		.magFilter = wgpu::FilterMode::Nearest,
 		.minFilter = wgpu::FilterMode::Nearest,
 		.mipmapFilter = wgpu::MipmapFilterMode::Nearest,
+		.compare = wgpu::CompareFunction::Less,
 	};
 	this->shadowMapSampler = wgpuContext->device.CreateSampler(&defaultSamplerDescriptor);
 }

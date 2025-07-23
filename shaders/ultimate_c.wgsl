@@ -14,6 +14,6 @@ fn cs_main(@builtin(global_invocation_id) GlobalInvocationID : vec3u) {
 
     var result : vec4<f32> = baseColor;
     result = result * lighting;
-    result = result * shadow;
+    result = result * (shadow);
     textureStore(surfaceTexture, coords, result);
 }
