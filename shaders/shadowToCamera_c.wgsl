@@ -23,7 +23,6 @@ struct Light {
 @compute @workgroup_size(1, 1, 1)
 fn cs_main(@builtin(global_invocation_id) GlobalInvocationID : vec3u) {
     let coords = vec2u(GlobalInvocationID.xy);
-    let bias = 0.01;
     var shadowFactor: f32 = 1.0;
     let shadowMapDimensions : vec2<u32> = textureDimensions(shadowMapTexture);
     let worldPos : vec4<f32> = vec4f(textureLoad(worldPositionTexture, coords).xyz, 1.0);
@@ -39,20 +38,24 @@ fn cs_main(@builtin(global_invocation_id) GlobalInvocationID : vec3u) {
     var uv : vec2<f32> = projCoords.xy * 0.5 + 0.5;
     uv.y = 1.0 - uv.y;
 
-    let normalDirection : vec3<f32> = normalize(normal) * vec3<f32>(1.0, 1.0, -1.0);
+    let normalDirection : vec3<f32> = normalize(normal);
     let fragToLight : vec3<f32> = normalize(light.position - worldPos.xyz);
     
     let oneOverShadowMapSize : f32 = 1.0 / f32(shadowMapDimensions.x);
-    let offset : vec2<f32> = vec2f(0);// normalDirection.xz * oneOverShadowMapSize * 2.0;
+    let offset : vec2<f32> = normalDirection.xz * oneOverShadowMapSize;
+    uv = uv + offset;
+
+    if (0.0 > uv.x || uv.x > 1.0 || 0.0 > uv.y || uv.y > 1.0) {
+       textureStore(shadowAccumulatorTexture, coords, vec4f(1.0));
+       return;
+    }
     
     let shadow = textureSampleCompareLevel(
         shadowMapTexture,
         depthSampler,
-        uv + offset,
+        uv,
         currentDepth,
     );
        
-    // Update shadow accumulator
-    // let currentShadow = textureLoad(shadowAccumulatorTexture, coords).x;
     textureStore(shadowAccumulatorTexture, coords, vec4f(shadow));
 }
