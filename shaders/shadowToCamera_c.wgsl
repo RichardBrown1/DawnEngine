@@ -1,52 +1,58 @@
+struct Light {
+    lightSpaceMatrix : mat4x4<f32>,
+    position : vec3<f32>,
+    PAD0 : u32,
+    rotation : vec3<f32>,
+    PAD1 : u32,
+    color : vec3<f32>,
+    lightType : u32,
+    intensity : f32,
+    range : f32,
+    innerConeAngle : f32,
+    outerConeAngle : f32,
+};
+
 @group(0) @binding(0) var depthSampler: sampler_comparison;
 @group(0) @binding(1) var shadowAccumulatorTexture: texture_storage_2d<r32float, read_write>;
 @group(0) @binding(2) var worldPositionTexture: texture_storage_2d<rgba32float, read>;
-@group(0) @binding(3) var 
+@group(0) @binding(3) var normalTexture : texture_storage_2d<rgba32float, read>;
 
 @group(1) @binding(0) var shadowMapTexture: texture_depth_2d;
-@group(1) @binding(1) var<uniform> lightViewProjectionMatrix : mat4x4f;
+@group(1) @binding(1) var<uniform> light: Light;
 
 @compute @workgroup_size(1, 1, 1)
 fn cs_main(@builtin(global_invocation_id) GlobalInvocationID : vec3u) {
     let coords = vec2u(GlobalInvocationID.xy);
     let bias = 0.01;
     var shadowFactor: f32 = 1.0;
+    let shadowMapDimensions : vec2<u32> = textureDimensions(shadowMapTexture);
+    let worldPos : vec4<f32> = vec4f(textureLoad(worldPositionTexture, coords).xyz, 1.0);
+    let lightPos : vec4<f32> = light.lightSpaceMatrix * worldPos;
+    let normal : vec3<f32> = textureLoad(normalTexture, coords).xyz;
 
-    // Read world position from storage texture
-    let worldPos = textureLoad(worldPositionTexture, coords).xyz;
-    
-    // Transform world position to light clip space
-    let lightClip = lightViewProjectionMatrix * vec4f(worldPos, 1.0);
-    
-    // Only process points in front of the light
-    if (lightClip.w > 0.0) {
-        // Perspective division to get NDC
-       let lightNDC = lightClip.xyz / lightClip.w;
-        
-        // Convert to UV texture coordinates [0,1]
-        var uv = lightNDC.xy * 0.5 + 0.5;
-        uv.y = 1.0 - uv.y;
-        let currentDepth = lightNDC.z * 0.5 + 0.5;
-        
-        // Check if within light frustum bounds
-        if ((all(uv >= vec2f(0.0)) && 
-           (all(uv <= vec2f(1.0)) &&
-           (currentDepth >= 0.0) && 
-           (currentDepth <= 1.0)))) {
-            
-            // Sample shadow map depth
-            let shadowMapDepth = textureSampleCompareLevel(
-                shadowMapTexture, 
-                depthSampler, 
-                uv + offset, 
-                currentDepth,
-            );
-
-            shadowFactor = shadowMapDepth;
-        }
+    let projCoords : vec3<f32> = lightPos.xyz / lightPos.w;
+    let currentDepth : f32 = projCoords.z;
+    if (currentDepth > 1.0) {
+        textureStore(shadowAccumulatorTexture, coords, vec4f(1.0));
+        return;
     }
+    var uv : vec2<f32> = projCoords.xy * 0.5 + 0.5;
+    uv.y = 1.0 - uv.y;
+
+    let normalDirection : vec3<f32> = normalize(normal) * vec3<f32>(1.0, 1.0, -1.0);
+    let fragToLight : vec3<f32> = normalize(light.position - worldPos.xyz);
     
+    let oneOverShadowMapSize : f32 = 1.0 / f32(shadowMapDimensions.x);
+    let offset : vec2<f32> = vec2f(0);// normalDirection.xz * oneOverShadowMapSize * 2.0;
+    
+    let shadow = textureSampleCompareLevel(
+        shadowMapTexture,
+        depthSampler,
+        uv + offset,
+        currentDepth,
+    );
+       
     // Update shadow accumulator
-    let currentShadow = textureLoad(shadowAccumulatorTexture, coords).x;
-    textureStore(shadowAccumulatorTexture, coords, vec4f(shadowFactor));
+    // let currentShadow = textureLoad(shadowAccumulatorTexture, coords).x;
+    textureStore(shadowAccumulatorTexture, coords, vec4f(shadow));
 }

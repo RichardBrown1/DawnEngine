@@ -20,7 +20,8 @@ namespace render {
 		createInputBindGroupLayout();
 		createAccumulatorBindGroupLayout(
 			deviceResources->render->shadowTextureFormat,
-			deviceResources->render->worldPositionTextureFormat
+			deviceResources->render->worldPositionTextureFormat,
+			deviceResources->render->normalTextureFormat
 		);
 
 		// Create compute pipeline
@@ -40,7 +41,8 @@ namespace render {
 		createAccumulatorBindGroup(
 			deviceResources->render->shadowMapSampler,
 			deviceResources->render->shadowTextureView,
-			deviceResources->render->worldPositionTextureView
+			deviceResources->render->worldPositionTextureView,
+			deviceResources->render->normalTextureView
 		);
 	}
 
@@ -80,9 +82,10 @@ namespace render {
 
 	void ShadowToCamera::createAccumulatorBindGroupLayout(
 		wgpu::TextureFormat shadowTextureFormat,
-		wgpu::TextureFormat worldPositionTextureFormat
+		wgpu::TextureFormat worldPositionTextureFormat,
+		wgpu::TextureFormat normalTextureFormat
 	) {
-		std::array<wgpu::BindGroupLayoutEntry, 3> entries = {
+		std::array<wgpu::BindGroupLayoutEntry, 4> entries = {
 			wgpu::BindGroupLayoutEntry{
 				.binding = 0,
 				.visibility = wgpu::ShaderStage::Compute,
@@ -108,6 +111,15 @@ namespace render {
 					.viewDimension = wgpu::TextureViewDimension::e2D
 				}
 			},
+			wgpu::BindGroupLayoutEntry{
+				.binding = 3,
+				.visibility = wgpu::ShaderStage::Compute,
+				.storageTexture = {
+					.access = wgpu::StorageTextureAccess::ReadOnly,
+					.format = normalTextureFormat,
+					.viewDimension = wgpu::TextureViewDimension::e2D
+				}
+			},
 		};
 		const wgpu::BindGroupLayoutDescriptor descriptor = {
 			.label = "shadowToCamera accumulator bind group layout",
@@ -120,9 +132,10 @@ namespace render {
 	void ShadowToCamera::createAccumulatorBindGroup(
 		wgpu::Sampler& shadowMapSampler,
 		wgpu::TextureView& shadowTextureView,
-		wgpu::TextureView& worldPositionTextureView
+		wgpu::TextureView& worldPositionTextureView,
+		wgpu::TextureView& normalTextureView
 	) {
-		std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 4> bindGroupEntries = {
 			wgpu::BindGroupEntry{
 				.binding = 0,
 				.sampler = shadowMapSampler
@@ -134,6 +147,10 @@ namespace render {
 			wgpu::BindGroupEntry{
 				.binding = 2,
 				.textureView = worldPositionTextureView,
+			},
+			wgpu::BindGroupEntry{
+				.binding = 3,
+				.textureView = normalTextureView,
 			},
 		};
 		const wgpu::BindGroupDescriptor descriptor = {
@@ -172,7 +189,7 @@ namespace render {
 				.visibility = wgpu::ShaderStage::Compute,
 				.buffer = {
 						.type = wgpu::BufferBindingType::Uniform,
-						.minBindingSize = sizeof(glm::mat4x4)
+						.minBindingSize = sizeof(structs::Light),
 				},
 			},
 		};
