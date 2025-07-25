@@ -7,17 +7,24 @@ namespace {
 	const std::string WINDOW_TITLE = "Dawn WebGPU Engine";
 }
 
-struct WGPUContext {
+class WGPUContext {
+public:
+	wgpu::Instance instance;
+	wgpu::Adapter adapter;
 	wgpu::Device device;
 	wgpu::Queue queue;
 
-	wgpu::Instance instance;
-	wgpu::Adapter adapter;
 	wgpu::Surface surface;
-	
-	wgpu::Extent2D screenDimensions = { 1280, 720 };
 	wgpu::TextureFormat surfaceFormat = wgpu::TextureFormat::BGRA8Unorm;
 
 	WGPUContext();
+	wgpu::Extent2D getScreenDimensions();
+	wgpu::Buffer& getScreenDimensionsBuffer();
+	void setScreenDimensions(wgpu::Extent2D ScreenDimensions);
+
+private:
+	wgpu::Extent2D _screenDimensions = { 1280, 720 };
+	wgpu::Buffer _screenDimensionsBuffer;
+
 };
 

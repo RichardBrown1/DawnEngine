@@ -10,34 +10,22 @@ namespace render {
 		_computeShaderModule = device::createWGSLShaderModule(wgpuContext->device, LIGHTING_SHADER_LABEL, LIGHTING_SHADER_PATH);
 	};
 
-	void Lighting::generateGpuObjects(const render::lighting::descriptor::GenerateGpuObjects* descriptor) {
+	void Lighting::generateGpuObjects(const DeviceResources* deviceResources) {
 		createAccumulatorBindGroupLayout(
-			descriptor->worldTextureFormat,
-			descriptor->normalTextureFormat
+			deviceResources->render->lightingTextureFormat,
+			deviceResources->render->worldPositionTextureFormat,
+			deviceResources->render->normalTextureFormat
 		);
 		createInputBindGroupLayout();
 		createComputePipeline();
 
-		const texture::descriptor::CreateTextureView lightingTextureViewDescriptor = {
-			.label = "lighting",
-			.device = &_wgpuContext->device,
-			.textureUsage = wgpu::TextureUsage::StorageBinding,
-			.textureDimensions = _wgpuContext->screenDimensions,
-			.textureFormat = lightingTextureFormat,
-			.outputTextureView = lightingTextureView,
-		};
-		texture::createTextureView(&lightingTextureViewDescriptor);
-
 		createAccumulatorBindGroup(
-			descriptor->worldTextureView,
-			descriptor->normalTextureView
+			deviceResources->render->lightingTextureView,
+			deviceResources->render->worldPositionTextureView,
+			deviceResources->render->normalTextureView
 		);
 		
-		std::vector<wgpu::Buffer> lightBuffers;
-		for (auto& light : descriptor->lights) {
-			lightBuffers.emplace_back(device::createBuffer(*_wgpuContext, light, "lights", wgpu::BufferUsage::Uniform));
-		}
-		for (auto& buffer : lightBuffers) {
+		for (auto& buffer : deviceResources->scene->lights) {
 			insertInputBindGroup(buffer);
 		}
 	}
@@ -51,12 +39,16 @@ namespace render {
 		computePassEncoder.SetBindGroup(0, _accumulatorBindGroup);
 		for (auto& bg : _inputBindGroups) {
 			computePassEncoder.SetBindGroup(1, bg);
-			computePassEncoder.DispatchWorkgroups(_wgpuContext->screenDimensions.width, _wgpuContext->screenDimensions.height);
+			computePassEncoder.DispatchWorkgroups(
+				_wgpuContext->getScreenDimensions().width,
+				_wgpuContext->getScreenDimensions().height
+			);
 		}
 		computePassEncoder.End();
 	}
 
 	void Lighting::createAccumulatorBindGroupLayout(
+		const wgpu::TextureFormat lightingTextureFormat,
 		const wgpu::TextureFormat worldPositionTextureFormat,
 	  const wgpu::TextureFormat normalTextureFormat) {
 		const wgpu::BindGroupLayoutEntry accumulatorBindGroupLayoutEntry = {
@@ -153,6 +145,7 @@ namespace render {
 	}
 
 	void Lighting::createAccumulatorBindGroup(
+		const wgpu::TextureView& lightingTextureView,
 		const wgpu::TextureView& worldPositionTextureView,
 		const wgpu::TextureView& normalTextureView
 	) {

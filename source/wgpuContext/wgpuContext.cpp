@@ -9,13 +9,18 @@
 #include "../print.hpp"
 #include "../device/callback.hpp"
 #include "wgpuContext.hpp"
+#include <dawn/webgpu_cpp.h>
 
 WGPUContext::WGPUContext() {
 	absl::SetStderrThreshold(LOG_LEVEL);
 	absl::InitializeLog();
 
 	SDL_Init(SDL_INIT_VIDEO);
-	SDL_Window* p_sdl_window = SDL_CreateWindow(WINDOW_TITLE.c_str(), static_cast<int>(this->screenDimensions.width), static_cast<int>(this->screenDimensions.height), 0);
+	SDL_Window* p_sdl_window = SDL_CreateWindow(
+		WINDOW_TITLE.c_str(), 
+		static_cast<int>(_screenDimensions.width),
+		static_cast<int>(_screenDimensions.height),
+	0);
 
 	CHECK(p_sdl_window);
 
@@ -37,6 +42,7 @@ WGPUContext::WGPUContext() {
 	const wgpu::RequestAdapterOptions requestAdapterOptions = {
 //		.nextInChain = &dawnTogglesDescriptor,
 		.powerPreference = wgpu::PowerPreference::HighPerformance,
+//		.backendType = wgpu::BackendType::Vulkan,
 	};
 	this->instance.WaitAny(this->instance.RequestAdapter(
 		&requestAdapterOptions,
@@ -55,14 +61,9 @@ WGPUContext::WGPUContext() {
 	print::adapter::GetInfo(this->adapter);
 	print::adapter::GetLimits(this->adapter);
 
-	const std::array<wgpu::FeatureName, 3> requiredFeatures = {
-		wgpu::FeatureName::IndirectFirstInstance,
-		wgpu::FeatureName::TextureCompressionBC,
-		wgpu::FeatureName::BGRA8UnormStorage,
-	};
-	
+	constexpr std::array<wgpu::FeatureName, 0> requiredFeatures = {};
 	constexpr wgpu::Limits requiredLimits = {
-		.maxColorAttachmentBytesPerSample = 64,
+			.maxColorAttachmentBytesPerSample = 64
 	};
 
 	wgpu::DeviceDescriptor deviceDescriptor = {};
@@ -81,11 +82,35 @@ WGPUContext::WGPUContext() {
 		.device = device,
 		.format = this->surfaceFormat,
 		.usage = wgpu::TextureUsage::RenderAttachment,
-		.width = screenDimensions.width,
-		.height = screenDimensions.height,
+		.width = _screenDimensions.width,
+		.height = _screenDimensions.height,
 		.alphaMode = wgpu::CompositeAlphaMode::Auto,
 		.presentMode = wgpu::PresentMode::Immediate,
 		};
 
 	surface.Configure(&surfaceConfiguration);
+
+	setScreenDimensions(_screenDimensions);
+}
+
+wgpu::Extent2D WGPUContext::getScreenDimensions()
+{
+	return _screenDimensions;
+}
+
+wgpu::Buffer& WGPUContext::getScreenDimensionsBuffer()
+{
+	return _screenDimensionsBuffer;
+}
+
+void WGPUContext::setScreenDimensions(wgpu::Extent2D screenDimensions)
+{
+	_screenDimensions = screenDimensions;
+	const wgpu::BufferDescriptor bufferDescriptor = {
+		.label = "screen dimensions buffer",
+		.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
+		.size = sizeof(_screenDimensions),
+	};
+	_screenDimensionsBuffer = device.CreateBuffer(&bufferDescriptor);
+	queue.WriteBuffer(_screenDimensionsBuffer, 0, &_screenDimensions, sizeof(_screenDimensions));
 }

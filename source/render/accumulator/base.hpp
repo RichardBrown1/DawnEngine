@@ -9,6 +9,7 @@
 #include "../../enums.hpp"
 #include <array>
 #include <cstdint>
+#include "../../device/resources.hpp"
 
 namespace render {
 	namespace accumulator {
@@ -40,7 +41,7 @@ namespace render {
 		BaseAccumulator(WGPUContext* wgpuContext) : _wgpuContext(wgpuContext) {};
 
 	public:
-		void generateGpuObjects(const render::accumulator::descriptor::GenerateGpuObjects* descriptor) {
+		void generateGpuObjects(const accumulator::descriptor::GenerateGpuObjects* descriptor) {
 			createAccumulatorBindGroupLayout(
 				descriptor->accumulatorTextureFormat,
 				descriptor->texCoordTextureFormat,
@@ -83,7 +84,10 @@ namespace render {
 			computePassEncoder.SetBindGroup(0, _accumulatorBindGroup);
 			for (auto& bg : _inputBindGroups) {
 				computePassEncoder.SetBindGroup(1, bg);
-				computePassEncoder.DispatchWorkgroups(_wgpuContext->screenDimensions.width, _wgpuContext->screenDimensions.height);
+				computePassEncoder.DispatchWorkgroups(
+					_wgpuContext->getScreenDimensions().width, 
+					_wgpuContext->getScreenDimensions().height
+				);
 			}
 			computePassEncoder.End();
 		}
@@ -107,13 +111,13 @@ namespace render {
 			const wgpu::TextureFormat textureIdTextureFormat
 		) {
 			const wgpu::BindGroupLayoutEntry accumulatorBindGroupLayoutEntry = {
-			.binding = 0,
-			.visibility = wgpu::ShaderStage::Compute,
-			.storageTexture = {
-				.access = wgpu::StorageTextureAccess::WriteOnly,
-				.format = accumulatorTextureFormat,
-				.viewDimension = wgpu::TextureViewDimension::e2D,
-			},
+				.binding = 0,
+				.visibility = wgpu::ShaderStage::Compute,
+				.storageTexture = {
+					.access = wgpu::StorageTextureAccess::WriteOnly,
+					.format = accumulatorTextureFormat,
+					.viewDimension = wgpu::TextureViewDimension::e2D,
+				},
 			};
 
 			const wgpu::BindGroupLayoutEntry texCoordBindGroupLayoutEntry = {
@@ -126,7 +130,7 @@ namespace render {
 				},
 			};
 
-			const wgpu::BindGroupLayoutEntry textureIdBindGroupLayoutEntry = {
+				const wgpu::BindGroupLayoutEntry textureIdBindGroupLayoutEntry = {
 				.binding = 2,
 				.visibility = wgpu::ShaderStage::Compute,
 				.storageTexture = {
@@ -136,10 +140,20 @@ namespace render {
 				},
 			};
 
-			std::array<wgpu::BindGroupLayoutEntry, 3> bindGroupLayoutEntries = {
+			const wgpu::BindGroupLayoutEntry screenDimensionsBindGroupLayoutEntry = {
+				.binding = 3,
+				.visibility = wgpu::ShaderStage::Compute,
+				.buffer = {
+					.type = wgpu::BufferBindingType::Uniform,
+					.minBindingSize = _wgpuContext->getScreenDimensionsBuffer().GetSize(),
+				}
+			};
+
+			std::array<wgpu::BindGroupLayoutEntry, 4> bindGroupLayoutEntries = {
 				accumulatorBindGroupLayoutEntry,
 				texCoordBindGroupLayoutEntry,
-				textureIdBindGroupLayoutEntry
+				textureIdBindGroupLayoutEntry,
+				screenDimensionsBindGroupLayoutEntry,
 			};
 
 			const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {
@@ -235,11 +249,16 @@ namespace render {
 				.binding = 2,
 				.textureView = textureIdTextureView,
 			};
+			const wgpu::BindGroupEntry screenDimensionsBindGroupEntry = {
+				.binding = 3,
+				.buffer = _wgpuContext->getScreenDimensionsBuffer(),
+			};
 
-			std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = {
+			std::array<wgpu::BindGroupEntry, 4> bindGroupEntries = {
 				accumulatorBindGroupEntry,
 				texCoordBindGroupEntry,
-				textureIdBindGroupEntry
+				textureIdBindGroupEntry,
+			  screenDimensionsBindGroupEntry,
 			};
 			const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 				.label = "accumulator accumulator bind group",

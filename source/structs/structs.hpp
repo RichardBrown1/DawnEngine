@@ -23,13 +23,6 @@ namespace structs {
 		glm::f32 outerConeAngle;
 	};
 
-	struct InstanceProperty { //TODO: is this padding necessary?
-		uint32_t materialIndex;
-		uint32_t PAD0;
-		uint32_t PAD1;
-		uint32_t PAD2;
-	};
-
 	struct SamplerTexturePair {
 		uint32_t samplerIndex;
 		uint32_t textureIndex;

@@ -7,88 +7,49 @@
 #include "../constants.hpp"
 #include "../structs/host.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
+#include "../device/resources.hpp"
 
 namespace render {
 	namespace initial::descriptor {
-		struct GenerateGpuObjects {
-			wgpu::Buffer& cameraBuffer;
-			wgpu::Buffer& transformBuffer;
-			wgpu::Buffer& instancePropertiesBuffer;
-			wgpu::Buffer& materialBuffer;
-		};
-
 		struct DoCommands {
 			wgpu::CommandEncoder& commandEncoder;
 			wgpu::Buffer& vertexBuffer;
 			wgpu::Buffer& indexBuffer;
 			std::vector<structs::host::DrawCall>& drawCalls;
+			wgpu::TextureView& depthTextureView;
 		};
 	}
 
 	class Initial {
 	public:
 		Initial(WGPUContext* wgpuContext);
-		void generateGpuObjects(const render::initial::descriptor::GenerateGpuObjects* descriptor);
+		void generateGpuObjects(const DeviceResources* deviceResources);
 		void doCommands(const render::initial::descriptor::DoCommands* descriptor);
 
-		const wgpu::TextureFormat worldPositionTextureFormat = wgpu::TextureFormat::RGBA32Float;
-		const wgpu::TextureFormat baseColorTextureFormat = wgpu::TextureFormat::RGBA32Float;
-		const wgpu::TextureFormat normalTextureFormat = wgpu::TextureFormat::RGBA32Float; //normal texture can tangent-ized	if I need it
-		const wgpu::TextureFormat texCoordTextureFormat = wgpu::TextureFormat::RG32Float; //I would prefer unorm but I think its bugged
-		const wgpu::TextureFormat baseColorTextureIdTextureFormat = wgpu::TextureFormat::R32Uint;
-		const wgpu::TextureFormat normalTextureIdTextureFormat = wgpu::TextureFormat::R32Uint;
-		const wgpu::TextureFormat depthTextureFormat = constants::DEPTH_FORMAT;
-
-		wgpu::TextureView worldPositionTextureView;
-		wgpu::TextureView baseColorTextureView;
-		wgpu::TextureView normalTextureView;
-		wgpu::TextureView texCoordTextureView;
-		wgpu::TextureView baseColorTextureIdTextureView;
-		wgpu::TextureView normalTextureIdTextureView;
-		wgpu::TextureView depthTextureView;
-
 	private:
-		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
-		const std::string VERTEX_SHADER_PATH = "shaders/initialRender_v.spv";
-
-		const wgpu::StringView FRAGMENT_SHADER_LABEL = "initial render fragment shader";
-		const std::string FRAGMENT_SHADER_PATH = "shaders/initialRender_f.spv";
-
-		const std::string _worldPositionLabel = std::string("world position info");
-		const std::string _baseColorLabel = std::string("base color");
-		const std::string _normalLabel = std::string("normals");
-		const std::string _texCoordLabel = std::string("texcoord");
-		const std::string _baseColorTextureIdLabel = std::string("base color id");
-		const std::string _normalTextureIdLabel = std::string("normal id");
-		const std::string _depthTextureLabel = std::string("depth texture");
-
-		const wgpu::TextureUsage _worldPositionTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-		const wgpu::TextureUsage _baseColorTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-		const wgpu::TextureUsage _normalTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-		const wgpu::TextureUsage _texCoordTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-		const wgpu::TextureUsage _baseColorTextureIdTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-		const wgpu::TextureUsage _normalTextureIdTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
-		const wgpu::TextureUsage _depthTextureUsage = wgpu::TextureUsage::RenderAttachment;
-
 		WGPUContext* _wgpuContext;
 
-		wgpu::RenderPipeline _renderPipeline;
-		wgpu::BindGroupLayout _bindGroupLayout;
-		wgpu::BindGroup _bindGroup;
-
+		const wgpu::StringView VERTEX_SHADER_LABEL = "initial render vertex shader";
+		const std::string VERTEX_SHADER_PATH = "shaders/initialRender_v.wgsl";
 		wgpu::ShaderModule _vertexShaderModule;
-		wgpu::ShaderModule _fragmentShaderModule;
 
-		std::array<wgpu::RenderPassColorAttachment, 6> _renderPassColorAttachments;
+		const wgpu::StringView FRAGMENT_SHADER_LABEL = "initial render fragment shader";
+		const std::string FRAGMENT_SHADER_PATH = "shaders/initialRender_f.wgsl";
+		wgpu::ShaderModule _oneFragmentShaderModule;
+		
+		wgpu::RenderPipeline _renderPipeline;
+
+		wgpu::BindGroupLayout _inputBindGroupLayout;
+		wgpu::BindGroup _inputBindGroup;
+
+		wgpu::ShaderModule _baseColorTexCoordsFragmentShaderModule;
+		wgpu::ShaderModule _worldNormalFragmentShaderModule;
+
+		std::array<wgpu::RenderPassColorAttachment, 4> _renderPassColorAttachments;
 
 		wgpu::PipelineLayout getPipelineLayout();
-		void createBindGroupLayout();
-		void createPipeline();
-		void createBindGroup(
-			const wgpu::Buffer& cameraBuffer,
-			const wgpu::Buffer& transformBuffer,
-			const wgpu::Buffer& instancePropertiesBuffer,
-			const wgpu::Buffer& materialBuffer
-		);
+		void createInputBindGroupLayout();
+		void createPipelines(const DeviceResources* deviceResources);
+		void createInputBindGroup(const DeviceResources* deviceResources);
 	};
 }

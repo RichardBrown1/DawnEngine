@@ -3,7 +3,6 @@
 #include <array>
 #include "../device/device.hpp"
 #include "../enums.hpp"
-#include "../texture/texture.hpp"
 #include <dawn/webgpu_cpp.h>
 
 namespace render {
@@ -11,24 +10,19 @@ namespace render {
 		_computeShaderModule = device::createWGSLShaderModule(wgpuContext->device, ULTIMATE_SHADER_LABEL, ULTIMATE_SHADER_PATH);
 	};
 
-	void Ultimate::generateGpuObjects(const render::ultimate::descriptor::GenerateGpuObjects* descriptor) {
-		const texture::descriptor::CreateTextureView createTextureViewDescriptor = {
-			.label = "ultimate texture view",
-			.device = &_wgpuContext->device,
-			.textureUsage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding,
-			.textureDimensions = _wgpuContext->screenDimensions,
-			.textureFormat = ultimateTextureFormat,
-			.outputTextureView = ultimateTextureView,
-		};
-		texture::createTextureView(&createTextureViewDescriptor);
+	void Ultimate::generateGpuObjects(const DeviceResources* deviceResources) {
 		createBindGroupLayout(
-			descriptor->baseColorTextureFormat,
-			descriptor->lightingTextureFormat
+			deviceResources->render->ultimateTextureFormat,
+			deviceResources->render->baseColorTextureFormat,
+			deviceResources->render->lightingTextureFormat,
+			deviceResources->render->shadowTextureFormat
 		);
 		createPipeline();
 		createBindGroup(
-			descriptor->baseColorTextureView,
-			descriptor->lightingTextureView
+			deviceResources->render->ultimateTextureView,
+			deviceResources->render->baseColorTextureView,
+			deviceResources->render->lightingTextureView,
+			deviceResources->render->shadowTextureView
 		);
 	};
 
@@ -39,7 +33,7 @@ namespace render {
 		wgpu::ComputePassEncoder computePassEncoder = descriptor->commandEncoder.BeginComputePass(&computePassDescriptor);
 		computePassEncoder.SetPipeline(_computePipeline);
 		computePassEncoder.SetBindGroup(0, _bindGroup);
-		computePassEncoder.DispatchWorkgroups(_wgpuContext->screenDimensions.width, _wgpuContext->screenDimensions.height);
+		computePassEncoder.DispatchWorkgroups(_wgpuContext->getScreenDimensions().width, _wgpuContext->getScreenDimensions().height);
 		computePassEncoder.End();
 	}
 
@@ -59,9 +53,10 @@ namespace render {
 	}
 
 	void Ultimate::createBindGroup(
+		wgpu::TextureView& ultimateTextureView,
 		wgpu::TextureView& baseColorTextureView,
-		wgpu::TextureView& lightingTextureView
-		//	wgpu::TextureView& shadowMapTextureView
+		wgpu::TextureView& lightingTextureView,
+		wgpu::TextureView& shadowTextureView
 	) {
 		const wgpu::BindGroupEntry ultimateBindGroupEntry = {
 			.binding = 0,
@@ -75,11 +70,16 @@ namespace render {
 			.binding = 2,
 			.textureView = lightingTextureView,
 		};
+		const wgpu::BindGroupEntry shadowBindGroupEntry = {
+			.binding = 3,
+			.textureView = shadowTextureView,
+		};
 
-		std::array<wgpu::BindGroupEntry, 3> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 4> bindGroupEntries = {
 			ultimateBindGroupEntry,
 			baseColorBindGroupEntry,
 			lightingBindGroupEntry,
+			shadowBindGroupEntry
 		};
 		const wgpu::BindGroupDescriptor bindGroupDescriptor = {
 			.label = "ultimate bind group",
@@ -91,8 +91,10 @@ namespace render {
 	}
 
 	void Ultimate::createBindGroupLayout(
+		wgpu::TextureFormat ultimateTextureFormat,
 		wgpu::TextureFormat baseColorTextureFormat,
-		wgpu::TextureFormat lightingTextureFormat
+		wgpu::TextureFormat lightingTextureFormat,
+		wgpu::TextureFormat shadowTextureFormat
 	) {
 		const wgpu::BindGroupLayoutEntry ultimateBindGroupLayoutEntry = {
 			.binding = 0,
@@ -124,10 +126,21 @@ namespace render {
 			},
 		};
 
-		std::array<wgpu::BindGroupLayoutEntry, 3> bindGroupLayoutEntries = {
+		const wgpu::BindGroupLayoutEntry shadowBindGroupLayoutEntry = {
+			.binding = 3,
+			.visibility = wgpu::ShaderStage::Compute,
+			.storageTexture = {
+				.access = wgpu::StorageTextureAccess::ReadOnly,
+				.format = shadowTextureFormat,
+				.viewDimension = wgpu::TextureViewDimension::e2D,
+			},
+		};
+
+		std::array<wgpu::BindGroupLayoutEntry, 4> bindGroupLayoutEntries = {
 			ultimateBindGroupLayoutEntry,
 			baseColorBindGroupLayoutEntry,
 			lightingBindGroupLayoutEntry,
+			shadowBindGroupLayoutEntry,
 		};
 
 		const wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {

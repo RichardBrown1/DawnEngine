@@ -7,6 +7,7 @@
 #include "../constants.hpp"
 #include "../structs/host.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
+#include "../device/resources.hpp"
 
 namespace render {
 	namespace ultimate::descriptor {
@@ -16,8 +17,8 @@ namespace render {
 			wgpu::TextureView& baseColorTextureView;
 			wgpu::TextureFormat lightingTextureFormat;
 			wgpu::TextureView& lightingTextureView;
-
-			wgpu::TextureView& shadowMapTextureView;
+			wgpu::TextureFormat shadowTextureFormat;
+			wgpu::TextureView& shadowTextureView;
 		};
 
 		struct DoCommands {
@@ -28,11 +29,8 @@ namespace render {
 	class Ultimate {
 	public:
 		Ultimate(WGPUContext* wgpuContext);
-		void generateGpuObjects(const render::ultimate::descriptor::GenerateGpuObjects* descriptor);
+		void generateGpuObjects(const DeviceResources* deviceResources);
 		void doCommands(const render::ultimate::descriptor::DoCommands* descriptor);
-
-		wgpu::TextureView ultimateTextureView;
-		wgpu::TextureFormat ultimateTextureFormat = wgpu::TextureFormat::RGBA32Float;
 
 	private:
 		const std::string _displayTextureViewLabel = "display ";
@@ -49,13 +47,17 @@ namespace render {
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createBindGroupLayout(
+			wgpu::TextureFormat ultimateTextureFormat,
 			wgpu::TextureFormat baseColorTextureFormat,
-			wgpu::TextureFormat lightingTextureFormat
+			wgpu::TextureFormat lightingTextureFormat,
+			wgpu::TextureFormat shadowTextureFormat
 		);
 		void createPipeline();
 		void createBindGroup(
+			wgpu::TextureView& ultimateTextureView,
 			wgpu::TextureView& baseColorTextureView,
-			wgpu::TextureView& lightingTextureView
+			wgpu::TextureView& lightingTextureView,
+			wgpu::TextureView& shadowTextureView
 		);
 	};
 }

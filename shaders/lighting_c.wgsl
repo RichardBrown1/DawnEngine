@@ -40,7 +40,7 @@ fn pointLight(light:Light, normal:vec3<f32>, worldPosition:vec3<f32>) -> vec3<f3
 
 fn spotLight(light:Light, normal:vec3<f32>, worldPosition:vec3<f32>) -> vec3<f32> {
     let lightToFrag:vec3<f32> = normalize(worldPosition - light.position);
-    let lightForward:vec3<f32> = computeLightDirection(light.rotation);
+    let lightForward:vec3<f32> = -computeLightDirection(light.rotation); //TO CHECK: I was expecting it to be the other way around so I flipped it.
     let cosTheta:f32 = dot(lightToFrag, lightForward);
     let cosInner:f32 = cos(light.innerConeAngle);
     let cosOuter:f32 = cos(light.outerConeAngle);
@@ -106,7 +106,7 @@ fn computeLightDirection(eulerRadians: vec3<f32>) -> vec3<f32> {
     let finalRot = rotZ * (rotY * rotX);
 
     // Default forward direction in left-handed systems: positive Z
-    let forward = vec3<f32>(0.0, 0.0, -1.0); //TODO: revisit this should be vec3<f32>(0.0, 0.0, 1.0);
+    let forward = vec3<f32>(0.0, 0.0, 1.0);
 
     return normalize(finalRot * forward);
 }

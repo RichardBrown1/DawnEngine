@@ -19,9 +19,10 @@
 #include <dawn/webgpu_cpp.h>
 #include "../host/host.hpp"
 #include "../enums.hpp"
+#include "../constants.hpp"
 
 namespace {
-	void addMeshData(host::SceneResources& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
+	void addMeshData(HostSceneResources& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t meshIndex) {
 		//		if (_meshIndexToDrawInfoMap.count(meshIndex)) {
 		//			++_meshIndexToDrawInfoMap[meshIndex]->instanceCount;
 		//			return;
@@ -54,13 +55,16 @@ namespace {
 			);
 
 			//texcoord_0
-			fastgltf::Attribute& texcoordAttribute = *primitive.findAttribute("TEXCOORD_0");
-			fastgltf::Accessor& texcoordAccessor = asset.accessors[texcoordAttribute.accessorIndex];
-			fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec2>(
-				asset, texcoordAccessor, [&](fastgltf::math::f32vec2 texcoord, size_t i) {
-					memcpy(&objects.vbo[i + vbosOffset].texcoord, &texcoord, sizeof(glm::f32vec2));
-				}
-			);
+			//fastgltf::Attribute& texcoordAttribute = 
+			fastgltf::Attribute* p_texcoordAttribute = primitive.findAttribute("TEXCOORD_0");
+			if (!p_texcoordAttribute->name.empty()) {
+				fastgltf::Accessor& texcoordAccessor = asset.accessors[p_texcoordAttribute->accessorIndex];
+				fastgltf::iterateAccessorWithIndex<fastgltf::math::f32vec2>(
+					asset, texcoordAccessor, [&](fastgltf::math::f32vec2 texcoord, size_t i) {
+						memcpy(&objects.vbo[i + vbosOffset].texcoord, &texcoord, sizeof(glm::f32vec2));
+					}
+				);
+			}
 
 			//indice
 			if (!primitive.indicesAccessor.has_value()) {
@@ -75,11 +79,8 @@ namespace {
 				}
 			);
 
-			//instanceProperty
-			const structs::InstanceProperty instanceProperty = {
-				.materialIndex = static_cast<uint32_t>(primitive.materialIndex.value_or(asset.materials.size())),
-			};
-			objects.instanceProperties.push_back(instanceProperty);
+			//material indices
+			objects.materialIndices.emplace_back(static_cast<uint32_t>(primitive.materialIndex.value_or(UINT32_MAX)));
 
 			//drawCall
 			const structs::host::DrawCall drawCall = {
@@ -93,7 +94,7 @@ namespace {
 		}
 	}
 
-	void addLightData(host::SceneResources& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
+	void addLightData(HostSceneResources& objects, fastgltf::Asset& asset, glm::f32mat4x4& transform, uint32_t lightIndex) {
 		structs::Light l = {};
 		glm::f32quat quaterion;
 		glm::f32vec3 scale, skew;
@@ -110,15 +111,20 @@ namespace {
 		l.type = static_cast<uint32_t>(asset.lights[lightIndex].type);
 		memcpy(&l.intensity, &asset.lights[lightIndex].intensity, sizeof(glm::f32) * 4);
 
-		const glm::mat4x4 lightView = glm::inverse(transform);
+	//	glm::mat4x4 lightView = glm::inverse(transform);
+		//lightView = glm::rotate(lightView, glm::pi<float>(), glm::f32vec3{0.0, 1.0, 0.0});
+		auto position = glm::f32vec3(transform[3]);
+		glm::f32vec3 forward = glm::normalize(glm::f32vec3(-transform[2]));
+	  auto lightView = glm::lookAt(position, position + forward, constants::UP);
 		const glm::mat4x4 lightProjection = glm::perspectiveRH_ZO(l.outerConeAngle, 1.0f, 0.1f, l.range);
+
 		l.lightSpaceMatrix = lightProjection * lightView;
 
 		objects.lights.push_back(l);
 	}
 
 	void addCameraData(
-		host::SceneResources& objects,
+		HostSceneResources& objects,
 		fastgltf::Asset& asset,
 		glm::f32mat4x4& transform,
 		uint32_t cameraIndex,
@@ -127,34 +133,29 @@ namespace {
 		//TODO what if there is 0 cameras or more than 1 cameras
 //		return;
 //	}
-		const glm::f32mat4x4 view = glm::inverse(transform);
+		glm::f32mat4x4 view = glm::inverse(transform);
 		fastgltf::Camera::Perspective* perspectiveCamera = std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[cameraIndex].camera);
 		fastgltf::Camera::Orthographic* orthographicCamera = std::get_if<fastgltf::Camera::Orthographic>(&asset.cameras[cameraIndex].camera);
 		if (orthographicCamera != nullptr) {
-			throw std::runtime_error("orthographic camera not supported");
+			LOG(ERROR) << "orthographic camera not supported";
 		}
+
+		view = glm::rotate(view, glm::pi<float>(), glm::f32vec3{0.0, 1.0, 0.0});
 
 		structs::host::H_Camera h_camera = {
 			.projection = glm::perspectiveRH_ZO(perspectiveCamera->yfov, screenDimensions[0] / (float)screenDimensions[1], perspectiveCamera->znear, perspectiveCamera->zfar.value_or(1024.0f)),
 			.position = glm::f32vec3(transform[3]),
-			.forward = glm::normalize(glm::f32vec3(view[2])) * 8.0f,
+			.forward = glm::normalize(glm::f32vec3(-transform[2])),
 		};
 
 		objects.cameras.push_back(h_camera);
 	}
 
-	void processNodes(host::SceneResources& object, fastgltf::Asset& asset, const std::array<uint32_t, 2> screenDimensions) {
+	void processNodes(HostSceneResources& object, fastgltf::Asset& asset, const std::array<uint32_t, 2> screenDimensions) {
 		const size_t sceneIndex = asset.defaultScene.value_or(0);
 		fastgltf::iterateSceneNodes(asset, sceneIndex, fastgltf::math::fmat4x4(),
 			[&](fastgltf::Node& node, fastgltf::math::fmat4x4 m) {
-				constexpr glm::f32mat4x4 zMirror = {
-					1.0f, 0.0f, 0.0f, 0.0f,
-					0.0f, 1.0f, 0.0f, 0.0f,
-					0.0f, 0.0f, -1.0f, 0.0f,
-					0.0f, 0.0f, 0.0f, 1.0f,
-				};
 				glm::f32mat4x4 matrix = reinterpret_cast<glm::f32mat4x4&>(m);
-				matrix *= zMirror;
 
 				if (node.meshIndex.has_value()) {
 					addMeshData(object, asset, matrix, static_cast<uint32_t>(node.meshIndex.value()));
@@ -174,8 +175,8 @@ namespace {
 
 	void addMaterial(const fastgltf::Material& inputMaterial, structs::Material& outputMaterial) {
 		memcpy(&outputMaterial.pbrMetallicRoughness, &inputMaterial.pbrData, sizeof(glm::f32vec4) + sizeof(float) * 2);
-		
-	  gltf::convert::textureInfo(
+
+		gltf::convert::textureInfo(
 			inputMaterial.pbrData.baseColorTexture,
 			outputMaterial.pbrMetallicRoughness.baseColorTextureInfo
 		);
@@ -237,11 +238,11 @@ namespace gltf {
 		if (wholeGltf.error() != fastgltf::Error::None) {
 			LOG(ERROR) << "can't load whole gltf";
 		}
-		
+
 		return std::move(wholeGltf.get());
 	}
 
-	void processAsset(host::SceneResources &hostObjects, fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
+	void processAsset(HostSceneResources& hostObjects, fastgltf::Asset& asset, std::array<uint32_t, 2> screenDimensions, const std::string gltfDirectory) {
 		processNodes(hostObjects, asset, screenDimensions);
 
 		hostObjects.materials.resize(asset.materials.size());

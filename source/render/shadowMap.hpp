@@ -4,13 +4,14 @@
 #include <string>
 #include "../structs/host.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
+#include "../device/resources.hpp"
 
 namespace render {
-	namespace shadow {
+	namespace shadowMap {
 		namespace descriptor {
 			struct GenerateGpuObjects {
 				wgpu::Buffer& transformBuffer;
-				wgpu::Buffer& lightBuffer;
+				std::vector<wgpu::Buffer>& lightBuffers;
 			};
 
 			struct DoCommands {
@@ -18,17 +19,17 @@ namespace render {
 				wgpu::Buffer& vertexBuffer;
 				wgpu::Buffer& indexBuffer;
 				std::vector<structs::host::DrawCall>& drawCalls;
+				std::vector<wgpu::TextureView>& shadowMapTextureViews;
 			};
 		}
 	}
 
-	class Shadow {
+	class ShadowMap {
 	public:
-		Shadow(WGPUContext* wgpuContext);
-		void generateGpuObjects(const render::shadow::descriptor::GenerateGpuObjects* descriptor);
-		void doCommands(const render::shadow::descriptor::DoCommands* descriptor);
+		ShadowMap(WGPUContext* wgpuContext);
+		void generateGpuObjects(const DeviceResources* deviceResources);
+		void doCommands(const render::shadowMap::descriptor::DoCommands* descriptor);
 
-		wgpu::TextureView shadowMapTextureView;
 	private:
 		const wgpu::StringView VERTEX_SHADER_LABEL = "shadow render vertex shader";
 		const std::string VERTEX_SHADER_PATH = "shaders/shadowMap_v.spv";
@@ -37,20 +38,26 @@ namespace render {
 		const std::string FRAGMENT_SHADER_PATH = "shaders/shadowMap_f.spv";
 
 		WGPUContext* _wgpuContext;
-		wgpu::Extent2D _shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
-		wgpu::TextureUsage _shadowTextureUsage = wgpu::TextureUsage::RenderAttachment;
+		uint32_t _shadowMapCount = 0;
 
 		wgpu::RenderPipeline _renderPipeline;
-		wgpu::BindGroupLayout _bindGroupLayout;
-		wgpu::BindGroup _bindGroup;
+		wgpu::BindGroupLayout _transformBindGroupLayout;
+		wgpu::BindGroupLayout _lightBindGroupLayout;
+		wgpu::BindGroup _transformBindGroup;
+		std::vector<wgpu::BindGroup> _lightBindGroups;
 
 		wgpu::ShaderModule _vertexShaderModule;
 		wgpu::ShaderModule _fragmentShaderModule;
 
 		wgpu::PipelineLayout getPipelineLayout();
-		void createBindGroupLayout();
+		void createTransformBindGroupLayout();
+		void createLightBindGroupLayout();
 		void createPipeline();
-		void createBindGroup(wgpu::Buffer& transformBuffer, wgpu::Buffer& lightBuffer);
-		void createShadowMapTextureView();
+		void createTransformBindGroup(
+			const wgpu::Buffer& transformBuffer
+		);
+		void insertLightBindGroup(
+			const wgpu::Buffer& lightBuffer
+		);
 	};
 }
