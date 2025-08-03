@@ -1,0 +1,28 @@
+fn octWrap(v : vec2<f32>) -> vec2<f32> {
+    return (1.0 - abs(v.yx)) * select(vec2f(-1.0), vec2f(1.0), v.xy >= vec2f(0.0));
+}
+ 
+fn octEncode(n_in : vec3f) -> vec2f {
+    var n = (n_in / (abs(n_in.x) + abs(n_in.y) + abs(n_in.z))).xy;
+    n = select(octWrap(n.xy), n.xy, n_in.z >= 0.0);
+    n = n.xy * 0.5 + 0.5;
+    return n.xy;
+}
+
+fn octEncodeAndPack(n : vec3<f32>) -> u32 {
+    let octNum : vec2<f32> = octEncode(n);
+    return pack2x16snorm(octNum);
+}
+ 
+fn octDecode(fInput : vec2<f32>) -> vec3<f32> {
+    var f : vec2<f32> = fInput * 2.0 - 1.0;
+    var n : vec3<f32> = vec3<f32>(f.x, f.y, 1.0 - abs(f.x) - abs(f.y));
+    let t : f32 = saturate(-n.z);
+    n += vec3f(select(vec2f(t), vec2f(-t), n.xy >= vec2f(0.0)), 0.0);
+    return normalize(n);
+}
+
+fn octDecodeAndUnpack(n : u32) -> vec3<f32> {
+    let octNum : vec2<f32> = unpack2x16snorm(n); 
+    return octDecode(octNum);
+}
