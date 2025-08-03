@@ -3,8 +3,8 @@
 #include "initialRender.wgsli"
 
 struct FSOutput { //THIS IS LIMITED TO 4 OR DX12 TRIANGLE BUG WILL OCCUR
-	@location(0) worldPosition : vec4<f32>,
-	@location(1) packedInfo : vec4<u32>,
+	@location(0) packedInfo : vec4<u32>,
+	@location(1) worldPosition : vec4<f32>,
 }
 
 @group(0) @binding(3) var<storage, read> materialIds: array<u32>;

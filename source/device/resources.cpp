@@ -14,6 +14,7 @@
 #include "../wgpuContext/wgpuContext.hpp"
 #include <dawn/webgpu_cpp.h>
 
+const std::string packedInfoLabel = "packed info";
 const std::string worldPositionLabel = "world position info";
 const std::string baseColorLabel = "base color";
 const std::string normalLabel = "normals";
@@ -26,6 +27,7 @@ const std::string shadowMapLabel = "shadow map";
 const std::string shadowLabel = "shadow";
 const std::string ultimateLabel = "ultimate";
 
+constexpr wgpu::TextureUsage packedInfoTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 constexpr wgpu::TextureUsage worldPositionTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 constexpr wgpu::TextureUsage baseColorTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
 constexpr wgpu::TextureUsage normalTextureUsage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::StorageBinding;
@@ -42,6 +44,16 @@ constexpr wgpu::Extent2D shadowDimensions = wgpu::Extent2D{ 2048, 2048 };
 constexpr uint32_t maxShadowMaps = 5;
 
 RenderResources::RenderResources(WGPUContext* wgpuContext) {
+	const texture::descriptor::CreateTextureView packedInfoTextureViewDescriptor = {
+		.label = packedInfoLabel,
+		.device = &wgpuContext->device,
+		.textureUsage = packedInfoTextureUsage,
+		.textureDimensions = wgpuContext->getScreenDimensions(),
+		.textureFormat = packedInfoTextureFormat,
+		.outputTextureView = packedInfoTextureView,
+	};
+	texture::createTextureView(&packedInfoTextureViewDescriptor);
+
 	const texture::descriptor::CreateTextureView worldPositionTextureViewDescriptor = {
 		.label = worldPositionLabel,
 		.device = &wgpuContext->device,

@@ -1,10 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
-#include <iostream>
 #include <dawn/webgpu_cpp.h>
-#include <fastgltf/types.hpp>
-#include "../constants.hpp"
 #include "../structs/host.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
 #include "../device/resources.hpp"
