@@ -29,7 +29,10 @@ add_executable (DawnEngine ${SRC_FILES})
 
 target_link_libraries(DawnEngine 
     PUBLIC dawn::webgpu_dawn     
-    PRIVATE SDL3::SDL3 KTX::ktx glm::glm fastgltf::fastgltf absl::log ${Stb_INCLUDE_DIR}
+    PRIVATE SDL3::SDL3 KTX::ktx glm::glm fastgltf::fastgltf absl::log
+)
+target_include_directories(DawnEngine 
+    PRIVATE ${Stb_INCLUDE_DIR}
 )
 
 #Disable compile warnings on libraries
@@ -53,23 +56,25 @@ add_custom_target(CopyModels
 ) 
 add_dependencies(DawnEngine CopyModels)
 
-#Shaders
+##Shaders
 set(SHADERS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 set(SHADERS_DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 
 file(MAKE_DIRECTORY ${SHADERS_DEST_DIR})
 add_custom_target(Shaders)
 
-#WGSL
+##WGSL
+set(WGSLPreprocessor "${CMAKE_CURRENT_SOURCE_DIR}/build_tools/wgslPreprocessor/build/Debug/WGSLPreprocessor.exe")
 file(GLOB_RECURSE WGSL_SHADER_FILES "shaders/*.wgsl")
 foreach(FILE ${WGSL_SHADER_FILES})
-    add_custom_command(
-        TARGET Shaders
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${FILE}
-        ${SHADERS_DEST_DIR}
-        COMMENT "WGSL ${FILE}"
-    )
+  get_filename_component(FILE_WE ${FILE} NAME_WE)
+  add_custom_command(
+     TARGET Shaders
+     COMMAND ${WGSLPreprocessor} ${FILE} ${SHADERS_DEST_DIR}/${FILE_WE}.wgsl 
+     MAIN_DEPENDENCY ${FILE}
+     COMMENT "WGSL Preprocess ${FILE}"
+     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  VERBATIM)
 endforeach(FILE)
 
 #HLSL -> Spirv Shaders

@@ -1,0 +1,3 @@
+[submodule "build_tools/wgslPreprocessor"]
+	path = build_tools/wgslPreprocessor
+	url = https://github.com/RichardBrown1/wgslPreprocessor
