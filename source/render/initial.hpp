@@ -42,7 +42,7 @@ namespace render {
 		wgpu::ShaderModule _baseColorTexCoordsFragmentShaderModule;
 		wgpu::ShaderModule _worldNormalFragmentShaderModule;
 
-		std::array<wgpu::RenderPassColorAttachment, 4> _renderPassColorAttachments;
+		std::array<wgpu::RenderPassColorAttachment, 2> _renderPassColorAttachments;
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createInputBindGroupLayout();
