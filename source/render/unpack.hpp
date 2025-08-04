@@ -1,5 +1,4 @@
 #pragma once
-#include <vector>
 #include <dawn/webgpu_cpp.h>
 #include "../wgpuContext/wgpuContext.hpp"
 #include "../device/resources.hpp"
