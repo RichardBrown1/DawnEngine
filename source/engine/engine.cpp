@@ -52,6 +52,10 @@ Engine::Engine() {
 	_initialRender = initialRender;
 	_initialRender->generateGpuObjects(_deviceResources);
 
+	render::Unpack* unpackRender = new render::Unpack(&_wgpuContext);
+	_unpackRender = unpackRender;
+	_unpackRender->generateGpuObjects(_deviceResources);
+
 	_baseColorAccumulatorRender = new render::FourChannel(&_wgpuContext);
 	const render::accumulator::descriptor::GenerateGpuObjects baseColorGenerateGpuObjectsDescriptor = {
 		.accumulatorTextureView = _deviceResources->render->baseColorTextureView,

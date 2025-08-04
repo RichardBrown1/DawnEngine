@@ -1,7 +1,7 @@
 #pragma once
-#include "../device/device.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
 #include "../render/initial.hpp"
+#include "../render/unpack.hpp"
 #include "../render/shadowToCamera.hpp"
 #include "../render/shadowMap.hpp"
 #include "../render/accumulator/fourChannel.hpp"
@@ -29,6 +29,7 @@ private:
 	WGPUContext _wgpuContext;
 	DeviceResources* _deviceResources;
 	render::Initial* _initialRender;
+	render::Unpack* _unpackRender;
 	render::ShadowMap* _shadowMapRender;
 	render::ShadowToCamera* _shadowToCamera;
 	render::FourChannel* _baseColorAccumulatorRender;
