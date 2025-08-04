@@ -37,8 +37,16 @@ namespace render {
 				.viewDimension = wgpu::TextureViewDimension::e2D,
 			},
 		};
-		const wgpu::BindGroupLayoutEntry normalBindGroupLayoutEntry = {
+		const wgpu::BindGroupLayoutEntry materialBindGroupLayoutEntry = {
 			.binding = 1,
+			.visibility = wgpu::ShaderStage::Compute,
+			.buffer = {
+				.type = wgpu::BufferBindingType::ReadOnlyStorage,
+				.minBindingSize	= sizeof(structs::Material), 
+			},
+		};
+		const wgpu::BindGroupLayoutEntry normalBindGroupLayoutEntry = {
+			.binding = 2,
 			.visibility = wgpu::ShaderStage::Compute,
 			.storageTexture = {
 				.access = wgpu::StorageTextureAccess::WriteOnly,
@@ -47,7 +55,7 @@ namespace render {
 			},
 		};
 		const wgpu::BindGroupLayoutEntry texCoordBindGroupLayoutEntry = {
-			.binding = 2,
+			.binding = 3,
 			.visibility = wgpu::ShaderStage::Compute,
 			.storageTexture = {
 				.access = wgpu::StorageTextureAccess::WriteOnly,
@@ -56,7 +64,7 @@ namespace render {
 			},
 		};
 		const wgpu::BindGroupLayoutEntry baseColorBindGroupLayoutEntry = {
-			.binding = 3,
+			.binding = 4,
 			.visibility = wgpu::ShaderStage::Compute,
 			.storageTexture = {
 				.access = wgpu::StorageTextureAccess::WriteOnly,
@@ -65,7 +73,7 @@ namespace render {
 			},
 		};
 		const wgpu::BindGroupLayoutEntry baseColorIdBindGroupLayoutEntry = {
-			.binding = 4,
+			.binding = 5,
 			.visibility = wgpu::ShaderStage::Compute,
 			.storageTexture = {
 				.access = wgpu::StorageTextureAccess::WriteOnly,
@@ -74,7 +82,7 @@ namespace render {
 			},
 		};
 		const wgpu::BindGroupLayoutEntry normalIdBindGroupLayoutEntry = {
-			.binding = 5,
+			.binding = 6,
 			.visibility = wgpu::ShaderStage::Compute,
 			.storageTexture = {
 				.access = wgpu::StorageTextureAccess::WriteOnly,
@@ -83,8 +91,9 @@ namespace render {
 			},
 		};
 
-		std::array<wgpu::BindGroupLayoutEntry, 6> bindGroupLayoutEntries = {
+		std::array<wgpu::BindGroupLayoutEntry, 7> bindGroupLayoutEntries = {
 			packedInfoBindGroupLayoutEntry,
+			materialBindGroupLayoutEntry,
 			normalBindGroupLayoutEntry,
 			texCoordBindGroupLayoutEntry,
 			baseColorBindGroupLayoutEntry,
@@ -132,28 +141,33 @@ namespace render {
 			.binding = 0,
 			.textureView = p_deviceResources->render->packedInfoTextureView,
 		};
-		const wgpu::BindGroupEntry normalBindGroupEntry = {
+		const wgpu::BindGroupEntry materialBindGroupEntry = {
 			.binding = 1,
+			.buffer = p_deviceResources->scene->materials,
+		};
+		const wgpu::BindGroupEntry normalBindGroupEntry = {
+			.binding = 2,
 			.textureView = p_deviceResources->render->normalTextureView,
 		};
 		const wgpu::BindGroupEntry texCoordBindGroupEntry = {
-			.binding = 2,
+			.binding = 3,
 			.textureView = p_deviceResources->render->texCoordTextureView,
 		};
 		const wgpu::BindGroupEntry baseColorBindGroupEntry = {
-			.binding = 3,
+			.binding = 4,
 			.textureView = p_deviceResources->render->baseColorTextureView,
 		};
 		const wgpu::BindGroupEntry baseColorIdBindGroupEntry = {
-			.binding = 4,
+			.binding = 5,
 			.textureView = p_deviceResources->render->baseColorIdTextureView,
 		};
 		const wgpu::BindGroupEntry normalIdBindGroupEntry = {
-			.binding = 5,
+			.binding = 6,
 			.textureView = p_deviceResources->render->normalIdTextureView,
 		};
-		std::array<wgpu::BindGroupEntry, 6> bindGroupEntries = {
+		std::array<wgpu::BindGroupEntry, 7> bindGroupEntries = {
 			packedInfoBindGroupEntry,
+			materialBindGroupEntry,
 			normalBindGroupEntry,
 			texCoordBindGroupEntry,
 			baseColorBindGroupEntry,

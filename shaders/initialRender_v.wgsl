@@ -1,4 +1,4 @@
-#include "_definitions.wgsl"
+#include "_definitions.wgsli"
 #include "initialRender.wgsli"
 
 @group(0) @binding(0) var<uniform> screenDimensions: vec2<u32>;

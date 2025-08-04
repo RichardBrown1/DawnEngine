@@ -58,12 +58,13 @@ WGPUContext::WGPUContext() {
 		INT64_MAX);
 	CHECK(adapter);
 
-	print::adapter::GetInfo(this->adapter);
-	print::adapter::GetLimits(this->adapter);
+	//print::adapter::GetInfo(this->adapter);
+	//print::adapter::GetLimits(this->adapter);
 
-	constexpr std::array<wgpu::FeatureName, 0> requiredFeatures = {};
+	constexpr std::array<wgpu::FeatureName, 0> requiredFeatures = {
+	};
 	constexpr wgpu::Limits requiredLimits = {
-			.maxColorAttachmentBytesPerSample = 64
+		.maxStorageTexturesPerShaderStage = 8,
 	};
 
 	wgpu::DeviceDescriptor deviceDescriptor = {};

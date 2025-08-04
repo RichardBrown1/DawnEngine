@@ -1,4 +1,4 @@
-#include "_definitions.wgsl"
+#include "_definitions.wgsli"
 #include "_helpers.wgsli"
 #include "initialRender.wgsli"
 

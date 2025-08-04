@@ -174,6 +174,11 @@ void Engine::draw() {
 	constexpr wgpu::CommandBufferDescriptor commandBufferDescriptor = {
 		.label = "Command Buffer",
 	};
+
+	const render::unpack::descriptor::DoCommands	doUnpackRenderCommandsDescriptor = {
+		.commandEncoder = commandEncoder,
+	};
+	_unpackRender->doCommands(&doUnpackRenderCommandsDescriptor);
 	wgpu::CommandBuffer commandBuffer = commandEncoder.Finish(&commandBufferDescriptor);
 
 	constexpr wgpu::CommandEncoderDescriptor commandEncoder2Descriptor = {
