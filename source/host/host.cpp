@@ -1,5 +1,6 @@
 #pragma once
 #include "host.hpp"
+#include "../enums.hpp"	
 #include "../device/device.hpp"
 #include "../gltf/gltf.hpp"
 #include <glm/ext/matrix_clip_space.hpp>
@@ -27,7 +28,7 @@ void HostSceneResources::addDefaults(const std::array<uint32_t, 2> screenDimensi
 		lights.push_back(structs::Light{
 			.rotation = glm::f32vec3{2.755f, -0.286f, -1.269f}, //Points downwards and slightly in +X and +Z
 			.color = {1.0f, 1.0f, 0.9f},
-			.type = 0, //Directional
+			.type = enums::LightType::DIRECTIONAL,
 			.intensity = 128.0f,
 			});
 	}
