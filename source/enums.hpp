@@ -22,4 +22,10 @@ namespace enums {
 		METALLIC_ROUGHNESS = 2,
 	};
 
+	enum LightType {
+		DIRECTIONAL = 0,
+		POINT = 1,
+		SPOT = 2,
+	};
+
 };
