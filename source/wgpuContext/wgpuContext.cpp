@@ -39,13 +39,8 @@ WGPUContext::WGPUContext() {
 //	wgpu::DawnTogglesDescriptor dawnTogglesDescriptor = {};
 //	dawnTogglesDescriptor.enabledToggleCount = 1;
 //	dawnTogglesDescriptor.enabledToggles = &useDxcToggle;
-	const wgpu::RequestAdapterOptions requestAdapterOptions = {
-//		.nextInChain = &dawnTogglesDescriptor,
-		.powerPreference = wgpu::PowerPreference::HighPerformance,
-//		.backendType = wgpu::BackendType::Vulkan,
-	};
 	this->instance.WaitAny(this->instance.RequestAdapter(
-		&requestAdapterOptions,
+		&_requestAdapterOptions,
 		wgpu::CallbackMode::WaitAnyOnly,
 		[&](wgpu::RequestAdapterStatus status,
 			wgpu::Adapter a,

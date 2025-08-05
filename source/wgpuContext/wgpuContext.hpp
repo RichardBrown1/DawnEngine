@@ -26,5 +26,10 @@ private:
 	wgpu::Extent2D _screenDimensions = { 1280, 720 };
 	wgpu::Buffer _screenDimensionsBuffer;
 
+	const wgpu::RequestAdapterOptions _requestAdapterOptions = {
+//		.nextInChain = &dawnTogglesDescriptor,
+		.powerPreference = wgpu::PowerPreference::HighPerformance,
+		.backendType = wgpu::BackendType::Vulkan,
+	};
 };
 
