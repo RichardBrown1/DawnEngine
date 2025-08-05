@@ -29,7 +29,7 @@ namespace render {
 				.view = deviceResources->render->worldPositionTextureView,
 				.loadOp = wgpu::LoadOp::Clear,
 				.storeOp = wgpu::StoreOp::Store,
-				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
+				.clearValue = wgpu::Color{1.0f, 1.0f, 1.0f, 1.0f},
 			},
 		};
 	};
