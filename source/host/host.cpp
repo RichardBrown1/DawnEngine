@@ -3,7 +3,10 @@
 #include "../enums.hpp"	
 #include "../device/device.hpp"
 #include "../gltf/gltf.hpp"
+#include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
+#include "../constants.hpp"
 
 HostSceneResources::HostSceneResources(
 	const std::string& gltfDirectory,
@@ -25,8 +28,26 @@ void HostSceneResources::addDefaults(const std::array<uint32_t, 2> screenDimensi
 			});
 	}
 	if (lights.size() == 0) {
+		const auto rotation = glm::f32vec3{ 1.26f, 0.0f, 1.269f }; //Points downwards and slightly in +X and +Z
+		const float yaw = rotation.y;
+		const float pitch = rotation.x;
+
+		 // Calculate the front vector from the Euler angles
+    glm::f32vec3 front;
+    front.x = cos(yaw) * cos(pitch);
+    front.y = sin(pitch);
+    front.z = sin(yaw) * cos(pitch);
+    front = glm::normalize(front);
+
+    // Create the view matrix
+		const auto position = glm::f32vec3{ 0.0f, 1.0f, 0.0f };
+    const glm::vec3 target = position + front;
+    const auto lightSpaceMatrix = glm::lookAt(position, target, constants::UP);
+
 		lights.push_back(structs::Light{
-			.rotation = glm::f32vec3{2.755f, -0.286f, -1.269f}, //Points downwards and slightly in +X and +Z
+			.lightSpaceMatrix = lightSpaceMatrix,
+			.position = position,
+			.rotation = rotation,
 			.color = {1.0f, 1.0f, 0.9f},
 			.type = enums::LightType::DIRECTIONAL,
 			.intensity = 128.0f,
