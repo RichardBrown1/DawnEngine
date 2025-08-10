@@ -11,7 +11,7 @@ fn octEncode(n_in : vec3f) -> vec2f {
 
 fn octEncodeAndPack(n : vec3<f32>) -> u32 {
     let octNum : vec2<f32> = octEncode(n);
-    return pack2x16snorm(octNum);
+    return pack2x16unorm(octNum);
 }
  
 fn octDecode(fInput : vec2<f32>) -> vec3<f32> {
@@ -23,6 +23,6 @@ fn octDecode(fInput : vec2<f32>) -> vec3<f32> {
 }
 
 fn octDecodeAndUnpack(n : u32) -> vec3<f32> {
-    let octNum : vec2<f32> = unpack2x16snorm(n); 
+    let octNum : vec2<f32> = unpack2x16unorm(n); 
     return octDecode(octNum);
 }
