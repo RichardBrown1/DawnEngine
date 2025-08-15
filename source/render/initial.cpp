@@ -20,28 +20,16 @@ namespace render {
 
 		_renderPassColorAttachments = {
 			wgpu::RenderPassColorAttachment {
+				.view = deviceResources->render->packedInfoTextureView,
+				.loadOp = wgpu::LoadOp::Clear,
+				.storeOp = wgpu::StoreOp::Store,
+				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
+			},
+			wgpu::RenderPassColorAttachment {
 				.view = deviceResources->render->worldPositionTextureView,
 				.loadOp = wgpu::LoadOp::Clear,
 				.storeOp = wgpu::StoreOp::Store,
-				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
-			},
-			wgpu::RenderPassColorAttachment {
-				.view = deviceResources->render->normalTextureView,
-				.loadOp = wgpu::LoadOp::Clear,
-				.storeOp = wgpu::StoreOp::Store,
-				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
-			},
-			wgpu::RenderPassColorAttachment {
-				.view = deviceResources->render->texCoordTextureView,
-				.loadOp = wgpu::LoadOp::Clear,
-				.storeOp = wgpu::StoreOp::Store,
-				.clearValue = wgpu::Color{0.0f, 0.0f, 0.0f, 0.0f},
-			},
-			wgpu::RenderPassColorAttachment {
-				.view = deviceResources->render->baseColorTextureView,
-				.loadOp = wgpu::LoadOp::Clear,
-				.storeOp = wgpu::StoreOp::Store,
-				.clearValue = wgpu::Color{0.3f, 0.3f, 1.0f, 1.0f},
+				.clearValue = wgpu::Color{1.0f, 1.0f, 1.0f, 1.0f},
 			},
 		};
 	};
@@ -105,11 +93,9 @@ namespace render {
 		};
 
 		renderPipelineDescriptor.label = "initial render pipeline";
-		const std::array<wgpu::ColorTargetState, 4> colorTargetStates = {
+		const std::array<wgpu::ColorTargetState, 2> colorTargetStates = {
+			wgpu::ColorTargetState {.format = deviceResources->render->packedInfoTextureFormat},
 			wgpu::ColorTargetState {.format = deviceResources->render->worldPositionTextureFormat},
-			wgpu::ColorTargetState {.format = deviceResources->render->normalTextureFormat},
-			wgpu::ColorTargetState {.format = deviceResources->render->texCoordTextureFormat},
-			wgpu::ColorTargetState {.format = deviceResources->render->baseColorTextureFormat},
 		};
 		const wgpu::FragmentState fragmentState = {
 			.module = _oneFragmentShaderModule,

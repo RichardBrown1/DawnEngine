@@ -1,10 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
-#include <iostream>
 #include <dawn/webgpu_cpp.h>
-#include <fastgltf/types.hpp>
-#include "../constants.hpp"
 #include "../structs/host.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
 #include "../device/resources.hpp"
@@ -45,7 +42,7 @@ namespace render {
 		wgpu::ShaderModule _baseColorTexCoordsFragmentShaderModule;
 		wgpu::ShaderModule _worldNormalFragmentShaderModule;
 
-		std::array<wgpu::RenderPassColorAttachment, 4> _renderPassColorAttachments;
+		std::array<wgpu::RenderPassColorAttachment, 2> _renderPassColorAttachments;
 
 		wgpu::PipelineLayout getPipelineLayout();
 		void createInputBindGroupLayout();

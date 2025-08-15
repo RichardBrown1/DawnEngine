@@ -39,13 +39,8 @@ WGPUContext::WGPUContext() {
 //	wgpu::DawnTogglesDescriptor dawnTogglesDescriptor = {};
 //	dawnTogglesDescriptor.enabledToggleCount = 1;
 //	dawnTogglesDescriptor.enabledToggles = &useDxcToggle;
-	const wgpu::RequestAdapterOptions requestAdapterOptions = {
-//		.nextInChain = &dawnTogglesDescriptor,
-		.powerPreference = wgpu::PowerPreference::HighPerformance,
-//		.backendType = wgpu::BackendType::Vulkan,
-	};
 	this->instance.WaitAny(this->instance.RequestAdapter(
-		&requestAdapterOptions,
+		&_requestAdapterOptions,
 		wgpu::CallbackMode::WaitAnyOnly,
 		[&](wgpu::RequestAdapterStatus status,
 			wgpu::Adapter a,
@@ -58,12 +53,13 @@ WGPUContext::WGPUContext() {
 		INT64_MAX);
 	CHECK(adapter);
 
-	print::adapter::GetInfo(this->adapter);
-	print::adapter::GetLimits(this->adapter);
+	//print::adapter::GetInfo(this->adapter);
+	//print::adapter::GetLimits(this->adapter);
 
-	constexpr std::array<wgpu::FeatureName, 0> requiredFeatures = {};
+	constexpr std::array<wgpu::FeatureName, 0> requiredFeatures = {
+	};
 	constexpr wgpu::Limits requiredLimits = {
-			.maxColorAttachmentBytesPerSample = 64
+		.maxStorageTexturesPerShaderStage = 8,
 	};
 
 	wgpu::DeviceDescriptor deviceDescriptor = {};

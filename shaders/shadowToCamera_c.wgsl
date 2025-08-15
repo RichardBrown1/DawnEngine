@@ -32,7 +32,7 @@ fn cs_main(@builtin(global_invocation_id) GlobalInvocationID : vec3u) {
     let projCoords : vec3<f32> = lightPos.xyz / lightPos.w;
     let currentDepth : f32 = projCoords.z;
     if (currentDepth > 1.0) {
-        textureStore(shadowAccumulatorTexture, coords, vec4f(1.0));
+        textureStore(shadowAccumulatorTexture, coords, vec4f(shadowFactor));
         return;
     }
     var uv : vec2<f32> = projCoords.xy * 0.5 + 0.5;
@@ -46,16 +46,16 @@ fn cs_main(@builtin(global_invocation_id) GlobalInvocationID : vec3u) {
     uv = uv + offset;
 
     if (0.0 > uv.x || uv.x > 1.0 || 0.0 > uv.y || uv.y > 1.0) {
-       textureStore(shadowAccumulatorTexture, coords, vec4f(1.0));
+       textureStore(shadowAccumulatorTexture, coords, vec4f(shadowFactor));
        return;
     }
     
-    let shadow = textureSampleCompareLevel(
+    shadowFactor = textureSampleCompareLevel(
         shadowMapTexture,
         depthSampler,
         uv,
         currentDepth,
     );
-       
-    textureStore(shadowAccumulatorTexture, coords, vec4f(shadow));
+    textureStore(shadowAccumulatorTexture, coords, vec4f(shadowFactor));
+    return;
 }

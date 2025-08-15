@@ -1,8 +1,6 @@
 #pragma once
-#include <vector>
 #include <string>
 #include <dawn/webgpu_cpp.h>
-#include "../structs/structs.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
 
 namespace render {

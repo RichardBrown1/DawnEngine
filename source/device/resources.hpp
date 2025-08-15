@@ -10,6 +10,7 @@
 struct RenderResources {
 	RenderResources(WGPUContext* wgpuContext);
 
+	const wgpu::TextureFormat packedInfoTextureFormat = wgpu::TextureFormat::RGBA32Uint;
 	const wgpu::TextureFormat worldPositionTextureFormat = wgpu::TextureFormat::RGBA32Float;
 	const wgpu::TextureFormat baseColorTextureFormat = wgpu::TextureFormat::RGBA32Float;
 	const wgpu::TextureFormat normalTextureFormat = wgpu::TextureFormat::RGBA32Float; //normal texture can tangent-ized	if I need it
@@ -23,6 +24,7 @@ struct RenderResources {
 	const wgpu::TextureFormat shadowTextureFormat = wgpu::TextureFormat::R32Float;
 	const wgpu::TextureFormat ultimateTextureFormat = wgpu::TextureFormat::RGBA32Float;
 
+	wgpu::TextureView packedInfoTextureView;
 	wgpu::TextureView worldPositionTextureView;
 	wgpu::TextureView baseColorTextureView;
 	wgpu::TextureView normalTextureView;
