@@ -29,7 +29,7 @@ private:
 	const wgpu::RequestAdapterOptions _requestAdapterOptions = {
 //		.nextInChain = &dawnTogglesDescriptor,
 		.powerPreference = wgpu::PowerPreference::HighPerformance,
-		.backendType = wgpu::BackendType::Vulkan,
+//		.backendType = wgpu::BackendType::Vulkan,
 	};
 };
 
