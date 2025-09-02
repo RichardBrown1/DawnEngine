@@ -3,7 +3,6 @@
 #include "../sdl3webgpu.hpp"
 #include "SDL3/SDL.h"
 #include "absl/log/check.h"
-#include "absl/log/initialize.h"
 #include "absl/log/globals.h"
 #include "../print.hpp"
 #include "../device/callback.hpp"
@@ -11,8 +10,6 @@
 #include <dawn/webgpu_cpp.h>
 
 WGPUContext::WGPUContext() {
-	absl::SetStderrThreshold(LOG_LEVEL);
-	absl::InitializeLog();
 
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_Window* p_sdl_window = SDL_CreateWindow(
@@ -23,8 +20,9 @@ WGPUContext::WGPUContext() {
 
 	CHECK(p_sdl_window);
 
-	std::array<wgpu::InstanceFeatureName, 1> instanceFeatures = {
+	std::array<wgpu::InstanceFeatureName, 2> instanceFeatures = {
 		wgpu::InstanceFeatureName::TimedWaitAny,
+		wgpu::InstanceFeatureName::ShaderSourceSPIRV,
 	};
 	const wgpu::InstanceDescriptor instanceDescriptor = {
 		.requiredFeatureCount = instanceFeatures.size(),

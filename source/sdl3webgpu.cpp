@@ -71,14 +71,11 @@ wgpu::Surface SDL_GetWGPUSurface(wgpu::Instance instance, SDL_Window* window) {
         if (!x11_display || !x11_window) return wgpu::Surface();
 
         wgpu::SurfaceSourceXlibWindow fromXlibWindow;
-        constexpr wgpu::ChainedStruct chainedStruct = {
-            .sType = wgpu::SType::SurfaceSourceXlibWindow,
-        };
         fromXlibWindow.display = x11_display;
         fromXlibWindow.window = x11_window;
 
         wgpu::SurfaceDescriptor surfaceDescriptor;
-        surfaceDescriptor.nextInChain = &chainedStruct;
+        surfaceDescriptor.nextInChain = &fromXlibWindow;
         surfaceDescriptor.label = wgpu::StringView("x11 surface");
 
         return instance.CreateSurface(&surfaceDescriptor);

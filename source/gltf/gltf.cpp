@@ -226,8 +226,10 @@ namespace {
 namespace gltf {
 	fastgltf::Asset getAsset(const std::string& gltfDirectory, const std::string& gltfFileName) {
 		fastgltf::Parser parser = fastgltf::Parser(fastgltf::Extensions::KHR_lights_punctual | fastgltf::Extensions::KHR_texture_basisu);
+		LOG(INFO) << std::filesystem::current_path();
 
-		std::string gltfFilePath = gltfDirectory + gltfFileName;
+		auto gltfFilePath = std::filesystem::canonical(std::filesystem::path(gltfDirectory + gltfFileName));
+		LOG(INFO) << gltfFilePath.string();
 		auto gltfFile = fastgltf::GltfDataBuffer::FromPath(gltfFilePath);
 		if (gltfFile.error() != fastgltf::Error::None) {// "cube databuffer fromPath");
 			LOG(ERROR) << "can't load gltf file";

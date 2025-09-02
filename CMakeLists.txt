@@ -41,7 +41,7 @@ if (MSVC)
     target_compile_options(DawnEngine PRIVATE /W4 /WX)
     set_source_files_properties(${THIRD_PARTY} PROPERTIES COMPILE_FLAGS /w)
 else()
-    target_compile_options(DawnEngine PRIVATE -Wall -Wextra -Wpedantic -Werror -std=c++20 -fsanitize=undefined -fsanitize=address -Wno-missing-field-initializers)
+    target_compile_options(DawnEngine PRIVATE -Wall -Wextra -Wpedantic -Werror -std=c++20 -Wno-missing-field-initializers -g)
 endif()
 
 #Models
