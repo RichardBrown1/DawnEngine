@@ -7,6 +7,7 @@
 #include "absl/log/log.h"
 #include "engine.hpp"
 #include "../wgpuContext/wgpuContext.hpp"
+#include <thread>
 
 namespace {
 	wgpu::TextureView getNextSurfaceTextureView(wgpu::Surface surface) {
@@ -137,11 +138,11 @@ void Engine::run() {
 		}
 
 		// do not draw if we are minimized
-		//if (stopRendering) {
-		//    // throttle the speed to avoid the endless spinning
-		//    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-		//    continue;
-		//}
+		if (stopRendering) {
+		    // throttle the speed to avoid the endless spinning
+		    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		    continue;
+		}
 
 		this->draw();
 	}

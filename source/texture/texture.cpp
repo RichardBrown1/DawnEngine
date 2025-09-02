@@ -47,7 +47,7 @@ namespace texture {
 				.width = width,
 				.height = height,
 			},
-			.format = [channels]() {
+			.format = [=]() {
 				switch (channels) {
 				case 1:
 					return wgpu::TextureFormat::R32Float;

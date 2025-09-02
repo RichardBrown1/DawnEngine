@@ -23,10 +23,12 @@ WGPUContext::WGPUContext() {
 
 	CHECK(p_sdl_window);
 
-	constexpr wgpu::InstanceDescriptor instanceDescriptor = {
-		.capabilities = {
-			.timedWaitAnyEnable = true,
-		}
+	std::array<wgpu::InstanceFeatureName, 1> instanceFeatures = {
+		wgpu::InstanceFeatureName::TimedWaitAny,
+	};
+	const wgpu::InstanceDescriptor instanceDescriptor = {
+		.requiredFeatureCount = instanceFeatures.size(),
+		.requiredFeatures = instanceFeatures.data(),
 	};
 	this->instance = wgpu::CreateInstance(&instanceDescriptor);
 	CHECK(instance);

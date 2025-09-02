@@ -40,7 +40,7 @@ namespace render {
 			};
 
 			const wgpu::RenderPassDescriptor renderPassDescriptor = {
-				.label = "shadow render pass #" + i,
+				.label = wgpu::StringView(std::format("shadow render pass #%d", i)),
 				.depthStencilAttachment = &renderPassDepthStencilAttachment,
 			};
 			wgpu::RenderPassEncoder renderPassEncoder = descriptor->commandEncoder.BeginRenderPass(&renderPassDescriptor);
@@ -65,18 +65,18 @@ namespace render {
 				.buffers = &render::vertexBufferLayout,
 		};
 
-		constexpr wgpu::BlendState blendState = {
-			.color = wgpu::BlendComponent{
-				.operation = wgpu::BlendOperation::Add,
-				.srcFactor = wgpu::BlendFactor::SrcAlpha,
-				.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha,
-			},
-			.alpha = wgpu::BlendComponent{
-				.operation = wgpu::BlendOperation::Add,
-				.srcFactor = wgpu::BlendFactor::Zero,
-				.dstFactor = wgpu::BlendFactor::One,
-			}
-		};
+//		constexpr wgpu::blendstate blendstate = {
+//			.color = wgpu::blendcomponent{
+//				.operation = wgpu::BlendOperation::Add,
+//				.srcFactor = wgpu::BlendFactor::SrcAlpha,
+//				.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha,
+//			},
+//			.alpha = wgpu::BlendComponent{
+//				.operation = wgpu::BlendOperation::Add,
+//				.srcFactor = wgpu::BlendFactor::Zero,
+//				.dstFactor = wgpu::BlendFactor::One,
+//			}
+//		};
 		const wgpu::FragmentState fragmentState = {
 			.module = _fragmentShaderModule,
 			.entryPoint = enums::EntryPoint::FRAGMENT,
