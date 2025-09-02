@@ -1,4 +1,3 @@
-#pragma once
 #include "../texture/texture.hpp"
 #include "device.hpp"
 #include "resources.hpp"

@@ -1,4 +1,3 @@
-#pragma once
 #include "texture.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -67,7 +66,7 @@ namespace texture {
 			.mipLevel = 0,
 		};
 		const wgpu::TexelCopyBufferLayout texelCopyBufferLayout = {
-				.bytesPerRow = width * channels * sizeof(char),
+				.bytesPerRow = static_cast<uint32_t>(width * channels * sizeof(char)),
 				.rowsPerImage = height,
 		};
 

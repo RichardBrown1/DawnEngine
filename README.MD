@@ -12,9 +12,19 @@ Shaders are in HLSL -> SPIRV
 - Models are taken from Khronos Gltf Sample Assets usually
 
 ## Install Instructions
-1. git clone --recurse-submodules
+1. git clone [this repo]
+2. git submodule update --init --recursive
 2. Make wgsl preprocessor executable
-    i. in the build_tools/wgslPreprocessor folder
+    i. cd build_tools/wgslPreprocessor folder
     ii. mkdir build
-    iii. cmake -B build
-    iv. cmake --build ./build
+    iii. cd build
+    iv. cmake -B . -S ../
+    v. cmake --build .
+3.  
+
+# Build Instructions
+1. mkdir build
+2. cd build
+3. cmake -B . -S ../ --preset vcpkg
+4. cmake --build .
+

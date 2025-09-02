@@ -1,4 +1,3 @@
-#pragma once
 #include <string>
 #define SDL_MAIN_HANDLED
 #include "../sdl3webgpu.hpp"

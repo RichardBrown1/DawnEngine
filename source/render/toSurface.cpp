@@ -1,4 +1,3 @@
-#pragma once
 #include "toSurface.hpp"
 #include <array>
 #include "../device/device.hpp"

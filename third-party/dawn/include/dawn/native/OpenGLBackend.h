@@ -1,4 +1,4 @@
-// Copyright 2023 The Dawn & Tint Authors
+// Copyright 2018 The Dawn & Tint Authors
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -25,35 +25,58 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef INCLUDE_DAWN_NATIVE_D3DBACKEND_H_
-#define INCLUDE_DAWN_NATIVE_D3DBACKEND_H_
-
-#include <dxgi1_4.h>
-#include <webgpu/webgpu_cpp_chained_struct.h>
-#include <windows.h>
-#include <wrl/client.h>
-
-#include <memory>
-#include <vector>
+#ifndef INCLUDE_DAWN_NATIVE_OPENGLBACKEND_H_
+#define INCLUDE_DAWN_NATIVE_OPENGLBACKEND_H_
 
 #include "dawn/native/DawnNative.h"
+#include "webgpu/webgpu_cpp_chained_struct.h"
 
-namespace dawn::native::d3d {
+namespace dawn::native::opengl {
 
-class ExternalImageDXGIImpl;
+using EGLDisplay = void*;
+using EGLImage = void*;
+using GLuint = unsigned int;
 
-DAWN_NATIVE_EXPORT Microsoft::WRL::ComPtr<IDXGIAdapter> GetDXGIAdapter(WGPUAdapter adapter);
+// Define a GetProc function pointer that mirrors the one in egl.h
+#if defined(_WIN32)
+#define DAWN_STDCALL __stdcall
+#else  // defined(_WIN32)
+#define DAWN_STDCALL
+#endif  // defined(_WIN32)
+
+using EGLFunctionPointerType = void (*)();
+// NOLINTNEXTLINE(readability/casting): cpplint thinks this is a C-style cast but it isn't.
+using EGLGetProcProc = EGLFunctionPointerType(DAWN_STDCALL*)(const char*);
+#undef DAWN_STDCALL
 
 // Can be chained in WGPURequestAdapterOptions
-struct DAWN_NATIVE_EXPORT RequestAdapterOptionsLUID : wgpu::ChainedStruct {
-    RequestAdapterOptionsLUID();
+struct DAWN_NATIVE_EXPORT RequestAdapterOptionsGetGLProc : wgpu::ChainedStruct {
+    RequestAdapterOptionsGetGLProc();
 
-    ::LUID adapterLUID;
+    EGLGetProcProc getProc;
+    EGLDisplay display;
 };
 
-// Chrome uses 0 as acquire key.
-static constexpr uint64_t kDXGIKeyedMutexAcquireKey = 0;
+struct DAWN_NATIVE_EXPORT ExternalImageDescriptorEGLImage : ExternalImageDescriptor {
+  public:
+    ExternalImageDescriptorEGLImage();
 
-}  // namespace dawn::native::d3d
+    EGLImage image;
+};
 
-#endif  // INCLUDE_DAWN_NATIVE_D3DBACKEND_H_
+DAWN_NATIVE_EXPORT WGPUTexture
+WrapExternalEGLImage(WGPUDevice device, const ExternalImageDescriptorEGLImage* descriptor);
+
+struct DAWN_NATIVE_EXPORT ExternalImageDescriptorGLTexture : ExternalImageDescriptor {
+  public:
+    ExternalImageDescriptorGLTexture();
+
+    GLuint texture;
+};
+
+DAWN_NATIVE_EXPORT WGPUTexture
+WrapExternalGLTexture(WGPUDevice device, const ExternalImageDescriptorGLTexture* descriptor);
+
+}  // namespace dawn::native::opengl
+
+#endif  // INCLUDE_DAWN_NATIVE_OPENGLBACKEND_H_

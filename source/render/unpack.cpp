@@ -1,4 +1,3 @@
-#pragma once
 #include "unpack.hpp"
 #include <array>
 #include "../device/device.hpp"

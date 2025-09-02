@@ -62,21 +62,6 @@ static constexpr size_t kStrlen = WGPU_STRLEN;
 static constexpr size_t kWholeMapSize = WGPU_WHOLE_MAP_SIZE;
 static constexpr uint64_t kWholeSize = WGPU_WHOLE_SIZE;
 
-enum class WGSLLanguageFeatureName : uint32_t {
-    ReadonlyAndReadwriteStorageTextures = WGPUWGSLLanguageFeatureName_ReadonlyAndReadwriteStorageTextures,
-    Packed4x8IntegerDotProduct = WGPUWGSLLanguageFeatureName_Packed4x8IntegerDotProduct,
-    UnrestrictedPointerParameters = WGPUWGSLLanguageFeatureName_UnrestrictedPointerParameters,
-    PointerCompositeAccess = WGPUWGSLLanguageFeatureName_PointerCompositeAccess,
-    SizedBindingArray = WGPUWGSLLanguageFeatureName_SizedBindingArray,
-    ChromiumTestingUnimplemented = WGPUWGSLLanguageFeatureName_ChromiumTestingUnimplemented,
-    ChromiumTestingUnsafeExperimental = WGPUWGSLLanguageFeatureName_ChromiumTestingUnsafeExperimental,
-    ChromiumTestingExperimental = WGPUWGSLLanguageFeatureName_ChromiumTestingExperimental,
-    ChromiumTestingShippedWithKillswitch = WGPUWGSLLanguageFeatureName_ChromiumTestingShippedWithKillswitch,
-    ChromiumTestingShipped = WGPUWGSLLanguageFeatureName_ChromiumTestingShipped,
-};
-static_assert(sizeof(WGSLLanguageFeatureName) == sizeof(WGPUWGSLLanguageFeatureName), "sizeof mismatch for WGSLLanguageFeatureName");
-static_assert(alignof(WGSLLanguageFeatureName) == alignof(WGPUWGSLLanguageFeatureName), "alignof mismatch for WGSLLanguageFeatureName");
-
 enum class AdapterType : uint32_t {
     DiscreteGPU = WGPUAdapterType_DiscreteGPU,
     IntegratedGPU = WGPUAdapterType_IntegratedGPU,
@@ -206,6 +191,18 @@ enum class CompilationMessageType : uint32_t {
 static_assert(sizeof(CompilationMessageType) == sizeof(WGPUCompilationMessageType), "sizeof mismatch for CompilationMessageType");
 static_assert(alignof(CompilationMessageType) == alignof(WGPUCompilationMessageType), "alignof mismatch for CompilationMessageType");
 
+enum class ComponentSwizzle : uint32_t {
+    Undefined = WGPUComponentSwizzle_Undefined,
+    Zero = WGPUComponentSwizzle_Zero,
+    One = WGPUComponentSwizzle_One,
+    R = WGPUComponentSwizzle_R,
+    G = WGPUComponentSwizzle_G,
+    B = WGPUComponentSwizzle_B,
+    A = WGPUComponentSwizzle_A,
+};
+static_assert(sizeof(ComponentSwizzle) == sizeof(WGPUComponentSwizzle), "sizeof mismatch for ComponentSwizzle");
+static_assert(alignof(ComponentSwizzle) == alignof(WGPUComponentSwizzle), "alignof mismatch for ComponentSwizzle");
+
 enum class CompositeAlphaMode : uint32_t {
     Auto = WGPUCompositeAlphaMode_Auto,
     Opaque = WGPUCompositeAlphaMode_Opaque,
@@ -279,14 +276,15 @@ static_assert(sizeof(FeatureLevel) == sizeof(WGPUFeatureLevel), "sizeof mismatch
 static_assert(alignof(FeatureLevel) == alignof(WGPUFeatureLevel), "alignof mismatch for FeatureLevel");
 
 enum class FeatureName : uint32_t {
+    CoreFeaturesAndLimits = WGPUFeatureName_CoreFeaturesAndLimits,
     DepthClipControl = WGPUFeatureName_DepthClipControl,
     Depth32FloatStencil8 = WGPUFeatureName_Depth32FloatStencil8,
-    TimestampQuery = WGPUFeatureName_TimestampQuery,
     TextureCompressionBC = WGPUFeatureName_TextureCompressionBC,
     TextureCompressionBCSliced3D = WGPUFeatureName_TextureCompressionBCSliced3D,
     TextureCompressionETC2 = WGPUFeatureName_TextureCompressionETC2,
     TextureCompressionASTC = WGPUFeatureName_TextureCompressionASTC,
     TextureCompressionASTCSliced3D = WGPUFeatureName_TextureCompressionASTCSliced3D,
+    TimestampQuery = WGPUFeatureName_TimestampQuery,
     IndirectFirstInstance = WGPUFeatureName_IndirectFirstInstance,
     ShaderF16 = WGPUFeatureName_ShaderF16,
     RG11B10UfloatRenderable = WGPUFeatureName_RG11B10UfloatRenderable,
@@ -296,13 +294,13 @@ enum class FeatureName : uint32_t {
     ClipDistances = WGPUFeatureName_ClipDistances,
     DualSourceBlending = WGPUFeatureName_DualSourceBlending,
     Subgroups = WGPUFeatureName_Subgroups,
-    CoreFeaturesAndLimits = WGPUFeatureName_CoreFeaturesAndLimits,
+    TextureFormatsTier1 = WGPUFeatureName_TextureFormatsTier1,
+    TextureFormatsTier2 = WGPUFeatureName_TextureFormatsTier2,
     DawnInternalUsages = WGPUFeatureName_DawnInternalUsages,
     DawnMultiPlanarFormats = WGPUFeatureName_DawnMultiPlanarFormats,
     DawnNative = WGPUFeatureName_DawnNative,
     ChromiumExperimentalTimestampQueryInsidePasses = WGPUFeatureName_ChromiumExperimentalTimestampQueryInsidePasses,
     ImplicitDeviceSynchronization = WGPUFeatureName_ImplicitDeviceSynchronization,
-    ChromiumExperimentalImmediateData = WGPUFeatureName_ChromiumExperimentalImmediateData,
     TransientAttachments = WGPUFeatureName_TransientAttachments,
     MSAARenderToSingleSampled = WGPUFeatureName_MSAARenderToSingleSampled,
     D3D11MultithreadProtected = WGPUFeatureName_D3D11MultithreadProtected,
@@ -355,6 +353,7 @@ enum class FeatureName : uint32_t {
     ChromiumExperimentalSubgroupMatrix = WGPUFeatureName_ChromiumExperimentalSubgroupMatrix,
     SharedFenceEGLSync = WGPUFeatureName_SharedFenceEGLSync,
     DawnDeviceAllocatorControl = WGPUFeatureName_DawnDeviceAllocatorControl,
+    TextureComponentSwizzle = WGPUFeatureName_TextureComponentSwizzle,
 };
 static_assert(sizeof(FeatureName) == sizeof(WGPUFeatureName), "sizeof mismatch for FeatureName");
 static_assert(alignof(FeatureName) == alignof(WGPUFeatureName), "alignof mismatch for FeatureName");
@@ -382,6 +381,14 @@ enum class IndexFormat : uint32_t {
 };
 static_assert(sizeof(IndexFormat) == sizeof(WGPUIndexFormat), "sizeof mismatch for IndexFormat");
 static_assert(alignof(IndexFormat) == alignof(WGPUIndexFormat), "alignof mismatch for IndexFormat");
+
+enum class InstanceFeatureName : uint32_t {
+    TimedWaitAny = WGPUInstanceFeatureName_TimedWaitAny,
+    ShaderSourceSPIRV = WGPUInstanceFeatureName_ShaderSourceSPIRV,
+    MultipleDevicesPerAdapter = WGPUInstanceFeatureName_MultipleDevicesPerAdapter,
+};
+static_assert(sizeof(InstanceFeatureName) == sizeof(WGPUInstanceFeatureName), "sizeof mismatch for InstanceFeatureName");
+static_assert(alignof(InstanceFeatureName) == alignof(WGPUInstanceFeatureName), "alignof mismatch for InstanceFeatureName");
 
 enum class LoadOp : uint32_t {
     Undefined = WGPULoadOp_Undefined,
@@ -433,6 +440,13 @@ enum class PowerPreference : uint32_t {
 };
 static_assert(sizeof(PowerPreference) == sizeof(WGPUPowerPreference), "sizeof mismatch for PowerPreference");
 static_assert(alignof(PowerPreference) == alignof(WGPUPowerPreference), "alignof mismatch for PowerPreference");
+
+enum class PredefinedColorSpace : uint32_t {
+    SRGB = WGPUPredefinedColorSpace_SRGB,
+    DisplayP3 = WGPUPredefinedColorSpace_DisplayP3,
+};
+static_assert(sizeof(PredefinedColorSpace) == sizeof(WGPUPredefinedColorSpace), "sizeof mismatch for PredefinedColorSpace");
+static_assert(alignof(PredefinedColorSpace) == alignof(WGPUPredefinedColorSpace), "alignof mismatch for PredefinedColorSpace");
 
 enum class PresentMode : uint32_t {
     Undefined = WGPUPresentMode_Undefined,
@@ -486,90 +500,6 @@ enum class RequestDeviceStatus : uint32_t {
 };
 static_assert(sizeof(RequestDeviceStatus) == sizeof(WGPURequestDeviceStatus), "sizeof mismatch for RequestDeviceStatus");
 static_assert(alignof(RequestDeviceStatus) == alignof(WGPURequestDeviceStatus), "alignof mismatch for RequestDeviceStatus");
-
-enum class SType : uint32_t {
-    ShaderSourceSPIRV = WGPUSType_ShaderSourceSPIRV,
-    ShaderSourceWGSL = WGPUSType_ShaderSourceWGSL,
-    RenderPassMaxDrawCount = WGPUSType_RenderPassMaxDrawCount,
-    SurfaceSourceMetalLayer = WGPUSType_SurfaceSourceMetalLayer,
-    SurfaceSourceWindowsHWND = WGPUSType_SurfaceSourceWindowsHWND,
-    SurfaceSourceXlibWindow = WGPUSType_SurfaceSourceXlibWindow,
-    SurfaceSourceWaylandSurface = WGPUSType_SurfaceSourceWaylandSurface,
-    SurfaceSourceAndroidNativeWindow = WGPUSType_SurfaceSourceAndroidNativeWindow,
-    SurfaceSourceXCBWindow = WGPUSType_SurfaceSourceXCBWindow,
-    AdapterPropertiesSubgroups = WGPUSType_AdapterPropertiesSubgroups,
-    BindGroupLayoutEntryArraySize = WGPUSType_BindGroupLayoutEntryArraySize,
-    TextureBindingViewDimensionDescriptor = WGPUSType_TextureBindingViewDimensionDescriptor,
-    SurfaceDescriptorFromWindowsCoreWindow = WGPUSType_SurfaceDescriptorFromWindowsCoreWindow,
-    ExternalTextureBindingEntry = WGPUSType_ExternalTextureBindingEntry,
-    ExternalTextureBindingLayout = WGPUSType_ExternalTextureBindingLayout,
-    SurfaceDescriptorFromWindowsUWPSwapChainPanel = WGPUSType_SurfaceDescriptorFromWindowsUWPSwapChainPanel,
-    DawnTextureInternalUsageDescriptor = WGPUSType_DawnTextureInternalUsageDescriptor,
-    DawnEncoderInternalUsageDescriptor = WGPUSType_DawnEncoderInternalUsageDescriptor,
-    DawnInstanceDescriptor = WGPUSType_DawnInstanceDescriptor,
-    DawnCacheDeviceDescriptor = WGPUSType_DawnCacheDeviceDescriptor,
-    DawnAdapterPropertiesPowerPreference = WGPUSType_DawnAdapterPropertiesPowerPreference,
-    DawnBufferDescriptorErrorInfoFromWireClient = WGPUSType_DawnBufferDescriptorErrorInfoFromWireClient,
-    DawnTogglesDescriptor = WGPUSType_DawnTogglesDescriptor,
-    DawnShaderModuleSPIRVOptionsDescriptor = WGPUSType_DawnShaderModuleSPIRVOptionsDescriptor,
-    RequestAdapterOptionsLUID = WGPUSType_RequestAdapterOptionsLUID,
-    RequestAdapterOptionsGetGLProc = WGPUSType_RequestAdapterOptionsGetGLProc,
-    RequestAdapterOptionsD3D11Device = WGPUSType_RequestAdapterOptionsD3D11Device,
-    DawnRenderPassColorAttachmentRenderToSingleSampled = WGPUSType_DawnRenderPassColorAttachmentRenderToSingleSampled,
-    RenderPassPixelLocalStorage = WGPUSType_RenderPassPixelLocalStorage,
-    PipelineLayoutPixelLocalStorage = WGPUSType_PipelineLayoutPixelLocalStorage,
-    BufferHostMappedPointer = WGPUSType_BufferHostMappedPointer,
-    AdapterPropertiesMemoryHeaps = WGPUSType_AdapterPropertiesMemoryHeaps,
-    AdapterPropertiesD3D = WGPUSType_AdapterPropertiesD3D,
-    AdapterPropertiesVk = WGPUSType_AdapterPropertiesVk,
-    DawnWireWGSLControl = WGPUSType_DawnWireWGSLControl,
-    DawnWGSLBlocklist = WGPUSType_DawnWGSLBlocklist,
-    DawnDrmFormatCapabilities = WGPUSType_DawnDrmFormatCapabilities,
-    ShaderModuleCompilationOptions = WGPUSType_ShaderModuleCompilationOptions,
-    ColorTargetStateExpandResolveTextureDawn = WGPUSType_ColorTargetStateExpandResolveTextureDawn,
-    RenderPassDescriptorExpandResolveRect = WGPUSType_RenderPassDescriptorExpandResolveRect,
-    SharedTextureMemoryVkDedicatedAllocationDescriptor = WGPUSType_SharedTextureMemoryVkDedicatedAllocationDescriptor,
-    SharedTextureMemoryAHardwareBufferDescriptor = WGPUSType_SharedTextureMemoryAHardwareBufferDescriptor,
-    SharedTextureMemoryDmaBufDescriptor = WGPUSType_SharedTextureMemoryDmaBufDescriptor,
-    SharedTextureMemoryOpaqueFDDescriptor = WGPUSType_SharedTextureMemoryOpaqueFDDescriptor,
-    SharedTextureMemoryZirconHandleDescriptor = WGPUSType_SharedTextureMemoryZirconHandleDescriptor,
-    SharedTextureMemoryDXGISharedHandleDescriptor = WGPUSType_SharedTextureMemoryDXGISharedHandleDescriptor,
-    SharedTextureMemoryD3D11Texture2DDescriptor = WGPUSType_SharedTextureMemoryD3D11Texture2DDescriptor,
-    SharedTextureMemoryIOSurfaceDescriptor = WGPUSType_SharedTextureMemoryIOSurfaceDescriptor,
-    SharedTextureMemoryEGLImageDescriptor = WGPUSType_SharedTextureMemoryEGLImageDescriptor,
-    SharedTextureMemoryInitializedBeginState = WGPUSType_SharedTextureMemoryInitializedBeginState,
-    SharedTextureMemoryInitializedEndState = WGPUSType_SharedTextureMemoryInitializedEndState,
-    SharedTextureMemoryVkImageLayoutBeginState = WGPUSType_SharedTextureMemoryVkImageLayoutBeginState,
-    SharedTextureMemoryVkImageLayoutEndState = WGPUSType_SharedTextureMemoryVkImageLayoutEndState,
-    SharedTextureMemoryD3DSwapchainBeginState = WGPUSType_SharedTextureMemoryD3DSwapchainBeginState,
-    SharedFenceVkSemaphoreOpaqueFDDescriptor = WGPUSType_SharedFenceVkSemaphoreOpaqueFDDescriptor,
-    SharedFenceVkSemaphoreOpaqueFDExportInfo = WGPUSType_SharedFenceVkSemaphoreOpaqueFDExportInfo,
-    SharedFenceSyncFDDescriptor = WGPUSType_SharedFenceSyncFDDescriptor,
-    SharedFenceSyncFDExportInfo = WGPUSType_SharedFenceSyncFDExportInfo,
-    SharedFenceVkSemaphoreZirconHandleDescriptor = WGPUSType_SharedFenceVkSemaphoreZirconHandleDescriptor,
-    SharedFenceVkSemaphoreZirconHandleExportInfo = WGPUSType_SharedFenceVkSemaphoreZirconHandleExportInfo,
-    SharedFenceDXGISharedHandleDescriptor = WGPUSType_SharedFenceDXGISharedHandleDescriptor,
-    SharedFenceDXGISharedHandleExportInfo = WGPUSType_SharedFenceDXGISharedHandleExportInfo,
-    SharedFenceMTLSharedEventDescriptor = WGPUSType_SharedFenceMTLSharedEventDescriptor,
-    SharedFenceMTLSharedEventExportInfo = WGPUSType_SharedFenceMTLSharedEventExportInfo,
-    SharedBufferMemoryD3D12ResourceDescriptor = WGPUSType_SharedBufferMemoryD3D12ResourceDescriptor,
-    StaticSamplerBindingLayout = WGPUSType_StaticSamplerBindingLayout,
-    YCbCrVkDescriptor = WGPUSType_YCbCrVkDescriptor,
-    SharedTextureMemoryAHardwareBufferProperties = WGPUSType_SharedTextureMemoryAHardwareBufferProperties,
-    AHardwareBufferProperties = WGPUSType_AHardwareBufferProperties,
-    DawnExperimentalImmediateDataLimits = WGPUSType_DawnExperimentalImmediateDataLimits,
-    DawnTexelCopyBufferRowAlignmentLimits = WGPUSType_DawnTexelCopyBufferRowAlignmentLimits,
-    AdapterPropertiesSubgroupMatrixConfigs = WGPUSType_AdapterPropertiesSubgroupMatrixConfigs,
-    SharedFenceEGLSyncDescriptor = WGPUSType_SharedFenceEGLSyncDescriptor,
-    SharedFenceEGLSyncExportInfo = WGPUSType_SharedFenceEGLSyncExportInfo,
-    DawnInjectedInvalidSType = WGPUSType_DawnInjectedInvalidSType,
-    DawnCompilationMessageUtf16 = WGPUSType_DawnCompilationMessageUtf16,
-    DawnFakeBufferOOMForTesting = WGPUSType_DawnFakeBufferOOMForTesting,
-    SurfaceDescriptorFromWindowsWinUISwapChainPanel = WGPUSType_SurfaceDescriptorFromWindowsWinUISwapChainPanel,
-    DawnDeviceAllocatorControl = WGPUSType_DawnDeviceAllocatorControl,
-};
-static_assert(sizeof(SType) == sizeof(WGPUSType), "sizeof mismatch for SType");
-static_assert(alignof(SType) == alignof(WGPUSType), "alignof mismatch for SType");
 
 enum class SamplerBindingType : uint32_t {
     BindingNotUsed = WGPUSamplerBindingType_BindingNotUsed,
@@ -631,11 +561,103 @@ enum class StoreOp : uint32_t {
 static_assert(sizeof(StoreOp) == sizeof(WGPUStoreOp), "sizeof mismatch for StoreOp");
 static_assert(alignof(StoreOp) == alignof(WGPUStoreOp), "alignof mismatch for StoreOp");
 
+enum class SType : uint32_t {
+    ShaderSourceSPIRV = WGPUSType_ShaderSourceSPIRV,
+    ShaderSourceWGSL = WGPUSType_ShaderSourceWGSL,
+    RenderPassMaxDrawCount = WGPUSType_RenderPassMaxDrawCount,
+    SurfaceSourceMetalLayer = WGPUSType_SurfaceSourceMetalLayer,
+    SurfaceSourceWindowsHWND = WGPUSType_SurfaceSourceWindowsHWND,
+    SurfaceSourceXlibWindow = WGPUSType_SurfaceSourceXlibWindow,
+    SurfaceSourceWaylandSurface = WGPUSType_SurfaceSourceWaylandSurface,
+    SurfaceSourceAndroidNativeWindow = WGPUSType_SurfaceSourceAndroidNativeWindow,
+    SurfaceSourceXCBWindow = WGPUSType_SurfaceSourceXCBWindow,
+    SurfaceColorManagement = WGPUSType_SurfaceColorManagement,
+    RequestAdapterWebXROptions = WGPUSType_RequestAdapterWebXROptions,
+    CompatibilityModeLimits = WGPUSType_CompatibilityModeLimits,
+    TextureBindingViewDimensionDescriptor = WGPUSType_TextureBindingViewDimensionDescriptor,
+    SurfaceDescriptorFromWindowsCoreWindow = WGPUSType_SurfaceDescriptorFromWindowsCoreWindow,
+    ExternalTextureBindingEntry = WGPUSType_ExternalTextureBindingEntry,
+    ExternalTextureBindingLayout = WGPUSType_ExternalTextureBindingLayout,
+    SurfaceDescriptorFromWindowsUWPSwapChainPanel = WGPUSType_SurfaceDescriptorFromWindowsUWPSwapChainPanel,
+    DawnTextureInternalUsageDescriptor = WGPUSType_DawnTextureInternalUsageDescriptor,
+    DawnEncoderInternalUsageDescriptor = WGPUSType_DawnEncoderInternalUsageDescriptor,
+    DawnInstanceDescriptor = WGPUSType_DawnInstanceDescriptor,
+    DawnCacheDeviceDescriptor = WGPUSType_DawnCacheDeviceDescriptor,
+    DawnAdapterPropertiesPowerPreference = WGPUSType_DawnAdapterPropertiesPowerPreference,
+    DawnBufferDescriptorErrorInfoFromWireClient = WGPUSType_DawnBufferDescriptorErrorInfoFromWireClient,
+    DawnTogglesDescriptor = WGPUSType_DawnTogglesDescriptor,
+    DawnShaderModuleSPIRVOptionsDescriptor = WGPUSType_DawnShaderModuleSPIRVOptionsDescriptor,
+    RequestAdapterOptionsLUID = WGPUSType_RequestAdapterOptionsLUID,
+    RequestAdapterOptionsGetGLProc = WGPUSType_RequestAdapterOptionsGetGLProc,
+    RequestAdapterOptionsD3D11Device = WGPUSType_RequestAdapterOptionsD3D11Device,
+    DawnRenderPassColorAttachmentRenderToSingleSampled = WGPUSType_DawnRenderPassColorAttachmentRenderToSingleSampled,
+    RenderPassPixelLocalStorage = WGPUSType_RenderPassPixelLocalStorage,
+    PipelineLayoutPixelLocalStorage = WGPUSType_PipelineLayoutPixelLocalStorage,
+    BufferHostMappedPointer = WGPUSType_BufferHostMappedPointer,
+    AdapterPropertiesMemoryHeaps = WGPUSType_AdapterPropertiesMemoryHeaps,
+    AdapterPropertiesD3D = WGPUSType_AdapterPropertiesD3D,
+    AdapterPropertiesVk = WGPUSType_AdapterPropertiesVk,
+    DawnWireWGSLControl = WGPUSType_DawnWireWGSLControl,
+    DawnWGSLBlocklist = WGPUSType_DawnWGSLBlocklist,
+    DawnDrmFormatCapabilities = WGPUSType_DawnDrmFormatCapabilities,
+    ShaderModuleCompilationOptions = WGPUSType_ShaderModuleCompilationOptions,
+    ColorTargetStateExpandResolveTextureDawn = WGPUSType_ColorTargetStateExpandResolveTextureDawn,
+    RenderPassDescriptorExpandResolveRect = WGPUSType_RenderPassDescriptorExpandResolveRect,
+    SharedTextureMemoryVkDedicatedAllocationDescriptor = WGPUSType_SharedTextureMemoryVkDedicatedAllocationDescriptor,
+    SharedTextureMemoryAHardwareBufferDescriptor = WGPUSType_SharedTextureMemoryAHardwareBufferDescriptor,
+    SharedTextureMemoryDmaBufDescriptor = WGPUSType_SharedTextureMemoryDmaBufDescriptor,
+    SharedTextureMemoryOpaqueFDDescriptor = WGPUSType_SharedTextureMemoryOpaqueFDDescriptor,
+    SharedTextureMemoryZirconHandleDescriptor = WGPUSType_SharedTextureMemoryZirconHandleDescriptor,
+    SharedTextureMemoryDXGISharedHandleDescriptor = WGPUSType_SharedTextureMemoryDXGISharedHandleDescriptor,
+    SharedTextureMemoryD3D11Texture2DDescriptor = WGPUSType_SharedTextureMemoryD3D11Texture2DDescriptor,
+    SharedTextureMemoryIOSurfaceDescriptor = WGPUSType_SharedTextureMemoryIOSurfaceDescriptor,
+    SharedTextureMemoryEGLImageDescriptor = WGPUSType_SharedTextureMemoryEGLImageDescriptor,
+    SharedTextureMemoryInitializedBeginState = WGPUSType_SharedTextureMemoryInitializedBeginState,
+    SharedTextureMemoryInitializedEndState = WGPUSType_SharedTextureMemoryInitializedEndState,
+    SharedTextureMemoryVkImageLayoutBeginState = WGPUSType_SharedTextureMemoryVkImageLayoutBeginState,
+    SharedTextureMemoryVkImageLayoutEndState = WGPUSType_SharedTextureMemoryVkImageLayoutEndState,
+    SharedTextureMemoryD3DSwapchainBeginState = WGPUSType_SharedTextureMemoryD3DSwapchainBeginState,
+    SharedFenceVkSemaphoreOpaqueFDDescriptor = WGPUSType_SharedFenceVkSemaphoreOpaqueFDDescriptor,
+    SharedFenceVkSemaphoreOpaqueFDExportInfo = WGPUSType_SharedFenceVkSemaphoreOpaqueFDExportInfo,
+    SharedFenceSyncFDDescriptor = WGPUSType_SharedFenceSyncFDDescriptor,
+    SharedFenceSyncFDExportInfo = WGPUSType_SharedFenceSyncFDExportInfo,
+    SharedFenceVkSemaphoreZirconHandleDescriptor = WGPUSType_SharedFenceVkSemaphoreZirconHandleDescriptor,
+    SharedFenceVkSemaphoreZirconHandleExportInfo = WGPUSType_SharedFenceVkSemaphoreZirconHandleExportInfo,
+    SharedFenceDXGISharedHandleDescriptor = WGPUSType_SharedFenceDXGISharedHandleDescriptor,
+    SharedFenceDXGISharedHandleExportInfo = WGPUSType_SharedFenceDXGISharedHandleExportInfo,
+    SharedFenceMTLSharedEventDescriptor = WGPUSType_SharedFenceMTLSharedEventDescriptor,
+    SharedFenceMTLSharedEventExportInfo = WGPUSType_SharedFenceMTLSharedEventExportInfo,
+    SharedBufferMemoryD3D12ResourceDescriptor = WGPUSType_SharedBufferMemoryD3D12ResourceDescriptor,
+    StaticSamplerBindingLayout = WGPUSType_StaticSamplerBindingLayout,
+    YCbCrVkDescriptor = WGPUSType_YCbCrVkDescriptor,
+    SharedTextureMemoryAHardwareBufferProperties = WGPUSType_SharedTextureMemoryAHardwareBufferProperties,
+    AHardwareBufferProperties = WGPUSType_AHardwareBufferProperties,
+    DawnTexelCopyBufferRowAlignmentLimits = WGPUSType_DawnTexelCopyBufferRowAlignmentLimits,
+    AdapterPropertiesSubgroupMatrixConfigs = WGPUSType_AdapterPropertiesSubgroupMatrixConfigs,
+    SharedFenceEGLSyncDescriptor = WGPUSType_SharedFenceEGLSyncDescriptor,
+    SharedFenceEGLSyncExportInfo = WGPUSType_SharedFenceEGLSyncExportInfo,
+    DawnInjectedInvalidSType = WGPUSType_DawnInjectedInvalidSType,
+    DawnCompilationMessageUtf16 = WGPUSType_DawnCompilationMessageUtf16,
+    DawnFakeBufferOOMForTesting = WGPUSType_DawnFakeBufferOOMForTesting,
+    SurfaceDescriptorFromWindowsWinUISwapChainPanel = WGPUSType_SurfaceDescriptorFromWindowsWinUISwapChainPanel,
+    DawnDeviceAllocatorControl = WGPUSType_DawnDeviceAllocatorControl,
+    DawnHostMappedPointerLimits = WGPUSType_DawnHostMappedPointerLimits,
+    RenderPassDescriptorResolveRect = WGPUSType_RenderPassDescriptorResolveRect,
+    RequestAdapterWebGPUBackendOptions = WGPUSType_RequestAdapterWebGPUBackendOptions,
+    DawnFakeDeviceInitializeErrorForTesting = WGPUSType_DawnFakeDeviceInitializeErrorForTesting,
+    TextureComponentSwizzleDescriptor = WGPUSType_TextureComponentSwizzleDescriptor,
+    SharedTextureMemoryD3D11BeginState = WGPUSType_SharedTextureMemoryD3D11BeginState,
+};
+static_assert(sizeof(SType) == sizeof(WGPUSType), "sizeof mismatch for SType");
+static_assert(alignof(SType) == alignof(WGPUSType), "alignof mismatch for SType");
+
 enum class SubgroupMatrixComponentType : uint32_t {
     F32 = WGPUSubgroupMatrixComponentType_F32,
     F16 = WGPUSubgroupMatrixComponentType_F16,
     U32 = WGPUSubgroupMatrixComponentType_U32,
     I32 = WGPUSubgroupMatrixComponentType_I32,
+    U8 = WGPUSubgroupMatrixComponentType_U8,
+    I8 = WGPUSubgroupMatrixComponentType_I8,
 };
 static_assert(sizeof(SubgroupMatrixComponentType) == sizeof(WGPUSubgroupMatrixComponentType), "sizeof mismatch for SubgroupMatrixComponentType");
 static_assert(alignof(SubgroupMatrixComponentType) == alignof(WGPUSubgroupMatrixComponentType), "alignof mismatch for SubgroupMatrixComponentType");
@@ -678,6 +700,8 @@ enum class TextureFormat : uint32_t {
     R8Snorm = WGPUTextureFormat_R8Snorm,
     R8Uint = WGPUTextureFormat_R8Uint,
     R8Sint = WGPUTextureFormat_R8Sint,
+    R16Unorm = WGPUTextureFormat_R16Unorm,
+    R16Snorm = WGPUTextureFormat_R16Snorm,
     R16Uint = WGPUTextureFormat_R16Uint,
     R16Sint = WGPUTextureFormat_R16Sint,
     R16Float = WGPUTextureFormat_R16Float,
@@ -688,6 +712,8 @@ enum class TextureFormat : uint32_t {
     R32Float = WGPUTextureFormat_R32Float,
     R32Uint = WGPUTextureFormat_R32Uint,
     R32Sint = WGPUTextureFormat_R32Sint,
+    RG16Unorm = WGPUTextureFormat_RG16Unorm,
+    RG16Snorm = WGPUTextureFormat_RG16Snorm,
     RG16Uint = WGPUTextureFormat_RG16Uint,
     RG16Sint = WGPUTextureFormat_RG16Sint,
     RG16Float = WGPUTextureFormat_RG16Float,
@@ -705,6 +731,8 @@ enum class TextureFormat : uint32_t {
     RG32Float = WGPUTextureFormat_RG32Float,
     RG32Uint = WGPUTextureFormat_RG32Uint,
     RG32Sint = WGPUTextureFormat_RG32Sint,
+    RGBA16Unorm = WGPUTextureFormat_RGBA16Unorm,
+    RGBA16Snorm = WGPUTextureFormat_RGBA16Snorm,
     RGBA16Uint = WGPUTextureFormat_RGBA16Uint,
     RGBA16Sint = WGPUTextureFormat_RGBA16Sint,
     RGBA16Float = WGPUTextureFormat_RGBA16Float,
@@ -769,12 +797,6 @@ enum class TextureFormat : uint32_t {
     ASTC12x10UnormSrgb = WGPUTextureFormat_ASTC12x10UnormSrgb,
     ASTC12x12Unorm = WGPUTextureFormat_ASTC12x12Unorm,
     ASTC12x12UnormSrgb = WGPUTextureFormat_ASTC12x12UnormSrgb,
-    R16Unorm = WGPUTextureFormat_R16Unorm,
-    RG16Unorm = WGPUTextureFormat_RG16Unorm,
-    RGBA16Unorm = WGPUTextureFormat_RGBA16Unorm,
-    R16Snorm = WGPUTextureFormat_R16Snorm,
-    RG16Snorm = WGPUTextureFormat_RG16Snorm,
-    RGBA16Snorm = WGPUTextureFormat_RGBA16Snorm,
     R8BG8Biplanar420Unorm = WGPUTextureFormat_R8BG8Biplanar420Unorm,
     R10X6BG10X6Biplanar420Unorm = WGPUTextureFormat_R10X6BG10X6Biplanar420Unorm,
     R8BG8A8Triplanar420Unorm = WGPUTextureFormat_R8BG8A8Triplanar420Unorm,
@@ -810,6 +832,13 @@ enum class TextureViewDimension : uint32_t {
 };
 static_assert(sizeof(TextureViewDimension) == sizeof(WGPUTextureViewDimension), "sizeof mismatch for TextureViewDimension");
 static_assert(alignof(TextureViewDimension) == alignof(WGPUTextureViewDimension), "alignof mismatch for TextureViewDimension");
+
+enum class ToneMappingMode : uint32_t {
+    Standard = WGPUToneMappingMode_Standard,
+    Extended = WGPUToneMappingMode_Extended,
+};
+static_assert(sizeof(ToneMappingMode) == sizeof(WGPUToneMappingMode), "sizeof mismatch for ToneMappingMode");
+static_assert(alignof(ToneMappingMode) == alignof(WGPUToneMappingMode), "alignof mismatch for ToneMappingMode");
 
 enum class VertexFormat : uint32_t {
     Uint8 = WGPUVertexFormat_Uint8,
@@ -872,6 +901,22 @@ enum class WaitStatus : uint32_t {
 };
 static_assert(sizeof(WaitStatus) == sizeof(WGPUWaitStatus), "sizeof mismatch for WaitStatus");
 static_assert(alignof(WaitStatus) == alignof(WGPUWaitStatus), "alignof mismatch for WaitStatus");
+
+enum class WGSLLanguageFeatureName : uint32_t {
+    ReadonlyAndReadwriteStorageTextures = WGPUWGSLLanguageFeatureName_ReadonlyAndReadwriteStorageTextures,
+    Packed4x8IntegerDotProduct = WGPUWGSLLanguageFeatureName_Packed4x8IntegerDotProduct,
+    UnrestrictedPointerParameters = WGPUWGSLLanguageFeatureName_UnrestrictedPointerParameters,
+    PointerCompositeAccess = WGPUWGSLLanguageFeatureName_PointerCompositeAccess,
+    SizedBindingArray = WGPUWGSLLanguageFeatureName_SizedBindingArray,
+    TexelBuffers = WGPUWGSLLanguageFeatureName_TexelBuffers,
+    ChromiumTestingUnimplemented = WGPUWGSLLanguageFeatureName_ChromiumTestingUnimplemented,
+    ChromiumTestingUnsafeExperimental = WGPUWGSLLanguageFeatureName_ChromiumTestingUnsafeExperimental,
+    ChromiumTestingExperimental = WGPUWGSLLanguageFeatureName_ChromiumTestingExperimental,
+    ChromiumTestingShippedWithKillswitch = WGPUWGSLLanguageFeatureName_ChromiumTestingShippedWithKillswitch,
+    ChromiumTestingShipped = WGPUWGSLLanguageFeatureName_ChromiumTestingShipped,
+};
+static_assert(sizeof(WGSLLanguageFeatureName) == sizeof(WGPUWGSLLanguageFeatureName), "sizeof mismatch for WGSLLanguageFeatureName");
+static_assert(alignof(WGSLLanguageFeatureName) == alignof(WGPUWGSLLanguageFeatureName), "alignof mismatch for WGSLLanguageFeatureName");
 
 
 enum class BufferUsage : uint64_t {
@@ -1117,11 +1162,6 @@ class ObjectBase {
   protected:
     CType mHandle = nullptr;
 };
-
-
-
-
-
 namespace dawn::wire::client {
 
 class Adapter;
@@ -1151,38 +1191,42 @@ class Surface;
 class Texture;
 class TextureView;
 
+struct StringView;
 struct AdapterPropertiesD3D;
-struct AdapterPropertiesSubgroups;
 struct AdapterPropertiesVk;
-struct BindGroupLayoutEntryArraySize;
 struct BlendComponent;
 struct BufferBindingLayout;
 struct BufferHostMappedPointer;
 struct Color;
 struct ColorTargetStateExpandResolveTextureDawn;
+struct CommandBufferDescriptor;
+struct CompatibilityModeLimits;
+struct ConstantEntry;
 struct CopyTextureForBrowserOptions;
-struct DawnWGSLBlocklist;
 struct DawnAdapterPropertiesPowerPreference;
 struct DawnBufferDescriptorErrorInfoFromWireClient;
+struct DawnCacheDeviceDescriptor;
 struct DawnCompilationMessageUtf16;
 struct DawnDeviceAllocatorControl;
 struct DawnDrmFormatProperties;
 struct DawnEncoderInternalUsageDescriptor;
-struct DawnExperimentalImmediateDataLimits;
 struct DawnFakeBufferOOMForTesting;
+struct DawnFakeDeviceInitializeErrorForTesting;
+struct DawnHostMappedPointerLimits;
 struct DawnInjectedInvalidSType;
 struct DawnRenderPassColorAttachmentRenderToSingleSampled;
 struct DawnShaderModuleSPIRVOptionsDescriptor;
 struct DawnTexelCopyBufferRowAlignmentLimits;
 struct DawnTextureInternalUsageDescriptor;
 struct DawnTogglesDescriptor;
+struct DawnWGSLBlocklist;
 struct DawnWireWGSLControl;
 struct Extent2D;
 struct Extent3D;
 struct ExternalTextureBindingEntry;
 struct ExternalTextureBindingLayout;
 struct Future;
-struct InstanceCapabilities;
+struct InstanceLimits;
 struct MemoryHeapInfo;
 struct MultisampleState;
 struct Origin2D;
@@ -1190,13 +1234,22 @@ struct Origin3D;
 struct PassTimestampWrites;
 struct PipelineLayoutStorageAttachment;
 struct PrimitiveState;
+struct QuerySetDescriptor;
+struct QueueDescriptor;
+struct RenderBundleDescriptor;
+struct RenderBundleEncoderDescriptor;
 struct RenderPassDepthStencilAttachment;
 struct RenderPassDescriptorExpandResolveRect;
+struct RenderPassDescriptorResolveRect;
 struct RenderPassMaxDrawCount;
+struct RequestAdapterWebGPUBackendOptions;
+struct RequestAdapterWebXROptions;
 struct SamplerBindingLayout;
 struct ShaderModuleCompilationOptions;
 struct ShaderSourceSPIRV;
+struct ShaderSourceWGSL;
 struct SharedBufferMemoryBeginAccessDescriptor;
+struct SharedBufferMemoryDescriptor;
 struct SharedBufferMemoryEndAccessState;
 struct SharedBufferMemoryProperties;
 struct SharedFenceDXGISharedHandleDescriptor;
@@ -1211,12 +1264,13 @@ struct SharedFenceVkSemaphoreOpaqueFDDescriptor;
 struct SharedFenceVkSemaphoreOpaqueFDExportInfo;
 struct SharedFenceVkSemaphoreZirconHandleDescriptor;
 struct SharedFenceVkSemaphoreZirconHandleExportInfo;
+struct SharedTextureMemoryAHardwareBufferDescriptor;
+struct SharedTextureMemoryD3D11BeginState;
 struct SharedTextureMemoryD3DSwapchainBeginState;
+struct SharedTextureMemoryDmaBufPlane;
 struct SharedTextureMemoryDXGISharedHandleDescriptor;
 struct SharedTextureMemoryEGLImageDescriptor;
 struct SharedTextureMemoryIOSurfaceDescriptor;
-struct SharedTextureMemoryAHardwareBufferDescriptor;
-struct SharedTextureMemoryDmaBufPlane;
 struct SharedTextureMemoryOpaqueFDDescriptor;
 struct SharedTextureMemoryVkDedicatedAllocationDescriptor;
 struct SharedTextureMemoryVkImageLayoutBeginState;
@@ -1225,40 +1279,40 @@ struct SharedTextureMemoryZirconHandleDescriptor;
 struct StaticSamplerBindingLayout;
 struct StencilFaceState;
 struct StorageTextureBindingLayout;
-struct StringView;
 struct SubgroupMatrixConfig;
-struct SupportedWGSLLanguageFeatures;
 struct SupportedFeatures;
+struct SupportedInstanceFeatures;
+struct SupportedWGSLLanguageFeatures;
 struct SurfaceCapabilities;
+struct SurfaceColorManagement;
 struct SurfaceConfiguration;
+struct SurfaceDescriptorFromWindowsCoreWindow;
 struct SurfaceDescriptorFromWindowsUWPSwapChainPanel;
 struct SurfaceDescriptorFromWindowsWinUISwapChainPanel;
-struct SurfaceDescriptorFromWindowsCoreWindow;
-struct SurfaceSourceXCBWindow;
 struct SurfaceSourceAndroidNativeWindow;
 struct SurfaceSourceMetalLayer;
 struct SurfaceSourceWaylandSurface;
 struct SurfaceSourceWindowsHWND;
+struct SurfaceSourceXCBWindow;
 struct SurfaceSourceXlibWindow;
 struct SurfaceTexture;
 struct TexelCopyBufferLayout;
 struct TextureBindingLayout;
 struct TextureBindingViewDimensionDescriptor;
+struct TextureComponentSwizzle;
 struct VertexAttribute;
 struct YCbCrVkDescriptor;
-struct AHardwareBufferProperties;
 struct AdapterPropertiesMemoryHeaps;
 struct AdapterPropertiesSubgroupMatrixConfigs;
+struct AHardwareBufferProperties;
 struct BindGroupEntry;
 struct BindGroupLayoutEntry;
 struct BlendState;
 struct BufferDescriptor;
-struct CommandBufferDescriptor;
 struct CommandEncoderDescriptor;
 struct CompilationMessage;
 struct ComputePassDescriptor;
-struct ConstantEntry;
-struct DawnCacheDeviceDescriptor;
+struct ComputeState;
 struct DawnDrmFormatCapabilities;
 struct DepthStencilState;
 struct ExternalTextureDescriptor;
@@ -1267,16 +1321,11 @@ struct ImageCopyExternalTexture;
 struct InstanceDescriptor;
 struct Limits;
 struct PipelineLayoutPixelLocalStorage;
-struct QuerySetDescriptor;
-struct QueueDescriptor;
-struct RenderBundleDescriptor;
-struct RenderBundleEncoderDescriptor;
 struct RenderPassColorAttachment;
 struct RenderPassStorageAttachment;
 struct RequestAdapterOptions;
 struct SamplerDescriptor;
-struct ShaderSourceWGSL;
-struct SharedBufferMemoryDescriptor;
+struct ShaderModuleDescriptor;
 struct SharedFenceDescriptor;
 struct SharedFenceExportInfo;
 struct SharedTextureMemoryAHardwareBufferProperties;
@@ -1286,24 +1335,23 @@ struct SharedTextureMemoryEndAccessState;
 struct SurfaceDescriptor;
 struct TexelCopyBufferInfo;
 struct TexelCopyTextureInfo;
+struct TextureComponentSwizzleDescriptor;
 struct TextureDescriptor;
-struct TextureViewDescriptor;
 struct VertexBufferLayout;
 struct AdapterInfo;
 struct BindGroupDescriptor;
 struct BindGroupLayoutDescriptor;
 struct ColorTargetState;
 struct CompilationInfo;
-struct ComputeState;
+struct ComputePipelineDescriptor;
 struct DawnFormatCapabilities;
 struct DeviceDescriptor;
 struct PipelineLayoutDescriptor;
 struct RenderPassPixelLocalStorage;
-struct ShaderModuleDescriptor;
 struct SharedTextureMemoryDescriptor;
 struct SharedTextureMemoryProperties;
+struct TextureViewDescriptor;
 struct VertexState;
-struct ComputePipelineDescriptor;
 struct FragmentState;
 struct RenderPassDescriptor;
 struct RenderPipelineDescriptor;
@@ -1445,23 +1493,23 @@ struct CallbackTypeBase<std::tuple<Args...>, T> {
 
 
 template <typename... T>
-using BufferMapCallback = typename detail::CallbackTypeBase<std::tuple<MapAsyncStatus , StringView >, T...>::Callback;
+using BufferMapCallback = typename detail::CallbackTypeBase<std::tuple<MapAsyncStatus, StringView>, T...>::Callback;
 template <typename... T>
-using CompilationInfoCallback = typename detail::CallbackTypeBase<std::tuple<CompilationInfoRequestStatus , CompilationInfo const * >, T...>::Callback;
+using CompilationInfoCallback = typename detail::CallbackTypeBase<std::tuple<CompilationInfoRequestStatus, CompilationInfo const *>, T...>::Callback;
 template <typename... T>
-using CreateComputePipelineAsyncCallback = typename detail::CallbackTypeBase<std::tuple<CreatePipelineAsyncStatus , ComputePipeline , StringView >, T...>::Callback;
+using CreateComputePipelineAsyncCallback = typename detail::CallbackTypeBase<std::tuple<CreatePipelineAsyncStatus, ComputePipeline, StringView>, T...>::Callback;
 template <typename... T>
-using CreateRenderPipelineAsyncCallback = typename detail::CallbackTypeBase<std::tuple<CreatePipelineAsyncStatus , RenderPipeline , StringView >, T...>::Callback;
+using CreateRenderPipelineAsyncCallback = typename detail::CallbackTypeBase<std::tuple<CreatePipelineAsyncStatus, RenderPipeline, StringView>, T...>::Callback;
 template <typename... T>
-using LoggingCallback = typename detail::CallbackTypeBase<std::tuple<LoggingType , StringView >, T...>::Callback;
+using LoggingCallback = typename detail::CallbackTypeBase<std::tuple<LoggingType, StringView>, T...>::Callback;
 template <typename... T>
-using PopErrorScopeCallback = typename detail::CallbackTypeBase<std::tuple<PopErrorScopeStatus , ErrorType , StringView >, T...>::Callback;
+using PopErrorScopeCallback = typename detail::CallbackTypeBase<std::tuple<PopErrorScopeStatus, ErrorType, StringView>, T...>::Callback;
 template <typename... T>
-using QueueWorkDoneCallback = typename detail::CallbackTypeBase<std::tuple<QueueWorkDoneStatus >, T...>::Callback;
+using QueueWorkDoneCallback = typename detail::CallbackTypeBase<std::tuple<QueueWorkDoneStatus, StringView>, T...>::Callback;
 template <typename... T>
-using RequestAdapterCallback = typename detail::CallbackTypeBase<std::tuple<RequestAdapterStatus , Adapter , StringView >, T...>::Callback;
+using RequestAdapterCallback = typename detail::CallbackTypeBase<std::tuple<RequestAdapterStatus, Adapter, StringView>, T...>::Callback;
 template <typename... T>
-using RequestDeviceCallback = typename detail::CallbackTypeBase<std::tuple<RequestDeviceStatus , Device , StringView >, T...>::Callback;
+using RequestDeviceCallback = typename detail::CallbackTypeBase<std::tuple<RequestDeviceStatus, Device, StringView>, T...>::Callback;
 template <typename... T>
 using DeviceLostCallback = typename detail::CallbackTypeBase<std::tuple<const Device&, DeviceLostReason, StringView>, T...>::Callback;
 template <typename... T>
@@ -1486,12 +1534,12 @@ class Adapter : public ObjectBase<Adapter, WGPUAdapter> {
               typename Cb = RequestDeviceCallback<T>,
               typename CbChar = void (RequestDeviceStatus status, Device device, const char* message, T userdata),
               typename = std::enable_if_t<std::is_convertible_v<F, Cb*> || std::is_convertible_v<F, CbChar*>>>
-    Future RequestDevice(DeviceDescriptor const * options, CallbackMode callbackMode,F callback, T userdata) const;
+    Future RequestDevice(DeviceDescriptor const * descriptor, CallbackMode callbackMode,F callback, T userdata) const;
     template <typename L,
               typename Cb = RequestDeviceCallback<>,
               typename CbChar = std::function<void(RequestDeviceStatus status, Device device, const char* message)>,
               typename = std::enable_if_t<std::is_convertible_v<L, Cb> || std::is_convertible_v<L, CbChar>>>
-    Future RequestDevice(DeviceDescriptor const * options, CallbackMode callbackMode,L callback) const;
+    Future RequestDevice(DeviceDescriptor const * descriptor, CallbackMode callbackMode,L callback) const;
 
 
   private:
@@ -1535,8 +1583,8 @@ class Buffer : public ObjectBase<Buffer, WGPUBuffer> {
 
     inline void Destroy() const;
     inline void const * GetConstMappedRange(size_t offset = 0, size_t size = kWholeMapSize) const;
-    inline BufferMapState GetMapState() const;
     inline void * GetMappedRange(size_t offset = 0, size_t size = kWholeMapSize) const;
+    inline BufferMapState GetMapState() const;
     inline uint64_t GetSize() const;
     inline BufferUsage GetUsage() const;
     template <typename F, typename T,
@@ -1687,9 +1735,9 @@ class Device : public ObjectBase<Device, WGPUDevice> {
     inline Texture CreateTexture(TextureDescriptor const * descriptor) const;
     inline void Destroy() const;
     inline void ForceLoss(DeviceLostReason type, StringView message) const;
-    inline ConvertibleStatus GetAHardwareBufferProperties(void * handle, AHardwareBufferProperties * properties) const;
     inline Adapter GetAdapter() const;
     inline ConvertibleStatus GetAdapterInfo(AdapterInfo * adapterInfo) const;
+    inline ConvertibleStatus GetAHardwareBufferProperties(void * handle, AHardwareBufferProperties * properties) const;
     inline void GetFeatures(SupportedFeatures * features) const;
     inline ConvertibleStatus GetLimits(Limits * limits) const;
     inline Future GetLostFuture() const;
@@ -1754,7 +1802,7 @@ class Instance : public ObjectBase<Instance, WGPUInstance> {
     using ObjectBase::operator=;
 
     inline Surface CreateSurface(SurfaceDescriptor const * descriptor) const;
-    inline ConvertibleStatus GetWGSLLanguageFeatures(SupportedWGSLLanguageFeatures * features) const;
+    inline void GetWGSLLanguageFeatures(SupportedWGSLLanguageFeatures * features) const;
     inline Bool HasWGSLLanguageFeature(WGSLLanguageFeatureName feature) const;
     inline void ProcessEvents() const;
     template <typename F, typename T,
@@ -1817,12 +1865,12 @@ class Queue : public ObjectBase<Queue, WGPUQueue> {
     inline void CopyTextureForBrowser(TexelCopyTextureInfo const * source, TexelCopyTextureInfo const * destination, Extent3D const * copySize, CopyTextureForBrowserOptions const * options) const;
     template <typename F, typename T,
               typename Cb = QueueWorkDoneCallback<T>,
-              typename CbChar = void (QueueWorkDoneStatus status, T userdata),
+              typename CbChar = void (QueueWorkDoneStatus status, const char* message, T userdata),
               typename = std::enable_if_t<std::is_convertible_v<F, Cb*> || std::is_convertible_v<F, CbChar*>>>
     Future OnSubmittedWorkDone(CallbackMode callbackMode,F callback, T userdata) const;
     template <typename L,
               typename Cb = QueueWorkDoneCallback<>,
-              typename CbChar = std::function<void(QueueWorkDoneStatus status)>,
+              typename CbChar = std::function<void(QueueWorkDoneStatus status, const char* message)>,
               typename = std::enable_if_t<std::is_convertible_v<L, Cb> || std::is_convertible_v<L, CbChar>>>
     Future OnSubmittedWorkDone(CallbackMode callbackMode,L callback) const;
     inline void SetLabel(StringView label) const;
@@ -2029,7 +2077,7 @@ class Surface : public ObjectBase<Surface, WGPUSurface> {
     inline void Configure(SurfaceConfiguration const * config) const;
     inline ConvertibleStatus GetCapabilities(Adapter const& adapter, SurfaceCapabilities * capabilities) const;
     inline void GetCurrentTexture(SurfaceTexture * surfaceTexture) const;
-    inline void Present() const;
+    inline ConvertibleStatus Present() const;
     inline void SetLabel(StringView label) const;
     inline void Unconfigure() const;
 
@@ -2099,21 +2147,8 @@ struct AdapterPropertiesD3D : ChainedStructOut {
     inline AdapterPropertiesD3D(Init&& init);
     inline operator const WGPUAdapterPropertiesD3D&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t));
     alignas(kFirstMemberAlignment) uint32_t shaderModel;
-};
-
-// Can be chained in AdapterInfo
-struct AdapterPropertiesSubgroups : ChainedStructOut {
-    inline AdapterPropertiesSubgroups();
-
-    struct Init;
-    inline AdapterPropertiesSubgroups(Init&& init);
-    inline operator const WGPUAdapterPropertiesSubgroups&() const noexcept;
-
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t ));
-    alignas(kFirstMemberAlignment) uint32_t subgroupMinSize = kLimitU32Undefined;
-    uint32_t subgroupMaxSize = kLimitU32Undefined;
 };
 
 // Can be chained in AdapterInfo
@@ -2124,20 +2159,8 @@ struct AdapterPropertiesVk : ChainedStructOut {
     inline AdapterPropertiesVk(Init&& init);
     inline operator const WGPUAdapterPropertiesVk&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t));
     alignas(kFirstMemberAlignment) uint32_t driverVersion;
-};
-
-// Can be chained in BindGroupLayoutEntry
-struct BindGroupLayoutEntryArraySize : ChainedStruct {
-    inline BindGroupLayoutEntryArraySize();
-
-    struct Init;
-    inline BindGroupLayoutEntryArraySize(Init&& init);
-    inline operator const WGPUBindGroupLayoutEntryArraySize&() const noexcept;
-
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t ));
-    alignas(kFirstMemberAlignment) uint32_t arraySize = 0;
 };
 
 struct BlendComponent {
@@ -2165,7 +2188,7 @@ struct BufferHostMappedPointer : ChainedStruct {
     inline BufferHostMappedPointer(Init&& init);
     inline operator const WGPUBufferHostMappedPointer&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * pointer;
     Callback disposeCallback;
     void * userdata;
@@ -2188,8 +2211,38 @@ struct ColorTargetStateExpandResolveTextureDawn : ChainedStruct {
     inline ColorTargetStateExpandResolveTextureDawn(Init&& init);
     inline operator const WGPUColorTargetStateExpandResolveTextureDawn&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool));
     alignas(kFirstMemberAlignment) Bool enabled = false;
+};
+
+struct CommandBufferDescriptor {
+    inline operator const WGPUCommandBufferDescriptor&() const noexcept;
+
+    ChainedStruct const * nextInChain = nullptr;
+    StringView label = {};
+};
+
+// Can be chained in Limits
+struct CompatibilityModeLimits : ChainedStructOut {
+    inline CompatibilityModeLimits();
+
+    struct Init;
+    inline CompatibilityModeLimits(Init&& init);
+    inline operator const WGPUCompatibilityModeLimits&() const noexcept;
+
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t));
+    alignas(kFirstMemberAlignment) uint32_t maxStorageBuffersInVertexStage = kLimitU32Undefined;
+    uint32_t maxStorageTexturesInVertexStage = kLimitU32Undefined;
+    uint32_t maxStorageBuffersInFragmentStage = kLimitU32Undefined;
+    uint32_t maxStorageTexturesInFragmentStage = kLimitU32Undefined;
+};
+
+struct ConstantEntry {
+    inline operator const WGPUConstantEntry&() const noexcept;
+
+    ChainedStruct const * nextInChain = nullptr;
+    StringView key = {};
+    double value;
 };
 
 struct CopyTextureForBrowserOptions {
@@ -2206,19 +2259,6 @@ struct CopyTextureForBrowserOptions {
     Bool internalUsage = false;
 };
 
-// Can be chained in InstanceDescriptor
-struct DawnWGSLBlocklist : ChainedStruct {
-    inline DawnWGSLBlocklist();
-
-    struct Init;
-    inline DawnWGSLBlocklist(Init&& init);
-    inline operator const WGPUDawnWGSLBlocklist&() const noexcept;
-
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(size_t ));
-    alignas(kFirstMemberAlignment) size_t blocklistedFeatureCount = 0;
-    const char* const * blocklistedFeatures = nullptr;
-};
-
 // Can be chained in AdapterInfo
 struct DawnAdapterPropertiesPowerPreference : ChainedStructOut {
     inline DawnAdapterPropertiesPowerPreference();
@@ -2227,7 +2267,7 @@ struct DawnAdapterPropertiesPowerPreference : ChainedStructOut {
     inline DawnAdapterPropertiesPowerPreference(Init&& init);
     inline operator const WGPUDawnAdapterPropertiesPowerPreference&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(PowerPreference ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(PowerPreference));
     alignas(kFirstMemberAlignment) PowerPreference powerPreference = PowerPreference::Undefined;
 };
 
@@ -2239,8 +2279,23 @@ struct DawnBufferDescriptorErrorInfoFromWireClient : ChainedStruct {
     inline DawnBufferDescriptorErrorInfoFromWireClient(Init&& init);
     inline operator const WGPUDawnBufferDescriptorErrorInfoFromWireClient&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool));
     alignas(kFirstMemberAlignment) Bool outOfMemory = false;
+};
+
+// Can be chained in DeviceDescriptor
+struct DawnCacheDeviceDescriptor : ChainedStruct {
+    inline DawnCacheDeviceDescriptor();
+
+    struct Init;
+    inline DawnCacheDeviceDescriptor(Init&& init);
+    inline operator const WGPUDawnCacheDeviceDescriptor&() const noexcept;
+
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(StringView));
+    alignas(kFirstMemberAlignment) StringView isolationKey = {};
+    DawnLoadCacheDataFunction loadDataFunction = nullptr;
+    DawnStoreCacheDataFunction storeDataFunction = nullptr;
+    void * functionUserdata = nullptr;
 };
 
 // Can be chained in CompilationMessage
@@ -2251,7 +2306,7 @@ struct DawnCompilationMessageUtf16 : ChainedStruct {
     inline DawnCompilationMessageUtf16(Init&& init);
     inline operator const WGPUDawnCompilationMessageUtf16&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint64_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint64_t));
     alignas(kFirstMemberAlignment) uint64_t linePos;
     uint64_t offset;
     uint64_t length;
@@ -2265,7 +2320,7 @@ struct DawnDeviceAllocatorControl : ChainedStruct {
     inline DawnDeviceAllocatorControl(Init&& init);
     inline operator const WGPUDawnDeviceAllocatorControl&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(size_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(size_t));
     alignas(kFirstMemberAlignment) size_t allocatorHeapBlockSize = 0;
 };
 
@@ -2284,20 +2339,8 @@ struct DawnEncoderInternalUsageDescriptor : ChainedStruct {
     inline DawnEncoderInternalUsageDescriptor(Init&& init);
     inline operator const WGPUDawnEncoderInternalUsageDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool));
     alignas(kFirstMemberAlignment) Bool useInternalUsages = false;
-};
-
-// Can be chained in Limits
-struct DawnExperimentalImmediateDataLimits : ChainedStructOut {
-    inline DawnExperimentalImmediateDataLimits();
-
-    struct Init;
-    inline DawnExperimentalImmediateDataLimits(Init&& init);
-    inline operator const WGPUDawnExperimentalImmediateDataLimits&() const noexcept;
-
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t ));
-    alignas(kFirstMemberAlignment) uint32_t maxImmediateDataRangeByteSize = kLimitU32Undefined;
 };
 
 // Can be chained in BufferDescriptor
@@ -2308,10 +2351,32 @@ struct DawnFakeBufferOOMForTesting : ChainedStruct {
     inline DawnFakeBufferOOMForTesting(Init&& init);
     inline operator const WGPUDawnFakeBufferOOMForTesting&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool));
     alignas(kFirstMemberAlignment) Bool fakeOOMAtWireClientMap;
     Bool fakeOOMAtNativeMap;
     Bool fakeOOMAtDevice;
+};
+
+// Can be chained in DeviceDescriptor
+struct DawnFakeDeviceInitializeErrorForTesting : ChainedStruct {
+    inline DawnFakeDeviceInitializeErrorForTesting();
+
+    struct Init;
+    inline DawnFakeDeviceInitializeErrorForTesting(Init&& init);
+    inline operator const WGPUDawnFakeDeviceInitializeErrorForTesting&() const noexcept;
+
+};
+
+// Can be chained in Limits
+struct DawnHostMappedPointerLimits : ChainedStructOut {
+    inline DawnHostMappedPointerLimits();
+
+    struct Init;
+    inline DawnHostMappedPointerLimits(Init&& init);
+    inline operator const WGPUDawnHostMappedPointerLimits&() const noexcept;
+
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t));
+    alignas(kFirstMemberAlignment) uint32_t hostMappedPointerAlignment = kLimitU32Undefined;
 };
 
 struct DawnInjectedInvalidSType : ChainedStruct {
@@ -2321,7 +2386,7 @@ struct DawnInjectedInvalidSType : ChainedStruct {
     inline DawnInjectedInvalidSType(Init&& init);
     inline operator const WGPUDawnInjectedInvalidSType&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(SType ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(SType));
     alignas(kFirstMemberAlignment) SType invalidSType = {};
 };
 
@@ -2333,7 +2398,7 @@ struct DawnRenderPassColorAttachmentRenderToSingleSampled : ChainedStruct {
     inline DawnRenderPassColorAttachmentRenderToSingleSampled(Init&& init);
     inline operator const WGPUDawnRenderPassColorAttachmentRenderToSingleSampled&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t));
     alignas(kFirstMemberAlignment) uint32_t implicitSampleCount = 1;
 };
 
@@ -2345,7 +2410,7 @@ struct DawnShaderModuleSPIRVOptionsDescriptor : ChainedStruct {
     inline DawnShaderModuleSPIRVOptionsDescriptor(Init&& init);
     inline operator const WGPUDawnShaderModuleSPIRVOptionsDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool));
     alignas(kFirstMemberAlignment) Bool allowNonUniformDerivatives = false;
 };
 
@@ -2357,7 +2422,7 @@ struct DawnTexelCopyBufferRowAlignmentLimits : ChainedStructOut {
     inline DawnTexelCopyBufferRowAlignmentLimits(Init&& init);
     inline operator const WGPUDawnTexelCopyBufferRowAlignmentLimits&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t));
     alignas(kFirstMemberAlignment) uint32_t minTexelCopyBufferRowAlignment = kLimitU32Undefined;
 };
 
@@ -2369,7 +2434,7 @@ struct DawnTextureInternalUsageDescriptor : ChainedStruct {
     inline DawnTextureInternalUsageDescriptor(Init&& init);
     inline operator const WGPUDawnTextureInternalUsageDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(TextureUsage ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(TextureUsage));
     alignas(kFirstMemberAlignment) TextureUsage internalUsage = TextureUsage::None;
 };
 
@@ -2383,11 +2448,24 @@ struct DawnTogglesDescriptor : ChainedStruct {
     inline DawnTogglesDescriptor(Init&& init);
     inline operator const WGPUDawnTogglesDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(size_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(size_t));
     alignas(kFirstMemberAlignment) size_t enabledToggleCount = 0;
     const char* const * enabledToggles = nullptr;
     size_t disabledToggleCount = 0;
     const char* const * disabledToggles = nullptr;
+};
+
+// Can be chained in InstanceDescriptor
+struct DawnWGSLBlocklist : ChainedStruct {
+    inline DawnWGSLBlocklist();
+
+    struct Init;
+    inline DawnWGSLBlocklist(Init&& init);
+    inline operator const WGPUDawnWGSLBlocklist&() const noexcept;
+
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(size_t));
+    alignas(kFirstMemberAlignment) size_t blocklistedFeatureCount = 0;
+    const char* const * blocklistedFeatures = nullptr;
 };
 
 // Can be chained in InstanceDescriptor
@@ -2398,7 +2476,7 @@ struct DawnWireWGSLControl : ChainedStruct {
     inline DawnWireWGSLControl(Init&& init);
     inline operator const WGPUDawnWireWGSLControl&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool));
     alignas(kFirstMemberAlignment) Bool enableExperimental = false;
     Bool enableUnsafe = false;
     Bool enableTesting = false;
@@ -2427,7 +2505,7 @@ struct ExternalTextureBindingEntry : ChainedStruct {
     inline ExternalTextureBindingEntry(Init&& init);
     inline operator const WGPUExternalTextureBindingEntry&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(ExternalTexture ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(ExternalTexture));
     alignas(kFirstMemberAlignment) ExternalTexture externalTexture = nullptr;
 };
 
@@ -2447,11 +2525,10 @@ struct Future {
     uint64_t id;
 };
 
-struct InstanceCapabilities {
-    inline operator const WGPUInstanceCapabilities&() const noexcept;
+struct InstanceLimits {
+    inline operator const WGPUInstanceLimits&() const noexcept;
 
     ChainedStructOut  * nextInChain = nullptr;
-    Bool timedWaitAnyEnable = false;
     size_t timedWaitAnyMaxCount = 0;
 };
 
@@ -2514,6 +2591,42 @@ struct PrimitiveState {
     Bool unclippedDepth = false;
 };
 
+struct QuerySetDescriptor {
+    inline operator const WGPUQuerySetDescriptor&() const noexcept;
+
+    ChainedStruct const * nextInChain = nullptr;
+    StringView label = {};
+    QueryType type = {};
+    uint32_t count;
+};
+
+struct QueueDescriptor {
+    inline operator const WGPUQueueDescriptor&() const noexcept;
+
+    ChainedStruct const * nextInChain = nullptr;
+    StringView label = {};
+};
+
+struct RenderBundleDescriptor {
+    inline operator const WGPURenderBundleDescriptor&() const noexcept;
+
+    ChainedStruct const * nextInChain = nullptr;
+    StringView label = {};
+};
+
+struct RenderBundleEncoderDescriptor {
+    inline operator const WGPURenderBundleEncoderDescriptor&() const noexcept;
+
+    ChainedStruct const * nextInChain = nullptr;
+    StringView label = {};
+    size_t colorFormatCount;
+    TextureFormat const * colorFormats = nullptr;
+    TextureFormat depthStencilFormat = TextureFormat::Undefined;
+    uint32_t sampleCount = 1;
+    Bool depthReadOnly = false;
+    Bool stencilReadOnly = false;
+};
+
 struct RenderPassDepthStencilAttachment {
     inline operator const WGPURenderPassDepthStencilAttachment&() const noexcept;
 
@@ -2537,9 +2650,26 @@ struct RenderPassDescriptorExpandResolveRect : ChainedStruct {
     inline RenderPassDescriptorExpandResolveRect(Init&& init);
     inline operator const WGPURenderPassDescriptorExpandResolveRect&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t));
     alignas(kFirstMemberAlignment) uint32_t x;
     uint32_t y;
+    uint32_t width;
+    uint32_t height;
+};
+
+// Can be chained in RenderPassDescriptor
+struct RenderPassDescriptorResolveRect : ChainedStruct {
+    inline RenderPassDescriptorResolveRect();
+
+    struct Init;
+    inline RenderPassDescriptorResolveRect(Init&& init);
+    inline operator const WGPURenderPassDescriptorResolveRect&() const noexcept;
+
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t));
+    alignas(kFirstMemberAlignment) uint32_t colorOffsetX;
+    uint32_t colorOffsetY;
+    uint32_t resolveOffsetX;
+    uint32_t resolveOffsetY;
     uint32_t width;
     uint32_t height;
 };
@@ -2552,8 +2682,30 @@ struct RenderPassMaxDrawCount : ChainedStruct {
     inline RenderPassMaxDrawCount(Init&& init);
     inline operator const WGPURenderPassMaxDrawCount&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint64_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint64_t));
     alignas(kFirstMemberAlignment) uint64_t maxDrawCount = 50000000;
+};
+
+// Can be chained in RequestAdapterOptions
+struct RequestAdapterWebGPUBackendOptions : ChainedStruct {
+    inline RequestAdapterWebGPUBackendOptions();
+
+    struct Init;
+    inline RequestAdapterWebGPUBackendOptions(Init&& init);
+    inline operator const WGPURequestAdapterWebGPUBackendOptions&() const noexcept;
+
+};
+
+// Can be chained in RequestAdapterOptions
+struct RequestAdapterWebXROptions : ChainedStruct {
+    inline RequestAdapterWebXROptions();
+
+    struct Init;
+    inline RequestAdapterWebXROptions(Init&& init);
+    inline operator const WGPURequestAdapterWebXROptions&() const noexcept;
+
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool));
+    alignas(kFirstMemberAlignment) Bool xrCompatible;
 };
 
 struct SamplerBindingLayout {
@@ -2571,7 +2723,7 @@ struct ShaderModuleCompilationOptions : ChainedStruct {
     inline ShaderModuleCompilationOptions(Init&& init);
     inline operator const WGPUShaderModuleCompilationOptions&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool));
     alignas(kFirstMemberAlignment) Bool strictMath;
 };
 
@@ -2583,9 +2735,21 @@ struct ShaderSourceSPIRV : ChainedStruct {
     inline ShaderSourceSPIRV(Init&& init);
     inline operator const WGPUShaderSourceSPIRV&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t));
     alignas(kFirstMemberAlignment) uint32_t codeSize;
     uint32_t const * code = nullptr;
+};
+
+// Can be chained in ShaderModuleDescriptor
+struct ShaderSourceWGSL : ChainedStruct {
+    inline ShaderSourceWGSL();
+
+    struct Init;
+    inline ShaderSourceWGSL(Init&& init);
+    inline operator const WGPUShaderSourceWGSL&() const noexcept;
+
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(StringView));
+    alignas(kFirstMemberAlignment) StringView code = {};
 };
 
 struct SharedBufferMemoryBeginAccessDescriptor {
@@ -2596,6 +2760,13 @@ struct SharedBufferMemoryBeginAccessDescriptor {
     size_t fenceCount = 0;
     SharedFence const * fences = nullptr;
     uint64_t const * signaledValues = nullptr;
+};
+
+struct SharedBufferMemoryDescriptor {
+    inline operator const WGPUSharedBufferMemoryDescriptor&() const noexcept;
+
+    ChainedStruct const * nextInChain = nullptr;
+    StringView label = {};
 };
 
 struct SharedBufferMemoryEndAccessState {
@@ -2634,7 +2805,7 @@ struct SharedFenceDXGISharedHandleDescriptor : ChainedStruct {
     inline SharedFenceDXGISharedHandleDescriptor(Init&& init);
     inline operator const WGPUSharedFenceDXGISharedHandleDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * handle;
 };
 
@@ -2646,7 +2817,7 @@ struct SharedFenceDXGISharedHandleExportInfo : ChainedStructOut {
     inline SharedFenceDXGISharedHandleExportInfo(Init&& init);
     inline operator const WGPUSharedFenceDXGISharedHandleExportInfo&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * handle;
 };
 
@@ -2658,7 +2829,7 @@ struct SharedFenceEGLSyncDescriptor : ChainedStruct {
     inline SharedFenceEGLSyncDescriptor(Init&& init);
     inline operator const WGPUSharedFenceEGLSyncDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * sync;
 };
 
@@ -2670,7 +2841,7 @@ struct SharedFenceEGLSyncExportInfo : ChainedStructOut {
     inline SharedFenceEGLSyncExportInfo(Init&& init);
     inline operator const WGPUSharedFenceEGLSyncExportInfo&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * sync;
 };
 
@@ -2682,7 +2853,7 @@ struct SharedFenceMTLSharedEventDescriptor : ChainedStruct {
     inline SharedFenceMTLSharedEventDescriptor(Init&& init);
     inline operator const WGPUSharedFenceMTLSharedEventDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * sharedEvent;
 };
 
@@ -2694,7 +2865,7 @@ struct SharedFenceMTLSharedEventExportInfo : ChainedStructOut {
     inline SharedFenceMTLSharedEventExportInfo(Init&& init);
     inline operator const WGPUSharedFenceMTLSharedEventExportInfo&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * sharedEvent;
 };
 
@@ -2706,7 +2877,7 @@ struct SharedFenceSyncFDDescriptor : ChainedStruct {
     inline SharedFenceSyncFDDescriptor(Init&& init);
     inline operator const WGPUSharedFenceSyncFDDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(int ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(int));
     alignas(kFirstMemberAlignment) int handle;
 };
 
@@ -2718,7 +2889,7 @@ struct SharedFenceSyncFDExportInfo : ChainedStructOut {
     inline SharedFenceSyncFDExportInfo(Init&& init);
     inline operator const WGPUSharedFenceSyncFDExportInfo&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(int ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(int));
     alignas(kFirstMemberAlignment) int handle;
 };
 
@@ -2730,7 +2901,7 @@ struct SharedFenceVkSemaphoreOpaqueFDDescriptor : ChainedStruct {
     inline SharedFenceVkSemaphoreOpaqueFDDescriptor(Init&& init);
     inline operator const WGPUSharedFenceVkSemaphoreOpaqueFDDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(int ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(int));
     alignas(kFirstMemberAlignment) int handle;
 };
 
@@ -2742,7 +2913,7 @@ struct SharedFenceVkSemaphoreOpaqueFDExportInfo : ChainedStructOut {
     inline SharedFenceVkSemaphoreOpaqueFDExportInfo(Init&& init);
     inline operator const WGPUSharedFenceVkSemaphoreOpaqueFDExportInfo&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(int ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(int));
     alignas(kFirstMemberAlignment) int handle;
 };
 
@@ -2754,7 +2925,7 @@ struct SharedFenceVkSemaphoreZirconHandleDescriptor : ChainedStruct {
     inline SharedFenceVkSemaphoreZirconHandleDescriptor(Init&& init);
     inline operator const WGPUSharedFenceVkSemaphoreZirconHandleDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t));
     alignas(kFirstMemberAlignment) uint32_t handle;
 };
 
@@ -2766,8 +2937,33 @@ struct SharedFenceVkSemaphoreZirconHandleExportInfo : ChainedStructOut {
     inline SharedFenceVkSemaphoreZirconHandleExportInfo(Init&& init);
     inline operator const WGPUSharedFenceVkSemaphoreZirconHandleExportInfo&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t));
     alignas(kFirstMemberAlignment) uint32_t handle;
+};
+
+// Can be chained in SharedTextureMemoryDescriptor
+struct SharedTextureMemoryAHardwareBufferDescriptor : ChainedStruct {
+    inline SharedTextureMemoryAHardwareBufferDescriptor();
+
+    struct Init;
+    inline SharedTextureMemoryAHardwareBufferDescriptor(Init&& init);
+    inline operator const WGPUSharedTextureMemoryAHardwareBufferDescriptor&() const noexcept;
+
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
+    alignas(kFirstMemberAlignment) void * handle;
+    Bool useExternalFormat;
+};
+
+// Can be chained in SharedTextureMemoryBeginAccessDescriptor
+struct SharedTextureMemoryD3D11BeginState : ChainedStruct {
+    inline SharedTextureMemoryD3D11BeginState();
+
+    struct Init;
+    inline SharedTextureMemoryD3D11BeginState(Init&& init);
+    inline operator const WGPUSharedTextureMemoryD3D11BeginState&() const noexcept;
+
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool));
+    alignas(kFirstMemberAlignment) Bool requiresEndAccessFence = true;
 };
 
 // Can be chained in SharedTextureMemoryBeginAccessDescriptor
@@ -2778,8 +2974,16 @@ struct SharedTextureMemoryD3DSwapchainBeginState : ChainedStruct {
     inline SharedTextureMemoryD3DSwapchainBeginState(Init&& init);
     inline operator const WGPUSharedTextureMemoryD3DSwapchainBeginState&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool));
     alignas(kFirstMemberAlignment) Bool isSwapchain = false;
+};
+
+struct SharedTextureMemoryDmaBufPlane {
+    inline operator const WGPUSharedTextureMemoryDmaBufPlane&() const noexcept;
+
+    int fd;
+    uint64_t offset;
+    uint32_t stride;
 };
 
 // Can be chained in SharedTextureMemoryDescriptor
@@ -2790,7 +2994,7 @@ struct SharedTextureMemoryDXGISharedHandleDescriptor : ChainedStruct {
     inline SharedTextureMemoryDXGISharedHandleDescriptor(Init&& init);
     inline operator const WGPUSharedTextureMemoryDXGISharedHandleDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * handle;
     Bool useKeyedMutex;
 };
@@ -2803,7 +3007,7 @@ struct SharedTextureMemoryEGLImageDescriptor : ChainedStruct {
     inline SharedTextureMemoryEGLImageDescriptor(Init&& init);
     inline operator const WGPUSharedTextureMemoryEGLImageDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * image;
 };
 
@@ -2815,30 +3019,9 @@ struct SharedTextureMemoryIOSurfaceDescriptor : ChainedStruct {
     inline SharedTextureMemoryIOSurfaceDescriptor(Init&& init);
     inline operator const WGPUSharedTextureMemoryIOSurfaceDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * ioSurface;
     Bool allowStorageBinding = true;
-};
-
-// Can be chained in SharedTextureMemoryDescriptor
-struct SharedTextureMemoryAHardwareBufferDescriptor : ChainedStruct {
-    inline SharedTextureMemoryAHardwareBufferDescriptor();
-
-    struct Init;
-    inline SharedTextureMemoryAHardwareBufferDescriptor(Init&& init);
-    inline operator const WGPUSharedTextureMemoryAHardwareBufferDescriptor&() const noexcept;
-
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
-    alignas(kFirstMemberAlignment) void * handle;
-    Bool useExternalFormat;
-};
-
-struct SharedTextureMemoryDmaBufPlane {
-    inline operator const WGPUSharedTextureMemoryDmaBufPlane&() const noexcept;
-
-    int fd;
-    uint64_t offset;
-    uint32_t stride;
 };
 
 // Can be chained in SharedTextureMemoryDescriptor
@@ -2849,7 +3032,7 @@ struct SharedTextureMemoryOpaqueFDDescriptor : ChainedStruct {
     inline SharedTextureMemoryOpaqueFDDescriptor(Init&& init);
     inline operator const WGPUSharedTextureMemoryOpaqueFDDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void const * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void const *));
     alignas(kFirstMemberAlignment) void const * vkImageCreateInfo;
     int memoryFD;
     uint32_t memoryTypeIndex;
@@ -2865,7 +3048,7 @@ struct SharedTextureMemoryVkDedicatedAllocationDescriptor : ChainedStruct {
     inline SharedTextureMemoryVkDedicatedAllocationDescriptor(Init&& init);
     inline operator const WGPUSharedTextureMemoryVkDedicatedAllocationDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Bool));
     alignas(kFirstMemberAlignment) Bool dedicatedAllocation;
 };
 
@@ -2877,7 +3060,7 @@ struct SharedTextureMemoryVkImageLayoutBeginState : ChainedStruct {
     inline SharedTextureMemoryVkImageLayoutBeginState(Init&& init);
     inline operator const WGPUSharedTextureMemoryVkImageLayoutBeginState&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(int32_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(int32_t));
     alignas(kFirstMemberAlignment) int32_t oldLayout;
     int32_t newLayout;
 };
@@ -2890,7 +3073,7 @@ struct SharedTextureMemoryVkImageLayoutEndState : ChainedStructOut {
     inline SharedTextureMemoryVkImageLayoutEndState(Init&& init);
     inline operator const WGPUSharedTextureMemoryVkImageLayoutEndState&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(int32_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(int32_t));
     alignas(kFirstMemberAlignment) int32_t oldLayout;
     int32_t newLayout;
 };
@@ -2903,7 +3086,7 @@ struct SharedTextureMemoryZirconHandleDescriptor : ChainedStruct {
     inline SharedTextureMemoryZirconHandleDescriptor(Init&& init);
     inline operator const WGPUSharedTextureMemoryZirconHandleDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t));
     alignas(kFirstMemberAlignment) uint32_t memoryFD;
     uint64_t allocationSize;
 };
@@ -2916,7 +3099,7 @@ struct StaticSamplerBindingLayout : ChainedStruct {
     inline StaticSamplerBindingLayout(Init&& init);
     inline operator const WGPUStaticSamplerBindingLayout&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Sampler ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Sampler));
     alignas(kFirstMemberAlignment) Sampler sampler = nullptr;
     uint32_t sampledTextureBinding = kLimitU32Undefined;
 };
@@ -2949,23 +3132,6 @@ struct SubgroupMatrixConfig {
     uint32_t K;
 };
 
-struct SupportedWGSLLanguageFeatures {
-    inline SupportedWGSLLanguageFeatures();
-    inline ~SupportedWGSLLanguageFeatures();
-    SupportedWGSLLanguageFeatures(const SupportedWGSLLanguageFeatures&) = delete;
-    SupportedWGSLLanguageFeatures& operator=(const SupportedWGSLLanguageFeatures&) = delete;
-    inline SupportedWGSLLanguageFeatures(SupportedWGSLLanguageFeatures&&);
-    inline SupportedWGSLLanguageFeatures& operator=(SupportedWGSLLanguageFeatures&&);
-    inline operator const WGPUSupportedWGSLLanguageFeatures&() const noexcept;
-
-    size_t const featureCount = {};
-    WGSLLanguageFeatureName const * const features = nullptr;
-
-  private:
-    inline void FreeMembers();
-    static inline void Reset(SupportedWGSLLanguageFeatures& value);
-};
-
 struct SupportedFeatures {
     inline SupportedFeatures();
     inline ~SupportedFeatures();
@@ -2981,6 +3147,40 @@ struct SupportedFeatures {
   private:
     inline void FreeMembers();
     static inline void Reset(SupportedFeatures& value);
+};
+
+struct SupportedInstanceFeatures {
+    inline SupportedInstanceFeatures();
+    inline ~SupportedInstanceFeatures();
+    SupportedInstanceFeatures(const SupportedInstanceFeatures&) = delete;
+    SupportedInstanceFeatures& operator=(const SupportedInstanceFeatures&) = delete;
+    inline SupportedInstanceFeatures(SupportedInstanceFeatures&&);
+    inline SupportedInstanceFeatures& operator=(SupportedInstanceFeatures&&);
+    inline operator const WGPUSupportedInstanceFeatures&() const noexcept;
+
+    size_t const featureCount = {};
+    InstanceFeatureName const * const features = nullptr;
+
+  private:
+    inline void FreeMembers();
+    static inline void Reset(SupportedInstanceFeatures& value);
+};
+
+struct SupportedWGSLLanguageFeatures {
+    inline SupportedWGSLLanguageFeatures();
+    inline ~SupportedWGSLLanguageFeatures();
+    SupportedWGSLLanguageFeatures(const SupportedWGSLLanguageFeatures&) = delete;
+    SupportedWGSLLanguageFeatures& operator=(const SupportedWGSLLanguageFeatures&) = delete;
+    inline SupportedWGSLLanguageFeatures(SupportedWGSLLanguageFeatures&&);
+    inline SupportedWGSLLanguageFeatures& operator=(SupportedWGSLLanguageFeatures&&);
+    inline operator const WGPUSupportedWGSLLanguageFeatures&() const noexcept;
+
+    size_t const featureCount = {};
+    WGSLLanguageFeatureName const * const features = nullptr;
+
+  private:
+    inline void FreeMembers();
+    static inline void Reset(SupportedWGSLLanguageFeatures& value);
 };
 
 struct SurfaceCapabilities {
@@ -3006,6 +3206,19 @@ struct SurfaceCapabilities {
     static inline void Reset(SurfaceCapabilities& value);
 };
 
+// Can be chained in SurfaceDescriptor
+struct SurfaceColorManagement : ChainedStruct {
+    inline SurfaceColorManagement();
+
+    struct Init;
+    inline SurfaceColorManagement(Init&& init);
+    inline operator const WGPUSurfaceColorManagement&() const noexcept;
+
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(PredefinedColorSpace));
+    alignas(kFirstMemberAlignment) PredefinedColorSpace colorSpace = {};
+    ToneMappingMode toneMappingMode = {};
+};
+
 struct SurfaceConfiguration {
     inline operator const WGPUSurfaceConfiguration&() const noexcept;
 
@@ -3022,6 +3235,18 @@ struct SurfaceConfiguration {
 };
 
 // Can be chained in SurfaceDescriptor
+struct SurfaceDescriptorFromWindowsCoreWindow : ChainedStruct {
+    inline SurfaceDescriptorFromWindowsCoreWindow();
+
+    struct Init;
+    inline SurfaceDescriptorFromWindowsCoreWindow(Init&& init);
+    inline operator const WGPUSurfaceDescriptorFromWindowsCoreWindow&() const noexcept;
+
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
+    alignas(kFirstMemberAlignment) void * coreWindow = nullptr;
+};
+
+// Can be chained in SurfaceDescriptor
 struct SurfaceDescriptorFromWindowsUWPSwapChainPanel : ChainedStruct {
     inline SurfaceDescriptorFromWindowsUWPSwapChainPanel();
 
@@ -3029,7 +3254,7 @@ struct SurfaceDescriptorFromWindowsUWPSwapChainPanel : ChainedStruct {
     inline SurfaceDescriptorFromWindowsUWPSwapChainPanel(Init&& init);
     inline operator const WGPUSurfaceDescriptorFromWindowsUWPSwapChainPanel&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * swapChainPanel = nullptr;
 };
 
@@ -3041,33 +3266,8 @@ struct SurfaceDescriptorFromWindowsWinUISwapChainPanel : ChainedStruct {
     inline SurfaceDescriptorFromWindowsWinUISwapChainPanel(Init&& init);
     inline operator const WGPUSurfaceDescriptorFromWindowsWinUISwapChainPanel&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * swapChainPanel = nullptr;
-};
-
-// Can be chained in SurfaceDescriptor
-struct SurfaceDescriptorFromWindowsCoreWindow : ChainedStruct {
-    inline SurfaceDescriptorFromWindowsCoreWindow();
-
-    struct Init;
-    inline SurfaceDescriptorFromWindowsCoreWindow(Init&& init);
-    inline operator const WGPUSurfaceDescriptorFromWindowsCoreWindow&() const noexcept;
-
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
-    alignas(kFirstMemberAlignment) void * coreWindow = nullptr;
-};
-
-// Can be chained in SurfaceDescriptor
-struct SurfaceSourceXCBWindow : ChainedStruct {
-    inline SurfaceSourceXCBWindow();
-
-    struct Init;
-    inline SurfaceSourceXCBWindow(Init&& init);
-    inline operator const WGPUSurfaceSourceXCBWindow&() const noexcept;
-
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
-    alignas(kFirstMemberAlignment) void * connection = nullptr;
-    uint32_t window;
 };
 
 // Can be chained in SurfaceDescriptor
@@ -3078,7 +3278,7 @@ struct SurfaceSourceAndroidNativeWindow : ChainedStruct {
     inline SurfaceSourceAndroidNativeWindow(Init&& init);
     inline operator const WGPUSurfaceSourceAndroidNativeWindow&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * window;
 };
 
@@ -3090,7 +3290,7 @@ struct SurfaceSourceMetalLayer : ChainedStruct {
     inline SurfaceSourceMetalLayer(Init&& init);
     inline operator const WGPUSurfaceSourceMetalLayer&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * layer = nullptr;
 };
 
@@ -3102,7 +3302,7 @@ struct SurfaceSourceWaylandSurface : ChainedStruct {
     inline SurfaceSourceWaylandSurface(Init&& init);
     inline operator const WGPUSurfaceSourceWaylandSurface&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * display = nullptr;
     void * surface = nullptr;
 };
@@ -3115,9 +3315,22 @@ struct SurfaceSourceWindowsHWND : ChainedStruct {
     inline SurfaceSourceWindowsHWND(Init&& init);
     inline operator const WGPUSurfaceSourceWindowsHWND&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * hinstance = nullptr;
     void * hwnd = nullptr;
+};
+
+// Can be chained in SurfaceDescriptor
+struct SurfaceSourceXCBWindow : ChainedStruct {
+    inline SurfaceSourceXCBWindow();
+
+    struct Init;
+    inline SurfaceSourceXCBWindow(Init&& init);
+    inline operator const WGPUSurfaceSourceXCBWindow&() const noexcept;
+
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
+    alignas(kFirstMemberAlignment) void * connection = nullptr;
+    uint32_t window;
 };
 
 // Can be chained in SurfaceDescriptor
@@ -3128,7 +3341,7 @@ struct SurfaceSourceXlibWindow : ChainedStruct {
     inline SurfaceSourceXlibWindow(Init&& init);
     inline operator const WGPUSurfaceSourceXlibWindow&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void * ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(void *));
     alignas(kFirstMemberAlignment) void * display = nullptr;
     uint64_t window;
 };
@@ -3166,8 +3379,17 @@ struct TextureBindingViewDimensionDescriptor : ChainedStruct {
     inline TextureBindingViewDimensionDescriptor(Init&& init);
     inline operator const WGPUTextureBindingViewDimensionDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(TextureViewDimension ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(TextureViewDimension));
     alignas(kFirstMemberAlignment) TextureViewDimension textureBindingViewDimension = TextureViewDimension::Undefined;
+};
+
+struct TextureComponentSwizzle {
+    inline operator const WGPUTextureComponentSwizzle&() const noexcept;
+
+    ComponentSwizzle r = ComponentSwizzle::Undefined;
+    ComponentSwizzle g = ComponentSwizzle::Undefined;
+    ComponentSwizzle b = ComponentSwizzle::Undefined;
+    ComponentSwizzle a = ComponentSwizzle::Undefined;
 };
 
 struct VertexAttribute {
@@ -3188,7 +3410,7 @@ struct YCbCrVkDescriptor : ChainedStruct {
     inline YCbCrVkDescriptor(Init&& init);
     inline operator const WGPUYCbCrVkDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint32_t));
     alignas(kFirstMemberAlignment) uint32_t vkFormat = 0;
     uint32_t vkYCbCrModel = 0;
     uint32_t vkYCbCrRange = 0;
@@ -3201,12 +3423,6 @@ struct YCbCrVkDescriptor : ChainedStruct {
     FilterMode vkChromaFilter = FilterMode::Undefined;
     Bool forceExplicitReconstruction = false;
     uint64_t externalFormat = 0;
-};
-
-struct AHardwareBufferProperties {
-    inline operator const WGPUAHardwareBufferProperties&() const noexcept;
-
-    YCbCrVkDescriptor yCbCrInfo = {};
 };
 
 // Can be chained in AdapterInfo
@@ -3222,7 +3438,7 @@ struct AdapterPropertiesMemoryHeaps : ChainedStructOut {
     inline AdapterPropertiesMemoryHeaps& operator=(AdapterPropertiesMemoryHeaps&&);
     inline operator const WGPUAdapterPropertiesMemoryHeaps&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(size_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(size_t));
     alignas(kFirstMemberAlignment) size_t const heapCount = {};
     MemoryHeapInfo const * const heapInfo = nullptr;
 
@@ -3244,13 +3460,19 @@ struct AdapterPropertiesSubgroupMatrixConfigs : ChainedStructOut {
     inline AdapterPropertiesSubgroupMatrixConfigs& operator=(AdapterPropertiesSubgroupMatrixConfigs&&);
     inline operator const WGPUAdapterPropertiesSubgroupMatrixConfigs&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(size_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(size_t));
     alignas(kFirstMemberAlignment) size_t const configCount = {};
     SubgroupMatrixConfig const * const configs = nullptr;
 
   private:
     inline void FreeMembers();
     static inline void Reset(AdapterPropertiesSubgroupMatrixConfigs& value);
+};
+
+struct AHardwareBufferProperties {
+    inline operator const WGPUAHardwareBufferProperties&() const noexcept;
+
+    YCbCrVkDescriptor yCbCrInfo = {};
 };
 
 struct BindGroupEntry {
@@ -3271,6 +3493,7 @@ struct BindGroupLayoutEntry {
     ChainedStruct const * nextInChain = nullptr;
     uint32_t binding;
     ShaderStage visibility = ShaderStage::None;
+    uint32_t bindingArraySize = 0;
     BufferBindingLayout buffer = { nullptr, BufferBindingType::BindingNotUsed, false, 0 };
     SamplerBindingLayout sampler = { nullptr, SamplerBindingType::BindingNotUsed };
     TextureBindingLayout texture = { nullptr, TextureSampleType::BindingNotUsed, TextureViewDimension::e2D, false };
@@ -3292,13 +3515,6 @@ struct BufferDescriptor {
     BufferUsage usage = BufferUsage::None;
     uint64_t size;
     Bool mappedAtCreation = false;
-};
-
-struct CommandBufferDescriptor {
-    inline operator const WGPUCommandBufferDescriptor&() const noexcept;
-
-    ChainedStruct const * nextInChain = nullptr;
-    StringView label = {};
 };
 
 struct CommandEncoderDescriptor {
@@ -3328,27 +3544,14 @@ struct ComputePassDescriptor {
     PassTimestampWrites const * timestampWrites = nullptr;
 };
 
-struct ConstantEntry {
-    inline operator const WGPUConstantEntry&() const noexcept;
+struct ComputeState {
+    inline operator const WGPUComputeState&() const noexcept;
 
     ChainedStruct const * nextInChain = nullptr;
-    StringView key = {};
-    double value;
-};
-
-// Can be chained in DeviceDescriptor
-struct DawnCacheDeviceDescriptor : ChainedStruct {
-    inline DawnCacheDeviceDescriptor();
-
-    struct Init;
-    inline DawnCacheDeviceDescriptor(Init&& init);
-    inline operator const WGPUDawnCacheDeviceDescriptor&() const noexcept;
-
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(StringView ));
-    alignas(kFirstMemberAlignment) StringView isolationKey = {};
-    DawnLoadCacheDataFunction loadDataFunction = nullptr;
-    DawnStoreCacheDataFunction storeDataFunction = nullptr;
-    void * functionUserdata = nullptr;
+    ShaderModule module = nullptr;
+    StringView entryPoint = {};
+    size_t constantCount = 0;
+    ConstantEntry const * constants = nullptr;
 };
 
 // Can be chained in DawnFormatCapabilities
@@ -3364,7 +3567,7 @@ struct DawnDrmFormatCapabilities : ChainedStructOut {
     inline DawnDrmFormatCapabilities& operator=(DawnDrmFormatCapabilities&&);
     inline operator const WGPUDawnDrmFormatCapabilities&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(size_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(size_t));
     alignas(kFirstMemberAlignment) size_t const propertiesCount = {};
     DawnDrmFormatProperties const * const properties = nullptr;
 
@@ -3385,8 +3588,8 @@ struct DepthStencilState {
     uint32_t stencilReadMask = 0xFFFFFFFF;
     uint32_t stencilWriteMask = 0xFFFFFFFF;
     int32_t depthBias = 0;
-    float depthBiasSlopeScale = 0.0f;
-    float depthBiasClamp = 0.0f;
+    float depthBiasSlopeScale = 0.f;
+    float depthBiasClamp = 0.f;
 };
 
 struct ExternalTextureDescriptor {
@@ -3428,7 +3631,9 @@ struct InstanceDescriptor {
     inline operator const WGPUInstanceDescriptor&() const noexcept;
 
     ChainedStruct const * nextInChain = nullptr;
-    InstanceCapabilities capabilities = {};
+    size_t requiredFeatureCount = 0;
+    InstanceFeatureName const * requiredFeatures = nullptr;
+    InstanceLimits const * requiredLimits = nullptr;
 };
 
 struct Limits {
@@ -3466,10 +3671,7 @@ struct Limits {
     uint32_t maxComputeWorkgroupSizeY = kLimitU32Undefined;
     uint32_t maxComputeWorkgroupSizeZ = kLimitU32Undefined;
     uint32_t maxComputeWorkgroupsPerDimension = kLimitU32Undefined;
-    uint32_t maxStorageBuffersInVertexStage = kLimitU32Undefined;
-    uint32_t maxStorageTexturesInVertexStage = kLimitU32Undefined;
-    uint32_t maxStorageBuffersInFragmentStage = kLimitU32Undefined;
-    uint32_t maxStorageTexturesInFragmentStage = kLimitU32Undefined;
+    uint32_t maxImmediateSize = kLimitU32Undefined;
 };
 
 // Can be chained in PipelineLayoutDescriptor
@@ -3480,46 +3682,10 @@ struct PipelineLayoutPixelLocalStorage : ChainedStruct {
     inline PipelineLayoutPixelLocalStorage(Init&& init);
     inline operator const WGPUPipelineLayoutPixelLocalStorage&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint64_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint64_t));
     alignas(kFirstMemberAlignment) uint64_t totalPixelLocalStorageSize;
     size_t storageAttachmentCount = 0;
     PipelineLayoutStorageAttachment const * storageAttachments = nullptr;
-};
-
-struct QuerySetDescriptor {
-    inline operator const WGPUQuerySetDescriptor&() const noexcept;
-
-    ChainedStruct const * nextInChain = nullptr;
-    StringView label = {};
-    QueryType type = {};
-    uint32_t count;
-};
-
-struct QueueDescriptor {
-    inline operator const WGPUQueueDescriptor&() const noexcept;
-
-    ChainedStruct const * nextInChain = nullptr;
-    StringView label = {};
-};
-
-struct RenderBundleDescriptor {
-    inline operator const WGPURenderBundleDescriptor&() const noexcept;
-
-    ChainedStruct const * nextInChain = nullptr;
-    StringView label = {};
-};
-
-struct RenderBundleEncoderDescriptor {
-    inline operator const WGPURenderBundleEncoderDescriptor&() const noexcept;
-
-    ChainedStruct const * nextInChain = nullptr;
-    StringView label = {};
-    size_t colorFormatCount;
-    TextureFormat const * colorFormats = nullptr;
-    TextureFormat depthStencilFormat = TextureFormat::Undefined;
-    uint32_t sampleCount = 1;
-    Bool depthReadOnly = false;
-    Bool stencilReadOnly = false;
 };
 
 struct RenderPassColorAttachment {
@@ -3567,26 +3733,14 @@ struct SamplerDescriptor {
     FilterMode magFilter = FilterMode::Undefined;
     FilterMode minFilter = FilterMode::Undefined;
     MipmapFilterMode mipmapFilter = MipmapFilterMode::Undefined;
-    float lodMinClamp = 0.0f;
-    float lodMaxClamp = 32.0f;
+    float lodMinClamp = 0.f;
+    float lodMaxClamp = 32.f;
     CompareFunction compare = CompareFunction::Undefined;
     uint16_t maxAnisotropy = 1;
 };
 
-// Can be chained in ShaderModuleDescriptor
-struct ShaderSourceWGSL : ChainedStruct {
-    inline ShaderSourceWGSL();
-
-    struct Init;
-    inline ShaderSourceWGSL(Init&& init);
-    inline operator const WGPUShaderSourceWGSL&() const noexcept;
-
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(StringView ));
-    alignas(kFirstMemberAlignment) StringView code = {};
-};
-
-struct SharedBufferMemoryDescriptor {
-    inline operator const WGPUSharedBufferMemoryDescriptor&() const noexcept;
+struct ShaderModuleDescriptor {
+    inline operator const WGPUShaderModuleDescriptor&() const noexcept;
 
     ChainedStruct const * nextInChain = nullptr;
     StringView label = {};
@@ -3614,7 +3768,7 @@ struct SharedTextureMemoryAHardwareBufferProperties : ChainedStructOut {
     inline SharedTextureMemoryAHardwareBufferProperties(Init&& init);
     inline operator const WGPUSharedTextureMemoryAHardwareBufferProperties&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(YCbCrVkDescriptor ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(YCbCrVkDescriptor));
     alignas(kFirstMemberAlignment) YCbCrVkDescriptor yCbCrInfo = {};
 };
 
@@ -3637,7 +3791,7 @@ struct SharedTextureMemoryDmaBufDescriptor : ChainedStruct {
     inline SharedTextureMemoryDmaBufDescriptor(Init&& init);
     inline operator const WGPUSharedTextureMemoryDmaBufDescriptor&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Extent3D ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(Extent3D));
     alignas(kFirstMemberAlignment) Extent3D size = {};
     uint32_t drmFormat;
     uint64_t drmModifier;
@@ -3688,6 +3842,18 @@ struct TexelCopyTextureInfo {
     TextureAspect aspect = TextureAspect::Undefined;
 };
 
+// Can be chained in TextureViewDescriptor
+struct TextureComponentSwizzleDescriptor : ChainedStruct {
+    inline TextureComponentSwizzleDescriptor();
+
+    struct Init;
+    inline TextureComponentSwizzleDescriptor(Init&& init);
+    inline operator const WGPUTextureComponentSwizzleDescriptor&() const noexcept;
+
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(TextureComponentSwizzle));
+    alignas(kFirstMemberAlignment) TextureComponentSwizzle swizzle = {};
+};
+
 struct TextureDescriptor {
     inline operator const WGPUTextureDescriptor&() const noexcept;
 
@@ -3701,21 +3867,6 @@ struct TextureDescriptor {
     uint32_t sampleCount = 1;
     size_t viewFormatCount = 0;
     TextureFormat const * viewFormats = nullptr;
-};
-
-struct TextureViewDescriptor {
-    inline operator const WGPUTextureViewDescriptor&() const noexcept;
-
-    ChainedStruct const * nextInChain = nullptr;
-    StringView label = {};
-    TextureFormat format = TextureFormat::Undefined;
-    TextureViewDimension dimension = TextureViewDimension::Undefined;
-    uint32_t baseMipLevel = 0;
-    uint32_t mipLevelCount = kMipLevelCountUndefined;
-    uint32_t baseArrayLayer = 0;
-    uint32_t arrayLayerCount = kArrayLayerCountUndefined;
-    TextureAspect aspect = TextureAspect::Undefined;
-    TextureUsage usage = TextureUsage::None;
 };
 
 struct VertexBufferLayout {
@@ -3790,14 +3941,13 @@ struct CompilationInfo {
     CompilationMessage const * messages = nullptr;
 };
 
-struct ComputeState {
-    inline operator const WGPUComputeState&() const noexcept;
+struct ComputePipelineDescriptor {
+    inline operator const WGPUComputePipelineDescriptor&() const noexcept;
 
     ChainedStruct const * nextInChain = nullptr;
-    ShaderModule module = nullptr;
-    StringView entryPoint = {};
-    size_t constantCount = 0;
-    ConstantEntry const * constants = nullptr;
+    StringView label = {};
+    PipelineLayout layout = nullptr;
+    ComputeState compute = {};
 };
 
 struct DawnFormatCapabilities {
@@ -3813,7 +3963,7 @@ struct PipelineLayoutDescriptor {
     StringView label = {};
     size_t bindGroupLayoutCount;
     BindGroupLayout const * bindGroupLayouts = nullptr;
-    uint32_t immediateDataRangeByteSize = 0;
+    uint32_t immediateSize = 0;
 };
 
 // Can be chained in RenderPassDescriptor
@@ -3824,17 +3974,10 @@ struct RenderPassPixelLocalStorage : ChainedStruct {
     inline RenderPassPixelLocalStorage(Init&& init);
     inline operator const WGPURenderPassPixelLocalStorage&() const noexcept;
 
-    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint64_t ));
+    static constexpr size_t kFirstMemberAlignment = detail::ConstexprMax(alignof(ChainedStruct), alignof(uint64_t));
     alignas(kFirstMemberAlignment) uint64_t totalPixelLocalStorageSize;
     size_t storageAttachmentCount = 0;
     RenderPassStorageAttachment const * storageAttachments = nullptr;
-};
-
-struct ShaderModuleDescriptor {
-    inline operator const WGPUShaderModuleDescriptor&() const noexcept;
-
-    ChainedStruct const * nextInChain = nullptr;
-    StringView label = {};
 };
 
 struct SharedTextureMemoryDescriptor {
@@ -3853,6 +3996,21 @@ struct SharedTextureMemoryProperties {
     TextureFormat format = TextureFormat::Undefined;
 };
 
+struct TextureViewDescriptor {
+    inline operator const WGPUTextureViewDescriptor&() const noexcept;
+
+    ChainedStruct const * nextInChain = nullptr;
+    StringView label = {};
+    TextureFormat format = TextureFormat::Undefined;
+    TextureViewDimension dimension = TextureViewDimension::Undefined;
+    uint32_t baseMipLevel = 0;
+    uint32_t mipLevelCount = kMipLevelCountUndefined;
+    uint32_t baseArrayLayer = 0;
+    uint32_t arrayLayerCount = kArrayLayerCountUndefined;
+    TextureAspect aspect = TextureAspect::Undefined;
+    TextureUsage usage = TextureUsage::None;
+};
+
 struct VertexState {
     inline operator const WGPUVertexState&() const noexcept;
 
@@ -3863,15 +4021,6 @@ struct VertexState {
     ConstantEntry const * constants = nullptr;
     size_t bufferCount = 0;
     VertexBufferLayout const * buffers = nullptr;
-};
-
-struct ComputePipelineDescriptor {
-    inline operator const WGPUComputePipelineDescriptor&() const noexcept;
-
-    ChainedStruct const * nextInChain = nullptr;
-    StringView label = {};
-    PipelineLayout layout = nullptr;
-    ComputeState compute = {};
 };
 
 struct FragmentState {
@@ -3983,30 +4132,6 @@ static_assert(alignof(AdapterPropertiesD3D) == alignof(WGPUAdapterPropertiesD3D)
 static_assert(offsetof(AdapterPropertiesD3D, shaderModel) == offsetof(WGPUAdapterPropertiesD3D, shaderModel),
         "offsetof mismatch for AdapterPropertiesD3D::shaderModel");
 
-// AdapterPropertiesSubgroups implementation
-AdapterPropertiesSubgroups::AdapterPropertiesSubgroups()
-  : ChainedStructOut { nullptr, SType::AdapterPropertiesSubgroups } {}
-struct AdapterPropertiesSubgroups::Init {
-    ChainedStructOut *  nextInChain;
-    uint32_t subgroupMinSize = kLimitU32Undefined;
-    uint32_t subgroupMaxSize = kLimitU32Undefined;
-};
-AdapterPropertiesSubgroups::AdapterPropertiesSubgroups(AdapterPropertiesSubgroups::Init&& init)
-  : ChainedStructOut { init.nextInChain, SType::AdapterPropertiesSubgroups }, 
-    subgroupMinSize(std::move(init.subgroupMinSize)), 
-    subgroupMaxSize(std::move(init.subgroupMaxSize)){}
-
-AdapterPropertiesSubgroups::operator const WGPUAdapterPropertiesSubgroups&() const noexcept {
-    return *reinterpret_cast<const WGPUAdapterPropertiesSubgroups*>(this);
-}
-
-static_assert(sizeof(AdapterPropertiesSubgroups) == sizeof(WGPUAdapterPropertiesSubgroups), "sizeof mismatch for AdapterPropertiesSubgroups");
-static_assert(alignof(AdapterPropertiesSubgroups) == alignof(WGPUAdapterPropertiesSubgroups), "alignof mismatch for AdapterPropertiesSubgroups");
-static_assert(offsetof(AdapterPropertiesSubgroups, subgroupMinSize) == offsetof(WGPUAdapterPropertiesSubgroups, subgroupMinSize),
-        "offsetof mismatch for AdapterPropertiesSubgroups::subgroupMinSize");
-static_assert(offsetof(AdapterPropertiesSubgroups, subgroupMaxSize) == offsetof(WGPUAdapterPropertiesSubgroups, subgroupMaxSize),
-        "offsetof mismatch for AdapterPropertiesSubgroups::subgroupMaxSize");
-
 // AdapterPropertiesVk implementation
 AdapterPropertiesVk::AdapterPropertiesVk()
   : ChainedStructOut { nullptr, SType::AdapterPropertiesVk } {}
@@ -4026,26 +4151,6 @@ static_assert(sizeof(AdapterPropertiesVk) == sizeof(WGPUAdapterPropertiesVk), "s
 static_assert(alignof(AdapterPropertiesVk) == alignof(WGPUAdapterPropertiesVk), "alignof mismatch for AdapterPropertiesVk");
 static_assert(offsetof(AdapterPropertiesVk, driverVersion) == offsetof(WGPUAdapterPropertiesVk, driverVersion),
         "offsetof mismatch for AdapterPropertiesVk::driverVersion");
-
-// BindGroupLayoutEntryArraySize implementation
-BindGroupLayoutEntryArraySize::BindGroupLayoutEntryArraySize()
-  : ChainedStruct { nullptr, SType::BindGroupLayoutEntryArraySize } {}
-struct BindGroupLayoutEntryArraySize::Init {
-    ChainedStruct * const nextInChain;
-    uint32_t arraySize = 0;
-};
-BindGroupLayoutEntryArraySize::BindGroupLayoutEntryArraySize(BindGroupLayoutEntryArraySize::Init&& init)
-  : ChainedStruct { init.nextInChain, SType::BindGroupLayoutEntryArraySize }, 
-    arraySize(std::move(init.arraySize)){}
-
-BindGroupLayoutEntryArraySize::operator const WGPUBindGroupLayoutEntryArraySize&() const noexcept {
-    return *reinterpret_cast<const WGPUBindGroupLayoutEntryArraySize*>(this);
-}
-
-static_assert(sizeof(BindGroupLayoutEntryArraySize) == sizeof(WGPUBindGroupLayoutEntryArraySize), "sizeof mismatch for BindGroupLayoutEntryArraySize");
-static_assert(alignof(BindGroupLayoutEntryArraySize) == alignof(WGPUBindGroupLayoutEntryArraySize), "alignof mismatch for BindGroupLayoutEntryArraySize");
-static_assert(offsetof(BindGroupLayoutEntryArraySize, arraySize) == offsetof(WGPUBindGroupLayoutEntryArraySize, arraySize),
-        "offsetof mismatch for BindGroupLayoutEntryArraySize::arraySize");
 
 // BlendComponent implementation
 
@@ -4144,6 +4249,66 @@ static_assert(alignof(ColorTargetStateExpandResolveTextureDawn) == alignof(WGPUC
 static_assert(offsetof(ColorTargetStateExpandResolveTextureDawn, enabled) == offsetof(WGPUColorTargetStateExpandResolveTextureDawn, enabled),
         "offsetof mismatch for ColorTargetStateExpandResolveTextureDawn::enabled");
 
+// CommandBufferDescriptor implementation
+
+CommandBufferDescriptor::operator const WGPUCommandBufferDescriptor&() const noexcept {
+    return *reinterpret_cast<const WGPUCommandBufferDescriptor*>(this);
+}
+
+static_assert(sizeof(CommandBufferDescriptor) == sizeof(WGPUCommandBufferDescriptor), "sizeof mismatch for CommandBufferDescriptor");
+static_assert(alignof(CommandBufferDescriptor) == alignof(WGPUCommandBufferDescriptor), "alignof mismatch for CommandBufferDescriptor");
+static_assert(offsetof(CommandBufferDescriptor, nextInChain) == offsetof(WGPUCommandBufferDescriptor, nextInChain),
+        "offsetof mismatch for CommandBufferDescriptor::nextInChain");
+static_assert(offsetof(CommandBufferDescriptor, label) == offsetof(WGPUCommandBufferDescriptor, label),
+        "offsetof mismatch for CommandBufferDescriptor::label");
+
+// CompatibilityModeLimits implementation
+CompatibilityModeLimits::CompatibilityModeLimits()
+  : ChainedStructOut { nullptr, SType::CompatibilityModeLimits } {}
+struct CompatibilityModeLimits::Init {
+    ChainedStructOut *  nextInChain;
+    uint32_t maxStorageBuffersInVertexStage = kLimitU32Undefined;
+    uint32_t maxStorageTexturesInVertexStage = kLimitU32Undefined;
+    uint32_t maxStorageBuffersInFragmentStage = kLimitU32Undefined;
+    uint32_t maxStorageTexturesInFragmentStage = kLimitU32Undefined;
+};
+CompatibilityModeLimits::CompatibilityModeLimits(CompatibilityModeLimits::Init&& init)
+  : ChainedStructOut { init.nextInChain, SType::CompatibilityModeLimits }, 
+    maxStorageBuffersInVertexStage(std::move(init.maxStorageBuffersInVertexStage)), 
+    maxStorageTexturesInVertexStage(std::move(init.maxStorageTexturesInVertexStage)), 
+    maxStorageBuffersInFragmentStage(std::move(init.maxStorageBuffersInFragmentStage)), 
+    maxStorageTexturesInFragmentStage(std::move(init.maxStorageTexturesInFragmentStage)){}
+
+CompatibilityModeLimits::operator const WGPUCompatibilityModeLimits&() const noexcept {
+    return *reinterpret_cast<const WGPUCompatibilityModeLimits*>(this);
+}
+
+static_assert(sizeof(CompatibilityModeLimits) == sizeof(WGPUCompatibilityModeLimits), "sizeof mismatch for CompatibilityModeLimits");
+static_assert(alignof(CompatibilityModeLimits) == alignof(WGPUCompatibilityModeLimits), "alignof mismatch for CompatibilityModeLimits");
+static_assert(offsetof(CompatibilityModeLimits, maxStorageBuffersInVertexStage) == offsetof(WGPUCompatibilityModeLimits, maxStorageBuffersInVertexStage),
+        "offsetof mismatch for CompatibilityModeLimits::maxStorageBuffersInVertexStage");
+static_assert(offsetof(CompatibilityModeLimits, maxStorageTexturesInVertexStage) == offsetof(WGPUCompatibilityModeLimits, maxStorageTexturesInVertexStage),
+        "offsetof mismatch for CompatibilityModeLimits::maxStorageTexturesInVertexStage");
+static_assert(offsetof(CompatibilityModeLimits, maxStorageBuffersInFragmentStage) == offsetof(WGPUCompatibilityModeLimits, maxStorageBuffersInFragmentStage),
+        "offsetof mismatch for CompatibilityModeLimits::maxStorageBuffersInFragmentStage");
+static_assert(offsetof(CompatibilityModeLimits, maxStorageTexturesInFragmentStage) == offsetof(WGPUCompatibilityModeLimits, maxStorageTexturesInFragmentStage),
+        "offsetof mismatch for CompatibilityModeLimits::maxStorageTexturesInFragmentStage");
+
+// ConstantEntry implementation
+
+ConstantEntry::operator const WGPUConstantEntry&() const noexcept {
+    return *reinterpret_cast<const WGPUConstantEntry*>(this);
+}
+
+static_assert(sizeof(ConstantEntry) == sizeof(WGPUConstantEntry), "sizeof mismatch for ConstantEntry");
+static_assert(alignof(ConstantEntry) == alignof(WGPUConstantEntry), "alignof mismatch for ConstantEntry");
+static_assert(offsetof(ConstantEntry, nextInChain) == offsetof(WGPUConstantEntry, nextInChain),
+        "offsetof mismatch for ConstantEntry::nextInChain");
+static_assert(offsetof(ConstantEntry, key) == offsetof(WGPUConstantEntry, key),
+        "offsetof mismatch for ConstantEntry::key");
+static_assert(offsetof(ConstantEntry, value) == offsetof(WGPUConstantEntry, value),
+        "offsetof mismatch for ConstantEntry::value");
+
 // CopyTextureForBrowserOptions implementation
 
 CopyTextureForBrowserOptions::operator const WGPUCopyTextureForBrowserOptions&() const noexcept {
@@ -4170,30 +4335,6 @@ static_assert(offsetof(CopyTextureForBrowserOptions, dstAlphaMode) == offsetof(W
         "offsetof mismatch for CopyTextureForBrowserOptions::dstAlphaMode");
 static_assert(offsetof(CopyTextureForBrowserOptions, internalUsage) == offsetof(WGPUCopyTextureForBrowserOptions, internalUsage),
         "offsetof mismatch for CopyTextureForBrowserOptions::internalUsage");
-
-// DawnWGSLBlocklist implementation
-DawnWGSLBlocklist::DawnWGSLBlocklist()
-  : ChainedStruct { nullptr, SType::DawnWGSLBlocklist } {}
-struct DawnWGSLBlocklist::Init {
-    ChainedStruct * const nextInChain;
-    size_t blocklistedFeatureCount = 0;
-    const char* const * blocklistedFeatures = nullptr;
-};
-DawnWGSLBlocklist::DawnWGSLBlocklist(DawnWGSLBlocklist::Init&& init)
-  : ChainedStruct { init.nextInChain, SType::DawnWGSLBlocklist }, 
-    blocklistedFeatureCount(std::move(init.blocklistedFeatureCount)), 
-    blocklistedFeatures(std::move(init.blocklistedFeatures)){}
-
-DawnWGSLBlocklist::operator const WGPUDawnWGSLBlocklist&() const noexcept {
-    return *reinterpret_cast<const WGPUDawnWGSLBlocklist*>(this);
-}
-
-static_assert(sizeof(DawnWGSLBlocklist) == sizeof(WGPUDawnWGSLBlocklist), "sizeof mismatch for DawnWGSLBlocklist");
-static_assert(alignof(DawnWGSLBlocklist) == alignof(WGPUDawnWGSLBlocklist), "alignof mismatch for DawnWGSLBlocklist");
-static_assert(offsetof(DawnWGSLBlocklist, blocklistedFeatureCount) == offsetof(WGPUDawnWGSLBlocklist, blocklistedFeatureCount),
-        "offsetof mismatch for DawnWGSLBlocklist::blocklistedFeatureCount");
-static_assert(offsetof(DawnWGSLBlocklist, blocklistedFeatures) == offsetof(WGPUDawnWGSLBlocklist, blocklistedFeatures),
-        "offsetof mismatch for DawnWGSLBlocklist::blocklistedFeatures");
 
 // DawnAdapterPropertiesPowerPreference implementation
 DawnAdapterPropertiesPowerPreference::DawnAdapterPropertiesPowerPreference()
@@ -4234,6 +4375,38 @@ static_assert(sizeof(DawnBufferDescriptorErrorInfoFromWireClient) == sizeof(WGPU
 static_assert(alignof(DawnBufferDescriptorErrorInfoFromWireClient) == alignof(WGPUDawnBufferDescriptorErrorInfoFromWireClient), "alignof mismatch for DawnBufferDescriptorErrorInfoFromWireClient");
 static_assert(offsetof(DawnBufferDescriptorErrorInfoFromWireClient, outOfMemory) == offsetof(WGPUDawnBufferDescriptorErrorInfoFromWireClient, outOfMemory),
         "offsetof mismatch for DawnBufferDescriptorErrorInfoFromWireClient::outOfMemory");
+
+// DawnCacheDeviceDescriptor implementation
+DawnCacheDeviceDescriptor::DawnCacheDeviceDescriptor()
+  : ChainedStruct { nullptr, SType::DawnCacheDeviceDescriptor } {}
+struct DawnCacheDeviceDescriptor::Init {
+    ChainedStruct * const nextInChain;
+    StringView isolationKey = {};
+    DawnLoadCacheDataFunction loadDataFunction = nullptr;
+    DawnStoreCacheDataFunction storeDataFunction = nullptr;
+    void * functionUserdata = nullptr;
+};
+DawnCacheDeviceDescriptor::DawnCacheDeviceDescriptor(DawnCacheDeviceDescriptor::Init&& init)
+  : ChainedStruct { init.nextInChain, SType::DawnCacheDeviceDescriptor }, 
+    isolationKey(std::move(init.isolationKey)), 
+    loadDataFunction(std::move(init.loadDataFunction)), 
+    storeDataFunction(std::move(init.storeDataFunction)), 
+    functionUserdata(std::move(init.functionUserdata)){}
+
+DawnCacheDeviceDescriptor::operator const WGPUDawnCacheDeviceDescriptor&() const noexcept {
+    return *reinterpret_cast<const WGPUDawnCacheDeviceDescriptor*>(this);
+}
+
+static_assert(sizeof(DawnCacheDeviceDescriptor) == sizeof(WGPUDawnCacheDeviceDescriptor), "sizeof mismatch for DawnCacheDeviceDescriptor");
+static_assert(alignof(DawnCacheDeviceDescriptor) == alignof(WGPUDawnCacheDeviceDescriptor), "alignof mismatch for DawnCacheDeviceDescriptor");
+static_assert(offsetof(DawnCacheDeviceDescriptor, isolationKey) == offsetof(WGPUDawnCacheDeviceDescriptor, isolationKey),
+        "offsetof mismatch for DawnCacheDeviceDescriptor::isolationKey");
+static_assert(offsetof(DawnCacheDeviceDescriptor, loadDataFunction) == offsetof(WGPUDawnCacheDeviceDescriptor, loadDataFunction),
+        "offsetof mismatch for DawnCacheDeviceDescriptor::loadDataFunction");
+static_assert(offsetof(DawnCacheDeviceDescriptor, storeDataFunction) == offsetof(WGPUDawnCacheDeviceDescriptor, storeDataFunction),
+        "offsetof mismatch for DawnCacheDeviceDescriptor::storeDataFunction");
+static_assert(offsetof(DawnCacheDeviceDescriptor, functionUserdata) == offsetof(WGPUDawnCacheDeviceDescriptor, functionUserdata),
+        "offsetof mismatch for DawnCacheDeviceDescriptor::functionUserdata");
 
 // DawnCompilationMessageUtf16 implementation
 DawnCompilationMessageUtf16::DawnCompilationMessageUtf16()
@@ -4316,26 +4489,6 @@ static_assert(alignof(DawnEncoderInternalUsageDescriptor) == alignof(WGPUDawnEnc
 static_assert(offsetof(DawnEncoderInternalUsageDescriptor, useInternalUsages) == offsetof(WGPUDawnEncoderInternalUsageDescriptor, useInternalUsages),
         "offsetof mismatch for DawnEncoderInternalUsageDescriptor::useInternalUsages");
 
-// DawnExperimentalImmediateDataLimits implementation
-DawnExperimentalImmediateDataLimits::DawnExperimentalImmediateDataLimits()
-  : ChainedStructOut { nullptr, SType::DawnExperimentalImmediateDataLimits } {}
-struct DawnExperimentalImmediateDataLimits::Init {
-    ChainedStructOut *  nextInChain;
-    uint32_t maxImmediateDataRangeByteSize = kLimitU32Undefined;
-};
-DawnExperimentalImmediateDataLimits::DawnExperimentalImmediateDataLimits(DawnExperimentalImmediateDataLimits::Init&& init)
-  : ChainedStructOut { init.nextInChain, SType::DawnExperimentalImmediateDataLimits }, 
-    maxImmediateDataRangeByteSize(std::move(init.maxImmediateDataRangeByteSize)){}
-
-DawnExperimentalImmediateDataLimits::operator const WGPUDawnExperimentalImmediateDataLimits&() const noexcept {
-    return *reinterpret_cast<const WGPUDawnExperimentalImmediateDataLimits*>(this);
-}
-
-static_assert(sizeof(DawnExperimentalImmediateDataLimits) == sizeof(WGPUDawnExperimentalImmediateDataLimits), "sizeof mismatch for DawnExperimentalImmediateDataLimits");
-static_assert(alignof(DawnExperimentalImmediateDataLimits) == alignof(WGPUDawnExperimentalImmediateDataLimits), "alignof mismatch for DawnExperimentalImmediateDataLimits");
-static_assert(offsetof(DawnExperimentalImmediateDataLimits, maxImmediateDataRangeByteSize) == offsetof(WGPUDawnExperimentalImmediateDataLimits, maxImmediateDataRangeByteSize),
-        "offsetof mismatch for DawnExperimentalImmediateDataLimits::maxImmediateDataRangeByteSize");
-
 // DawnFakeBufferOOMForTesting implementation
 DawnFakeBufferOOMForTesting::DawnFakeBufferOOMForTesting()
   : ChainedStruct { nullptr, SType::DawnFakeBufferOOMForTesting } {}
@@ -4363,6 +4516,42 @@ static_assert(offsetof(DawnFakeBufferOOMForTesting, fakeOOMAtNativeMap) == offse
         "offsetof mismatch for DawnFakeBufferOOMForTesting::fakeOOMAtNativeMap");
 static_assert(offsetof(DawnFakeBufferOOMForTesting, fakeOOMAtDevice) == offsetof(WGPUDawnFakeBufferOOMForTesting, fakeOOMAtDevice),
         "offsetof mismatch for DawnFakeBufferOOMForTesting::fakeOOMAtDevice");
+
+// DawnFakeDeviceInitializeErrorForTesting implementation
+DawnFakeDeviceInitializeErrorForTesting::DawnFakeDeviceInitializeErrorForTesting()
+  : ChainedStruct { nullptr, SType::DawnFakeDeviceInitializeErrorForTesting } {}
+struct DawnFakeDeviceInitializeErrorForTesting::Init {
+    ChainedStruct * const nextInChain;
+};
+DawnFakeDeviceInitializeErrorForTesting::DawnFakeDeviceInitializeErrorForTesting(DawnFakeDeviceInitializeErrorForTesting::Init&& init)
+  : ChainedStruct { init.nextInChain, SType::DawnFakeDeviceInitializeErrorForTesting }{}
+
+DawnFakeDeviceInitializeErrorForTesting::operator const WGPUDawnFakeDeviceInitializeErrorForTesting&() const noexcept {
+    return *reinterpret_cast<const WGPUDawnFakeDeviceInitializeErrorForTesting*>(this);
+}
+
+static_assert(sizeof(DawnFakeDeviceInitializeErrorForTesting) == sizeof(WGPUDawnFakeDeviceInitializeErrorForTesting), "sizeof mismatch for DawnFakeDeviceInitializeErrorForTesting");
+static_assert(alignof(DawnFakeDeviceInitializeErrorForTesting) == alignof(WGPUDawnFakeDeviceInitializeErrorForTesting), "alignof mismatch for DawnFakeDeviceInitializeErrorForTesting");
+
+// DawnHostMappedPointerLimits implementation
+DawnHostMappedPointerLimits::DawnHostMappedPointerLimits()
+  : ChainedStructOut { nullptr, SType::DawnHostMappedPointerLimits } {}
+struct DawnHostMappedPointerLimits::Init {
+    ChainedStructOut *  nextInChain;
+    uint32_t hostMappedPointerAlignment = kLimitU32Undefined;
+};
+DawnHostMappedPointerLimits::DawnHostMappedPointerLimits(DawnHostMappedPointerLimits::Init&& init)
+  : ChainedStructOut { init.nextInChain, SType::DawnHostMappedPointerLimits }, 
+    hostMappedPointerAlignment(std::move(init.hostMappedPointerAlignment)){}
+
+DawnHostMappedPointerLimits::operator const WGPUDawnHostMappedPointerLimits&() const noexcept {
+    return *reinterpret_cast<const WGPUDawnHostMappedPointerLimits*>(this);
+}
+
+static_assert(sizeof(DawnHostMappedPointerLimits) == sizeof(WGPUDawnHostMappedPointerLimits), "sizeof mismatch for DawnHostMappedPointerLimits");
+static_assert(alignof(DawnHostMappedPointerLimits) == alignof(WGPUDawnHostMappedPointerLimits), "alignof mismatch for DawnHostMappedPointerLimits");
+static_assert(offsetof(DawnHostMappedPointerLimits, hostMappedPointerAlignment) == offsetof(WGPUDawnHostMappedPointerLimits, hostMappedPointerAlignment),
+        "offsetof mismatch for DawnHostMappedPointerLimits::hostMappedPointerAlignment");
 
 // DawnInjectedInvalidSType implementation
 DawnInjectedInvalidSType::DawnInjectedInvalidSType()
@@ -4496,6 +4685,30 @@ static_assert(offsetof(DawnTogglesDescriptor, disabledToggleCount) == offsetof(W
 static_assert(offsetof(DawnTogglesDescriptor, disabledToggles) == offsetof(WGPUDawnTogglesDescriptor, disabledToggles),
         "offsetof mismatch for DawnTogglesDescriptor::disabledToggles");
 
+// DawnWGSLBlocklist implementation
+DawnWGSLBlocklist::DawnWGSLBlocklist()
+  : ChainedStruct { nullptr, SType::DawnWGSLBlocklist } {}
+struct DawnWGSLBlocklist::Init {
+    ChainedStruct * const nextInChain;
+    size_t blocklistedFeatureCount = 0;
+    const char* const * blocklistedFeatures = nullptr;
+};
+DawnWGSLBlocklist::DawnWGSLBlocklist(DawnWGSLBlocklist::Init&& init)
+  : ChainedStruct { init.nextInChain, SType::DawnWGSLBlocklist }, 
+    blocklistedFeatureCount(std::move(init.blocklistedFeatureCount)), 
+    blocklistedFeatures(std::move(init.blocklistedFeatures)){}
+
+DawnWGSLBlocklist::operator const WGPUDawnWGSLBlocklist&() const noexcept {
+    return *reinterpret_cast<const WGPUDawnWGSLBlocklist*>(this);
+}
+
+static_assert(sizeof(DawnWGSLBlocklist) == sizeof(WGPUDawnWGSLBlocklist), "sizeof mismatch for DawnWGSLBlocklist");
+static_assert(alignof(DawnWGSLBlocklist) == alignof(WGPUDawnWGSLBlocklist), "alignof mismatch for DawnWGSLBlocklist");
+static_assert(offsetof(DawnWGSLBlocklist, blocklistedFeatureCount) == offsetof(WGPUDawnWGSLBlocklist, blocklistedFeatureCount),
+        "offsetof mismatch for DawnWGSLBlocklist::blocklistedFeatureCount");
+static_assert(offsetof(DawnWGSLBlocklist, blocklistedFeatures) == offsetof(WGPUDawnWGSLBlocklist, blocklistedFeatures),
+        "offsetof mismatch for DawnWGSLBlocklist::blocklistedFeatures");
+
 // DawnWireWGSLControl implementation
 DawnWireWGSLControl::DawnWireWGSLControl()
   : ChainedStruct { nullptr, SType::DawnWireWGSLControl } {}
@@ -4599,20 +4812,18 @@ static_assert(alignof(Future) == alignof(WGPUFuture), "alignof mismatch for Futu
 static_assert(offsetof(Future, id) == offsetof(WGPUFuture, id),
         "offsetof mismatch for Future::id");
 
-// InstanceCapabilities implementation
+// InstanceLimits implementation
 
-InstanceCapabilities::operator const WGPUInstanceCapabilities&() const noexcept {
-    return *reinterpret_cast<const WGPUInstanceCapabilities*>(this);
+InstanceLimits::operator const WGPUInstanceLimits&() const noexcept {
+    return *reinterpret_cast<const WGPUInstanceLimits*>(this);
 }
 
-static_assert(sizeof(InstanceCapabilities) == sizeof(WGPUInstanceCapabilities), "sizeof mismatch for InstanceCapabilities");
-static_assert(alignof(InstanceCapabilities) == alignof(WGPUInstanceCapabilities), "alignof mismatch for InstanceCapabilities");
-static_assert(offsetof(InstanceCapabilities, nextInChain) == offsetof(WGPUInstanceCapabilities, nextInChain),
-        "offsetof mismatch for InstanceCapabilities::nextInChain");
-static_assert(offsetof(InstanceCapabilities, timedWaitAnyEnable) == offsetof(WGPUInstanceCapabilities, timedWaitAnyEnable),
-        "offsetof mismatch for InstanceCapabilities::timedWaitAnyEnable");
-static_assert(offsetof(InstanceCapabilities, timedWaitAnyMaxCount) == offsetof(WGPUInstanceCapabilities, timedWaitAnyMaxCount),
-        "offsetof mismatch for InstanceCapabilities::timedWaitAnyMaxCount");
+static_assert(sizeof(InstanceLimits) == sizeof(WGPUInstanceLimits), "sizeof mismatch for InstanceLimits");
+static_assert(alignof(InstanceLimits) == alignof(WGPUInstanceLimits), "alignof mismatch for InstanceLimits");
+static_assert(offsetof(InstanceLimits, nextInChain) == offsetof(WGPUInstanceLimits, nextInChain),
+        "offsetof mismatch for InstanceLimits::nextInChain");
+static_assert(offsetof(InstanceLimits, timedWaitAnyMaxCount) == offsetof(WGPUInstanceLimits, timedWaitAnyMaxCount),
+        "offsetof mismatch for InstanceLimits::timedWaitAnyMaxCount");
 
 // MemoryHeapInfo implementation
 
@@ -4725,6 +4936,74 @@ static_assert(offsetof(PrimitiveState, cullMode) == offsetof(WGPUPrimitiveState,
 static_assert(offsetof(PrimitiveState, unclippedDepth) == offsetof(WGPUPrimitiveState, unclippedDepth),
         "offsetof mismatch for PrimitiveState::unclippedDepth");
 
+// QuerySetDescriptor implementation
+
+QuerySetDescriptor::operator const WGPUQuerySetDescriptor&() const noexcept {
+    return *reinterpret_cast<const WGPUQuerySetDescriptor*>(this);
+}
+
+static_assert(sizeof(QuerySetDescriptor) == sizeof(WGPUQuerySetDescriptor), "sizeof mismatch for QuerySetDescriptor");
+static_assert(alignof(QuerySetDescriptor) == alignof(WGPUQuerySetDescriptor), "alignof mismatch for QuerySetDescriptor");
+static_assert(offsetof(QuerySetDescriptor, nextInChain) == offsetof(WGPUQuerySetDescriptor, nextInChain),
+        "offsetof mismatch for QuerySetDescriptor::nextInChain");
+static_assert(offsetof(QuerySetDescriptor, label) == offsetof(WGPUQuerySetDescriptor, label),
+        "offsetof mismatch for QuerySetDescriptor::label");
+static_assert(offsetof(QuerySetDescriptor, type) == offsetof(WGPUQuerySetDescriptor, type),
+        "offsetof mismatch for QuerySetDescriptor::type");
+static_assert(offsetof(QuerySetDescriptor, count) == offsetof(WGPUQuerySetDescriptor, count),
+        "offsetof mismatch for QuerySetDescriptor::count");
+
+// QueueDescriptor implementation
+
+QueueDescriptor::operator const WGPUQueueDescriptor&() const noexcept {
+    return *reinterpret_cast<const WGPUQueueDescriptor*>(this);
+}
+
+static_assert(sizeof(QueueDescriptor) == sizeof(WGPUQueueDescriptor), "sizeof mismatch for QueueDescriptor");
+static_assert(alignof(QueueDescriptor) == alignof(WGPUQueueDescriptor), "alignof mismatch for QueueDescriptor");
+static_assert(offsetof(QueueDescriptor, nextInChain) == offsetof(WGPUQueueDescriptor, nextInChain),
+        "offsetof mismatch for QueueDescriptor::nextInChain");
+static_assert(offsetof(QueueDescriptor, label) == offsetof(WGPUQueueDescriptor, label),
+        "offsetof mismatch for QueueDescriptor::label");
+
+// RenderBundleDescriptor implementation
+
+RenderBundleDescriptor::operator const WGPURenderBundleDescriptor&() const noexcept {
+    return *reinterpret_cast<const WGPURenderBundleDescriptor*>(this);
+}
+
+static_assert(sizeof(RenderBundleDescriptor) == sizeof(WGPURenderBundleDescriptor), "sizeof mismatch for RenderBundleDescriptor");
+static_assert(alignof(RenderBundleDescriptor) == alignof(WGPURenderBundleDescriptor), "alignof mismatch for RenderBundleDescriptor");
+static_assert(offsetof(RenderBundleDescriptor, nextInChain) == offsetof(WGPURenderBundleDescriptor, nextInChain),
+        "offsetof mismatch for RenderBundleDescriptor::nextInChain");
+static_assert(offsetof(RenderBundleDescriptor, label) == offsetof(WGPURenderBundleDescriptor, label),
+        "offsetof mismatch for RenderBundleDescriptor::label");
+
+// RenderBundleEncoderDescriptor implementation
+
+RenderBundleEncoderDescriptor::operator const WGPURenderBundleEncoderDescriptor&() const noexcept {
+    return *reinterpret_cast<const WGPURenderBundleEncoderDescriptor*>(this);
+}
+
+static_assert(sizeof(RenderBundleEncoderDescriptor) == sizeof(WGPURenderBundleEncoderDescriptor), "sizeof mismatch for RenderBundleEncoderDescriptor");
+static_assert(alignof(RenderBundleEncoderDescriptor) == alignof(WGPURenderBundleEncoderDescriptor), "alignof mismatch for RenderBundleEncoderDescriptor");
+static_assert(offsetof(RenderBundleEncoderDescriptor, nextInChain) == offsetof(WGPURenderBundleEncoderDescriptor, nextInChain),
+        "offsetof mismatch for RenderBundleEncoderDescriptor::nextInChain");
+static_assert(offsetof(RenderBundleEncoderDescriptor, label) == offsetof(WGPURenderBundleEncoderDescriptor, label),
+        "offsetof mismatch for RenderBundleEncoderDescriptor::label");
+static_assert(offsetof(RenderBundleEncoderDescriptor, colorFormatCount) == offsetof(WGPURenderBundleEncoderDescriptor, colorFormatCount),
+        "offsetof mismatch for RenderBundleEncoderDescriptor::colorFormatCount");
+static_assert(offsetof(RenderBundleEncoderDescriptor, colorFormats) == offsetof(WGPURenderBundleEncoderDescriptor, colorFormats),
+        "offsetof mismatch for RenderBundleEncoderDescriptor::colorFormats");
+static_assert(offsetof(RenderBundleEncoderDescriptor, depthStencilFormat) == offsetof(WGPURenderBundleEncoderDescriptor, depthStencilFormat),
+        "offsetof mismatch for RenderBundleEncoderDescriptor::depthStencilFormat");
+static_assert(offsetof(RenderBundleEncoderDescriptor, sampleCount) == offsetof(WGPURenderBundleEncoderDescriptor, sampleCount),
+        "offsetof mismatch for RenderBundleEncoderDescriptor::sampleCount");
+static_assert(offsetof(RenderBundleEncoderDescriptor, depthReadOnly) == offsetof(WGPURenderBundleEncoderDescriptor, depthReadOnly),
+        "offsetof mismatch for RenderBundleEncoderDescriptor::depthReadOnly");
+static_assert(offsetof(RenderBundleEncoderDescriptor, stencilReadOnly) == offsetof(WGPURenderBundleEncoderDescriptor, stencilReadOnly),
+        "offsetof mismatch for RenderBundleEncoderDescriptor::stencilReadOnly");
+
 // RenderPassDepthStencilAttachment implementation
 
 RenderPassDepthStencilAttachment::operator const WGPURenderPassDepthStencilAttachment&() const noexcept {
@@ -4786,6 +5065,46 @@ static_assert(offsetof(RenderPassDescriptorExpandResolveRect, width) == offsetof
 static_assert(offsetof(RenderPassDescriptorExpandResolveRect, height) == offsetof(WGPURenderPassDescriptorExpandResolveRect, height),
         "offsetof mismatch for RenderPassDescriptorExpandResolveRect::height");
 
+// RenderPassDescriptorResolveRect implementation
+RenderPassDescriptorResolveRect::RenderPassDescriptorResolveRect()
+  : ChainedStruct { nullptr, SType::RenderPassDescriptorResolveRect } {}
+struct RenderPassDescriptorResolveRect::Init {
+    ChainedStruct * const nextInChain;
+    uint32_t colorOffsetX;
+    uint32_t colorOffsetY;
+    uint32_t resolveOffsetX;
+    uint32_t resolveOffsetY;
+    uint32_t width;
+    uint32_t height;
+};
+RenderPassDescriptorResolveRect::RenderPassDescriptorResolveRect(RenderPassDescriptorResolveRect::Init&& init)
+  : ChainedStruct { init.nextInChain, SType::RenderPassDescriptorResolveRect }, 
+    colorOffsetX(std::move(init.colorOffsetX)), 
+    colorOffsetY(std::move(init.colorOffsetY)), 
+    resolveOffsetX(std::move(init.resolveOffsetX)), 
+    resolveOffsetY(std::move(init.resolveOffsetY)), 
+    width(std::move(init.width)), 
+    height(std::move(init.height)){}
+
+RenderPassDescriptorResolveRect::operator const WGPURenderPassDescriptorResolveRect&() const noexcept {
+    return *reinterpret_cast<const WGPURenderPassDescriptorResolveRect*>(this);
+}
+
+static_assert(sizeof(RenderPassDescriptorResolveRect) == sizeof(WGPURenderPassDescriptorResolveRect), "sizeof mismatch for RenderPassDescriptorResolveRect");
+static_assert(alignof(RenderPassDescriptorResolveRect) == alignof(WGPURenderPassDescriptorResolveRect), "alignof mismatch for RenderPassDescriptorResolveRect");
+static_assert(offsetof(RenderPassDescriptorResolveRect, colorOffsetX) == offsetof(WGPURenderPassDescriptorResolveRect, colorOffsetX),
+        "offsetof mismatch for RenderPassDescriptorResolveRect::colorOffsetX");
+static_assert(offsetof(RenderPassDescriptorResolveRect, colorOffsetY) == offsetof(WGPURenderPassDescriptorResolveRect, colorOffsetY),
+        "offsetof mismatch for RenderPassDescriptorResolveRect::colorOffsetY");
+static_assert(offsetof(RenderPassDescriptorResolveRect, resolveOffsetX) == offsetof(WGPURenderPassDescriptorResolveRect, resolveOffsetX),
+        "offsetof mismatch for RenderPassDescriptorResolveRect::resolveOffsetX");
+static_assert(offsetof(RenderPassDescriptorResolveRect, resolveOffsetY) == offsetof(WGPURenderPassDescriptorResolveRect, resolveOffsetY),
+        "offsetof mismatch for RenderPassDescriptorResolveRect::resolveOffsetY");
+static_assert(offsetof(RenderPassDescriptorResolveRect, width) == offsetof(WGPURenderPassDescriptorResolveRect, width),
+        "offsetof mismatch for RenderPassDescriptorResolveRect::width");
+static_assert(offsetof(RenderPassDescriptorResolveRect, height) == offsetof(WGPURenderPassDescriptorResolveRect, height),
+        "offsetof mismatch for RenderPassDescriptorResolveRect::height");
+
 // RenderPassMaxDrawCount implementation
 RenderPassMaxDrawCount::RenderPassMaxDrawCount()
   : ChainedStruct { nullptr, SType::RenderPassMaxDrawCount } {}
@@ -4805,6 +5124,42 @@ static_assert(sizeof(RenderPassMaxDrawCount) == sizeof(WGPURenderPassMaxDrawCoun
 static_assert(alignof(RenderPassMaxDrawCount) == alignof(WGPURenderPassMaxDrawCount), "alignof mismatch for RenderPassMaxDrawCount");
 static_assert(offsetof(RenderPassMaxDrawCount, maxDrawCount) == offsetof(WGPURenderPassMaxDrawCount, maxDrawCount),
         "offsetof mismatch for RenderPassMaxDrawCount::maxDrawCount");
+
+// RequestAdapterWebGPUBackendOptions implementation
+RequestAdapterWebGPUBackendOptions::RequestAdapterWebGPUBackendOptions()
+  : ChainedStruct { nullptr, SType::RequestAdapterWebGPUBackendOptions } {}
+struct RequestAdapterWebGPUBackendOptions::Init {
+    ChainedStruct * const nextInChain;
+};
+RequestAdapterWebGPUBackendOptions::RequestAdapterWebGPUBackendOptions(RequestAdapterWebGPUBackendOptions::Init&& init)
+  : ChainedStruct { init.nextInChain, SType::RequestAdapterWebGPUBackendOptions }{}
+
+RequestAdapterWebGPUBackendOptions::operator const WGPURequestAdapterWebGPUBackendOptions&() const noexcept {
+    return *reinterpret_cast<const WGPURequestAdapterWebGPUBackendOptions*>(this);
+}
+
+static_assert(sizeof(RequestAdapterWebGPUBackendOptions) == sizeof(WGPURequestAdapterWebGPUBackendOptions), "sizeof mismatch for RequestAdapterWebGPUBackendOptions");
+static_assert(alignof(RequestAdapterWebGPUBackendOptions) == alignof(WGPURequestAdapterWebGPUBackendOptions), "alignof mismatch for RequestAdapterWebGPUBackendOptions");
+
+// RequestAdapterWebXROptions implementation
+RequestAdapterWebXROptions::RequestAdapterWebXROptions()
+  : ChainedStruct { nullptr, SType::RequestAdapterWebXROptions } {}
+struct RequestAdapterWebXROptions::Init {
+    ChainedStruct * const nextInChain;
+    Bool xrCompatible;
+};
+RequestAdapterWebXROptions::RequestAdapterWebXROptions(RequestAdapterWebXROptions::Init&& init)
+  : ChainedStruct { init.nextInChain, SType::RequestAdapterWebXROptions }, 
+    xrCompatible(std::move(init.xrCompatible)){}
+
+RequestAdapterWebXROptions::operator const WGPURequestAdapterWebXROptions&() const noexcept {
+    return *reinterpret_cast<const WGPURequestAdapterWebXROptions*>(this);
+}
+
+static_assert(sizeof(RequestAdapterWebXROptions) == sizeof(WGPURequestAdapterWebXROptions), "sizeof mismatch for RequestAdapterWebXROptions");
+static_assert(alignof(RequestAdapterWebXROptions) == alignof(WGPURequestAdapterWebXROptions), "alignof mismatch for RequestAdapterWebXROptions");
+static_assert(offsetof(RequestAdapterWebXROptions, xrCompatible) == offsetof(WGPURequestAdapterWebXROptions, xrCompatible),
+        "offsetof mismatch for RequestAdapterWebXROptions::xrCompatible");
 
 // SamplerBindingLayout implementation
 
@@ -4863,6 +5218,26 @@ static_assert(offsetof(ShaderSourceSPIRV, codeSize) == offsetof(WGPUShaderSource
 static_assert(offsetof(ShaderSourceSPIRV, code) == offsetof(WGPUShaderSourceSPIRV, code),
         "offsetof mismatch for ShaderSourceSPIRV::code");
 
+// ShaderSourceWGSL implementation
+ShaderSourceWGSL::ShaderSourceWGSL()
+  : ChainedStruct { nullptr, SType::ShaderSourceWGSL } {}
+struct ShaderSourceWGSL::Init {
+    ChainedStruct * const nextInChain;
+    StringView code = {};
+};
+ShaderSourceWGSL::ShaderSourceWGSL(ShaderSourceWGSL::Init&& init)
+  : ChainedStruct { init.nextInChain, SType::ShaderSourceWGSL }, 
+    code(std::move(init.code)){}
+
+ShaderSourceWGSL::operator const WGPUShaderSourceWGSL&() const noexcept {
+    return *reinterpret_cast<const WGPUShaderSourceWGSL*>(this);
+}
+
+static_assert(sizeof(ShaderSourceWGSL) == sizeof(WGPUShaderSourceWGSL), "sizeof mismatch for ShaderSourceWGSL");
+static_assert(alignof(ShaderSourceWGSL) == alignof(WGPUShaderSourceWGSL), "alignof mismatch for ShaderSourceWGSL");
+static_assert(offsetof(ShaderSourceWGSL, code) == offsetof(WGPUShaderSourceWGSL, code),
+        "offsetof mismatch for ShaderSourceWGSL::code");
+
 // SharedBufferMemoryBeginAccessDescriptor implementation
 
 SharedBufferMemoryBeginAccessDescriptor::operator const WGPUSharedBufferMemoryBeginAccessDescriptor&() const noexcept {
@@ -4881,6 +5256,19 @@ static_assert(offsetof(SharedBufferMemoryBeginAccessDescriptor, fences) == offse
         "offsetof mismatch for SharedBufferMemoryBeginAccessDescriptor::fences");
 static_assert(offsetof(SharedBufferMemoryBeginAccessDescriptor, signaledValues) == offsetof(WGPUSharedBufferMemoryBeginAccessDescriptor, signaledValues),
         "offsetof mismatch for SharedBufferMemoryBeginAccessDescriptor::signaledValues");
+
+// SharedBufferMemoryDescriptor implementation
+
+SharedBufferMemoryDescriptor::operator const WGPUSharedBufferMemoryDescriptor&() const noexcept {
+    return *reinterpret_cast<const WGPUSharedBufferMemoryDescriptor*>(this);
+}
+
+static_assert(sizeof(SharedBufferMemoryDescriptor) == sizeof(WGPUSharedBufferMemoryDescriptor), "sizeof mismatch for SharedBufferMemoryDescriptor");
+static_assert(alignof(SharedBufferMemoryDescriptor) == alignof(WGPUSharedBufferMemoryDescriptor), "alignof mismatch for SharedBufferMemoryDescriptor");
+static_assert(offsetof(SharedBufferMemoryDescriptor, nextInChain) == offsetof(WGPUSharedBufferMemoryDescriptor, nextInChain),
+        "offsetof mismatch for SharedBufferMemoryDescriptor::nextInChain");
+static_assert(offsetof(SharedBufferMemoryDescriptor, label) == offsetof(WGPUSharedBufferMemoryDescriptor, label),
+        "offsetof mismatch for SharedBufferMemoryDescriptor::label");
 
 // SharedBufferMemoryEndAccessState implementation
 SharedBufferMemoryEndAccessState::SharedBufferMemoryEndAccessState() = default;
@@ -5197,6 +5585,50 @@ static_assert(alignof(SharedFenceVkSemaphoreZirconHandleExportInfo) == alignof(W
 static_assert(offsetof(SharedFenceVkSemaphoreZirconHandleExportInfo, handle) == offsetof(WGPUSharedFenceVkSemaphoreZirconHandleExportInfo, handle),
         "offsetof mismatch for SharedFenceVkSemaphoreZirconHandleExportInfo::handle");
 
+// SharedTextureMemoryAHardwareBufferDescriptor implementation
+SharedTextureMemoryAHardwareBufferDescriptor::SharedTextureMemoryAHardwareBufferDescriptor()
+  : ChainedStruct { nullptr, SType::SharedTextureMemoryAHardwareBufferDescriptor } {}
+struct SharedTextureMemoryAHardwareBufferDescriptor::Init {
+    ChainedStruct * const nextInChain;
+    void * handle;
+    Bool useExternalFormat;
+};
+SharedTextureMemoryAHardwareBufferDescriptor::SharedTextureMemoryAHardwareBufferDescriptor(SharedTextureMemoryAHardwareBufferDescriptor::Init&& init)
+  : ChainedStruct { init.nextInChain, SType::SharedTextureMemoryAHardwareBufferDescriptor }, 
+    handle(std::move(init.handle)), 
+    useExternalFormat(std::move(init.useExternalFormat)){}
+
+SharedTextureMemoryAHardwareBufferDescriptor::operator const WGPUSharedTextureMemoryAHardwareBufferDescriptor&() const noexcept {
+    return *reinterpret_cast<const WGPUSharedTextureMemoryAHardwareBufferDescriptor*>(this);
+}
+
+static_assert(sizeof(SharedTextureMemoryAHardwareBufferDescriptor) == sizeof(WGPUSharedTextureMemoryAHardwareBufferDescriptor), "sizeof mismatch for SharedTextureMemoryAHardwareBufferDescriptor");
+static_assert(alignof(SharedTextureMemoryAHardwareBufferDescriptor) == alignof(WGPUSharedTextureMemoryAHardwareBufferDescriptor), "alignof mismatch for SharedTextureMemoryAHardwareBufferDescriptor");
+static_assert(offsetof(SharedTextureMemoryAHardwareBufferDescriptor, handle) == offsetof(WGPUSharedTextureMemoryAHardwareBufferDescriptor, handle),
+        "offsetof mismatch for SharedTextureMemoryAHardwareBufferDescriptor::handle");
+static_assert(offsetof(SharedTextureMemoryAHardwareBufferDescriptor, useExternalFormat) == offsetof(WGPUSharedTextureMemoryAHardwareBufferDescriptor, useExternalFormat),
+        "offsetof mismatch for SharedTextureMemoryAHardwareBufferDescriptor::useExternalFormat");
+
+// SharedTextureMemoryD3D11BeginState implementation
+SharedTextureMemoryD3D11BeginState::SharedTextureMemoryD3D11BeginState()
+  : ChainedStruct { nullptr, SType::SharedTextureMemoryD3D11BeginState } {}
+struct SharedTextureMemoryD3D11BeginState::Init {
+    ChainedStruct * const nextInChain;
+    Bool requiresEndAccessFence = true;
+};
+SharedTextureMemoryD3D11BeginState::SharedTextureMemoryD3D11BeginState(SharedTextureMemoryD3D11BeginState::Init&& init)
+  : ChainedStruct { init.nextInChain, SType::SharedTextureMemoryD3D11BeginState }, 
+    requiresEndAccessFence(std::move(init.requiresEndAccessFence)){}
+
+SharedTextureMemoryD3D11BeginState::operator const WGPUSharedTextureMemoryD3D11BeginState&() const noexcept {
+    return *reinterpret_cast<const WGPUSharedTextureMemoryD3D11BeginState*>(this);
+}
+
+static_assert(sizeof(SharedTextureMemoryD3D11BeginState) == sizeof(WGPUSharedTextureMemoryD3D11BeginState), "sizeof mismatch for SharedTextureMemoryD3D11BeginState");
+static_assert(alignof(SharedTextureMemoryD3D11BeginState) == alignof(WGPUSharedTextureMemoryD3D11BeginState), "alignof mismatch for SharedTextureMemoryD3D11BeginState");
+static_assert(offsetof(SharedTextureMemoryD3D11BeginState, requiresEndAccessFence) == offsetof(WGPUSharedTextureMemoryD3D11BeginState, requiresEndAccessFence),
+        "offsetof mismatch for SharedTextureMemoryD3D11BeginState::requiresEndAccessFence");
+
 // SharedTextureMemoryD3DSwapchainBeginState implementation
 SharedTextureMemoryD3DSwapchainBeginState::SharedTextureMemoryD3DSwapchainBeginState()
   : ChainedStruct { nullptr, SType::SharedTextureMemoryD3DSwapchainBeginState } {}
@@ -5216,6 +5648,21 @@ static_assert(sizeof(SharedTextureMemoryD3DSwapchainBeginState) == sizeof(WGPUSh
 static_assert(alignof(SharedTextureMemoryD3DSwapchainBeginState) == alignof(WGPUSharedTextureMemoryD3DSwapchainBeginState), "alignof mismatch for SharedTextureMemoryD3DSwapchainBeginState");
 static_assert(offsetof(SharedTextureMemoryD3DSwapchainBeginState, isSwapchain) == offsetof(WGPUSharedTextureMemoryD3DSwapchainBeginState, isSwapchain),
         "offsetof mismatch for SharedTextureMemoryD3DSwapchainBeginState::isSwapchain");
+
+// SharedTextureMemoryDmaBufPlane implementation
+
+SharedTextureMemoryDmaBufPlane::operator const WGPUSharedTextureMemoryDmaBufPlane&() const noexcept {
+    return *reinterpret_cast<const WGPUSharedTextureMemoryDmaBufPlane*>(this);
+}
+
+static_assert(sizeof(SharedTextureMemoryDmaBufPlane) == sizeof(WGPUSharedTextureMemoryDmaBufPlane), "sizeof mismatch for SharedTextureMemoryDmaBufPlane");
+static_assert(alignof(SharedTextureMemoryDmaBufPlane) == alignof(WGPUSharedTextureMemoryDmaBufPlane), "alignof mismatch for SharedTextureMemoryDmaBufPlane");
+static_assert(offsetof(SharedTextureMemoryDmaBufPlane, fd) == offsetof(WGPUSharedTextureMemoryDmaBufPlane, fd),
+        "offsetof mismatch for SharedTextureMemoryDmaBufPlane::fd");
+static_assert(offsetof(SharedTextureMemoryDmaBufPlane, offset) == offsetof(WGPUSharedTextureMemoryDmaBufPlane, offset),
+        "offsetof mismatch for SharedTextureMemoryDmaBufPlane::offset");
+static_assert(offsetof(SharedTextureMemoryDmaBufPlane, stride) == offsetof(WGPUSharedTextureMemoryDmaBufPlane, stride),
+        "offsetof mismatch for SharedTextureMemoryDmaBufPlane::stride");
 
 // SharedTextureMemoryDXGISharedHandleDescriptor implementation
 SharedTextureMemoryDXGISharedHandleDescriptor::SharedTextureMemoryDXGISharedHandleDescriptor()
@@ -5284,45 +5731,6 @@ static_assert(offsetof(SharedTextureMemoryIOSurfaceDescriptor, ioSurface) == off
         "offsetof mismatch for SharedTextureMemoryIOSurfaceDescriptor::ioSurface");
 static_assert(offsetof(SharedTextureMemoryIOSurfaceDescriptor, allowStorageBinding) == offsetof(WGPUSharedTextureMemoryIOSurfaceDescriptor, allowStorageBinding),
         "offsetof mismatch for SharedTextureMemoryIOSurfaceDescriptor::allowStorageBinding");
-
-// SharedTextureMemoryAHardwareBufferDescriptor implementation
-SharedTextureMemoryAHardwareBufferDescriptor::SharedTextureMemoryAHardwareBufferDescriptor()
-  : ChainedStruct { nullptr, SType::SharedTextureMemoryAHardwareBufferDescriptor } {}
-struct SharedTextureMemoryAHardwareBufferDescriptor::Init {
-    ChainedStruct * const nextInChain;
-    void * handle;
-    Bool useExternalFormat;
-};
-SharedTextureMemoryAHardwareBufferDescriptor::SharedTextureMemoryAHardwareBufferDescriptor(SharedTextureMemoryAHardwareBufferDescriptor::Init&& init)
-  : ChainedStruct { init.nextInChain, SType::SharedTextureMemoryAHardwareBufferDescriptor }, 
-    handle(std::move(init.handle)), 
-    useExternalFormat(std::move(init.useExternalFormat)){}
-
-SharedTextureMemoryAHardwareBufferDescriptor::operator const WGPUSharedTextureMemoryAHardwareBufferDescriptor&() const noexcept {
-    return *reinterpret_cast<const WGPUSharedTextureMemoryAHardwareBufferDescriptor*>(this);
-}
-
-static_assert(sizeof(SharedTextureMemoryAHardwareBufferDescriptor) == sizeof(WGPUSharedTextureMemoryAHardwareBufferDescriptor), "sizeof mismatch for SharedTextureMemoryAHardwareBufferDescriptor");
-static_assert(alignof(SharedTextureMemoryAHardwareBufferDescriptor) == alignof(WGPUSharedTextureMemoryAHardwareBufferDescriptor), "alignof mismatch for SharedTextureMemoryAHardwareBufferDescriptor");
-static_assert(offsetof(SharedTextureMemoryAHardwareBufferDescriptor, handle) == offsetof(WGPUSharedTextureMemoryAHardwareBufferDescriptor, handle),
-        "offsetof mismatch for SharedTextureMemoryAHardwareBufferDescriptor::handle");
-static_assert(offsetof(SharedTextureMemoryAHardwareBufferDescriptor, useExternalFormat) == offsetof(WGPUSharedTextureMemoryAHardwareBufferDescriptor, useExternalFormat),
-        "offsetof mismatch for SharedTextureMemoryAHardwareBufferDescriptor::useExternalFormat");
-
-// SharedTextureMemoryDmaBufPlane implementation
-
-SharedTextureMemoryDmaBufPlane::operator const WGPUSharedTextureMemoryDmaBufPlane&() const noexcept {
-    return *reinterpret_cast<const WGPUSharedTextureMemoryDmaBufPlane*>(this);
-}
-
-static_assert(sizeof(SharedTextureMemoryDmaBufPlane) == sizeof(WGPUSharedTextureMemoryDmaBufPlane), "sizeof mismatch for SharedTextureMemoryDmaBufPlane");
-static_assert(alignof(SharedTextureMemoryDmaBufPlane) == alignof(WGPUSharedTextureMemoryDmaBufPlane), "alignof mismatch for SharedTextureMemoryDmaBufPlane");
-static_assert(offsetof(SharedTextureMemoryDmaBufPlane, fd) == offsetof(WGPUSharedTextureMemoryDmaBufPlane, fd),
-        "offsetof mismatch for SharedTextureMemoryDmaBufPlane::fd");
-static_assert(offsetof(SharedTextureMemoryDmaBufPlane, offset) == offsetof(WGPUSharedTextureMemoryDmaBufPlane, offset),
-        "offsetof mismatch for SharedTextureMemoryDmaBufPlane::offset");
-static_assert(offsetof(SharedTextureMemoryDmaBufPlane, stride) == offsetof(WGPUSharedTextureMemoryDmaBufPlane, stride),
-        "offsetof mismatch for SharedTextureMemoryDmaBufPlane::stride");
 
 // SharedTextureMemoryOpaqueFDDescriptor implementation
 SharedTextureMemoryOpaqueFDDescriptor::SharedTextureMemoryOpaqueFDDescriptor()
@@ -5529,54 +5937,6 @@ static_assert(offsetof(SubgroupMatrixConfig, N) == offsetof(WGPUSubgroupMatrixCo
 static_assert(offsetof(SubgroupMatrixConfig, K) == offsetof(WGPUSubgroupMatrixConfig, K),
         "offsetof mismatch for SubgroupMatrixConfig::K");
 
-// SupportedWGSLLanguageFeatures implementation
-SupportedWGSLLanguageFeatures::SupportedWGSLLanguageFeatures() = default;
-SupportedWGSLLanguageFeatures::~SupportedWGSLLanguageFeatures() {
-    FreeMembers();
-}
-
-SupportedWGSLLanguageFeatures::SupportedWGSLLanguageFeatures(SupportedWGSLLanguageFeatures&& rhs)
-    : featureCount(rhs.featureCount),
-            features(rhs.features){
-    Reset(rhs);
-}
-
-SupportedWGSLLanguageFeatures& SupportedWGSLLanguageFeatures::operator=(SupportedWGSLLanguageFeatures&& rhs) {
-    if (&rhs == this) {
-        return *this;
-    }
-    FreeMembers();
-    detail::AsNonConstReference(this->featureCount) = std::move(rhs.featureCount);
-    detail::AsNonConstReference(this->features) = std::move(rhs.features);
-    Reset(rhs);
-    return *this;
-}
-
-void SupportedWGSLLanguageFeatures::FreeMembers() {
-    bool needsFreeing = false;    if (this->features != nullptr) { needsFreeing = true; }if (needsFreeing) {
-        wgpuDawnWireClientSupportedWGSLLanguageFeaturesFreeMembers(
-            *reinterpret_cast<WGPUSupportedWGSLLanguageFeatures*>(this));
-    }
-}
-
-// static
-void SupportedWGSLLanguageFeatures::Reset(SupportedWGSLLanguageFeatures& value) {
-    SupportedWGSLLanguageFeatures defaultValue{};
-    detail::AsNonConstReference(value.featureCount) = defaultValue.featureCount;
-    detail::AsNonConstReference(value.features) = defaultValue.features;
-}
-
-SupportedWGSLLanguageFeatures::operator const WGPUSupportedWGSLLanguageFeatures&() const noexcept {
-    return *reinterpret_cast<const WGPUSupportedWGSLLanguageFeatures*>(this);
-}
-
-static_assert(sizeof(SupportedWGSLLanguageFeatures) == sizeof(WGPUSupportedWGSLLanguageFeatures), "sizeof mismatch for SupportedWGSLLanguageFeatures");
-static_assert(alignof(SupportedWGSLLanguageFeatures) == alignof(WGPUSupportedWGSLLanguageFeatures), "alignof mismatch for SupportedWGSLLanguageFeatures");
-static_assert(offsetof(SupportedWGSLLanguageFeatures, featureCount) == offsetof(WGPUSupportedWGSLLanguageFeatures, featureCount),
-        "offsetof mismatch for SupportedWGSLLanguageFeatures::featureCount");
-static_assert(offsetof(SupportedWGSLLanguageFeatures, features) == offsetof(WGPUSupportedWGSLLanguageFeatures, features),
-        "offsetof mismatch for SupportedWGSLLanguageFeatures::features");
-
 // SupportedFeatures implementation
 SupportedFeatures::SupportedFeatures() = default;
 SupportedFeatures::~SupportedFeatures() {
@@ -5624,6 +5984,102 @@ static_assert(offsetof(SupportedFeatures, featureCount) == offsetof(WGPUSupporte
         "offsetof mismatch for SupportedFeatures::featureCount");
 static_assert(offsetof(SupportedFeatures, features) == offsetof(WGPUSupportedFeatures, features),
         "offsetof mismatch for SupportedFeatures::features");
+
+// SupportedInstanceFeatures implementation
+SupportedInstanceFeatures::SupportedInstanceFeatures() = default;
+SupportedInstanceFeatures::~SupportedInstanceFeatures() {
+    FreeMembers();
+}
+
+SupportedInstanceFeatures::SupportedInstanceFeatures(SupportedInstanceFeatures&& rhs)
+    : featureCount(rhs.featureCount),
+            features(rhs.features){
+    Reset(rhs);
+}
+
+SupportedInstanceFeatures& SupportedInstanceFeatures::operator=(SupportedInstanceFeatures&& rhs) {
+    if (&rhs == this) {
+        return *this;
+    }
+    FreeMembers();
+    detail::AsNonConstReference(this->featureCount) = std::move(rhs.featureCount);
+    detail::AsNonConstReference(this->features) = std::move(rhs.features);
+    Reset(rhs);
+    return *this;
+}
+
+void SupportedInstanceFeatures::FreeMembers() {
+    bool needsFreeing = false;    if (this->features != nullptr) { needsFreeing = true; }if (needsFreeing) {
+        wgpuDawnWireClientSupportedInstanceFeaturesFreeMembers(
+            *reinterpret_cast<WGPUSupportedInstanceFeatures*>(this));
+    }
+}
+
+// static
+void SupportedInstanceFeatures::Reset(SupportedInstanceFeatures& value) {
+    SupportedInstanceFeatures defaultValue{};
+    detail::AsNonConstReference(value.featureCount) = defaultValue.featureCount;
+    detail::AsNonConstReference(value.features) = defaultValue.features;
+}
+
+SupportedInstanceFeatures::operator const WGPUSupportedInstanceFeatures&() const noexcept {
+    return *reinterpret_cast<const WGPUSupportedInstanceFeatures*>(this);
+}
+
+static_assert(sizeof(SupportedInstanceFeatures) == sizeof(WGPUSupportedInstanceFeatures), "sizeof mismatch for SupportedInstanceFeatures");
+static_assert(alignof(SupportedInstanceFeatures) == alignof(WGPUSupportedInstanceFeatures), "alignof mismatch for SupportedInstanceFeatures");
+static_assert(offsetof(SupportedInstanceFeatures, featureCount) == offsetof(WGPUSupportedInstanceFeatures, featureCount),
+        "offsetof mismatch for SupportedInstanceFeatures::featureCount");
+static_assert(offsetof(SupportedInstanceFeatures, features) == offsetof(WGPUSupportedInstanceFeatures, features),
+        "offsetof mismatch for SupportedInstanceFeatures::features");
+
+// SupportedWGSLLanguageFeatures implementation
+SupportedWGSLLanguageFeatures::SupportedWGSLLanguageFeatures() = default;
+SupportedWGSLLanguageFeatures::~SupportedWGSLLanguageFeatures() {
+    FreeMembers();
+}
+
+SupportedWGSLLanguageFeatures::SupportedWGSLLanguageFeatures(SupportedWGSLLanguageFeatures&& rhs)
+    : featureCount(rhs.featureCount),
+            features(rhs.features){
+    Reset(rhs);
+}
+
+SupportedWGSLLanguageFeatures& SupportedWGSLLanguageFeatures::operator=(SupportedWGSLLanguageFeatures&& rhs) {
+    if (&rhs == this) {
+        return *this;
+    }
+    FreeMembers();
+    detail::AsNonConstReference(this->featureCount) = std::move(rhs.featureCount);
+    detail::AsNonConstReference(this->features) = std::move(rhs.features);
+    Reset(rhs);
+    return *this;
+}
+
+void SupportedWGSLLanguageFeatures::FreeMembers() {
+    bool needsFreeing = false;    if (this->features != nullptr) { needsFreeing = true; }if (needsFreeing) {
+        wgpuDawnWireClientSupportedWGSLLanguageFeaturesFreeMembers(
+            *reinterpret_cast<WGPUSupportedWGSLLanguageFeatures*>(this));
+    }
+}
+
+// static
+void SupportedWGSLLanguageFeatures::Reset(SupportedWGSLLanguageFeatures& value) {
+    SupportedWGSLLanguageFeatures defaultValue{};
+    detail::AsNonConstReference(value.featureCount) = defaultValue.featureCount;
+    detail::AsNonConstReference(value.features) = defaultValue.features;
+}
+
+SupportedWGSLLanguageFeatures::operator const WGPUSupportedWGSLLanguageFeatures&() const noexcept {
+    return *reinterpret_cast<const WGPUSupportedWGSLLanguageFeatures*>(this);
+}
+
+static_assert(sizeof(SupportedWGSLLanguageFeatures) == sizeof(WGPUSupportedWGSLLanguageFeatures), "sizeof mismatch for SupportedWGSLLanguageFeatures");
+static_assert(alignof(SupportedWGSLLanguageFeatures) == alignof(WGPUSupportedWGSLLanguageFeatures), "alignof mismatch for SupportedWGSLLanguageFeatures");
+static_assert(offsetof(SupportedWGSLLanguageFeatures, featureCount) == offsetof(WGPUSupportedWGSLLanguageFeatures, featureCount),
+        "offsetof mismatch for SupportedWGSLLanguageFeatures::featureCount");
+static_assert(offsetof(SupportedWGSLLanguageFeatures, features) == offsetof(WGPUSupportedWGSLLanguageFeatures, features),
+        "offsetof mismatch for SupportedWGSLLanguageFeatures::features");
 
 // SurfaceCapabilities implementation
 SurfaceCapabilities::SurfaceCapabilities() = default;
@@ -5700,6 +6156,30 @@ static_assert(offsetof(SurfaceCapabilities, alphaModeCount) == offsetof(WGPUSurf
 static_assert(offsetof(SurfaceCapabilities, alphaModes) == offsetof(WGPUSurfaceCapabilities, alphaModes),
         "offsetof mismatch for SurfaceCapabilities::alphaModes");
 
+// SurfaceColorManagement implementation
+SurfaceColorManagement::SurfaceColorManagement()
+  : ChainedStruct { nullptr, SType::SurfaceColorManagement } {}
+struct SurfaceColorManagement::Init {
+    ChainedStruct * const nextInChain;
+    PredefinedColorSpace colorSpace = {};
+    ToneMappingMode toneMappingMode = {};
+};
+SurfaceColorManagement::SurfaceColorManagement(SurfaceColorManagement::Init&& init)
+  : ChainedStruct { init.nextInChain, SType::SurfaceColorManagement }, 
+    colorSpace(std::move(init.colorSpace)), 
+    toneMappingMode(std::move(init.toneMappingMode)){}
+
+SurfaceColorManagement::operator const WGPUSurfaceColorManagement&() const noexcept {
+    return *reinterpret_cast<const WGPUSurfaceColorManagement*>(this);
+}
+
+static_assert(sizeof(SurfaceColorManagement) == sizeof(WGPUSurfaceColorManagement), "sizeof mismatch for SurfaceColorManagement");
+static_assert(alignof(SurfaceColorManagement) == alignof(WGPUSurfaceColorManagement), "alignof mismatch for SurfaceColorManagement");
+static_assert(offsetof(SurfaceColorManagement, colorSpace) == offsetof(WGPUSurfaceColorManagement, colorSpace),
+        "offsetof mismatch for SurfaceColorManagement::colorSpace");
+static_assert(offsetof(SurfaceColorManagement, toneMappingMode) == offsetof(WGPUSurfaceColorManagement, toneMappingMode),
+        "offsetof mismatch for SurfaceColorManagement::toneMappingMode");
+
 // SurfaceConfiguration implementation
 
 SurfaceConfiguration::operator const WGPUSurfaceConfiguration&() const noexcept {
@@ -5728,6 +6208,26 @@ static_assert(offsetof(SurfaceConfiguration, alphaMode) == offsetof(WGPUSurfaceC
         "offsetof mismatch for SurfaceConfiguration::alphaMode");
 static_assert(offsetof(SurfaceConfiguration, presentMode) == offsetof(WGPUSurfaceConfiguration, presentMode),
         "offsetof mismatch for SurfaceConfiguration::presentMode");
+
+// SurfaceDescriptorFromWindowsCoreWindow implementation
+SurfaceDescriptorFromWindowsCoreWindow::SurfaceDescriptorFromWindowsCoreWindow()
+  : ChainedStruct { nullptr, SType::SurfaceDescriptorFromWindowsCoreWindow } {}
+struct SurfaceDescriptorFromWindowsCoreWindow::Init {
+    ChainedStruct * const nextInChain;
+    void * coreWindow = nullptr;
+};
+SurfaceDescriptorFromWindowsCoreWindow::SurfaceDescriptorFromWindowsCoreWindow(SurfaceDescriptorFromWindowsCoreWindow::Init&& init)
+  : ChainedStruct { init.nextInChain, SType::SurfaceDescriptorFromWindowsCoreWindow }, 
+    coreWindow(std::move(init.coreWindow)){}
+
+SurfaceDescriptorFromWindowsCoreWindow::operator const WGPUSurfaceDescriptorFromWindowsCoreWindow&() const noexcept {
+    return *reinterpret_cast<const WGPUSurfaceDescriptorFromWindowsCoreWindow*>(this);
+}
+
+static_assert(sizeof(SurfaceDescriptorFromWindowsCoreWindow) == sizeof(WGPUSurfaceDescriptorFromWindowsCoreWindow), "sizeof mismatch for SurfaceDescriptorFromWindowsCoreWindow");
+static_assert(alignof(SurfaceDescriptorFromWindowsCoreWindow) == alignof(WGPUSurfaceDescriptorFromWindowsCoreWindow), "alignof mismatch for SurfaceDescriptorFromWindowsCoreWindow");
+static_assert(offsetof(SurfaceDescriptorFromWindowsCoreWindow, coreWindow) == offsetof(WGPUSurfaceDescriptorFromWindowsCoreWindow, coreWindow),
+        "offsetof mismatch for SurfaceDescriptorFromWindowsCoreWindow::coreWindow");
 
 // SurfaceDescriptorFromWindowsUWPSwapChainPanel implementation
 SurfaceDescriptorFromWindowsUWPSwapChainPanel::SurfaceDescriptorFromWindowsUWPSwapChainPanel()
@@ -5768,50 +6268,6 @@ static_assert(sizeof(SurfaceDescriptorFromWindowsWinUISwapChainPanel) == sizeof(
 static_assert(alignof(SurfaceDescriptorFromWindowsWinUISwapChainPanel) == alignof(WGPUSurfaceDescriptorFromWindowsWinUISwapChainPanel), "alignof mismatch for SurfaceDescriptorFromWindowsWinUISwapChainPanel");
 static_assert(offsetof(SurfaceDescriptorFromWindowsWinUISwapChainPanel, swapChainPanel) == offsetof(WGPUSurfaceDescriptorFromWindowsWinUISwapChainPanel, swapChainPanel),
         "offsetof mismatch for SurfaceDescriptorFromWindowsWinUISwapChainPanel::swapChainPanel");
-
-// SurfaceDescriptorFromWindowsCoreWindow implementation
-SurfaceDescriptorFromWindowsCoreWindow::SurfaceDescriptorFromWindowsCoreWindow()
-  : ChainedStruct { nullptr, SType::SurfaceDescriptorFromWindowsCoreWindow } {}
-struct SurfaceDescriptorFromWindowsCoreWindow::Init {
-    ChainedStruct * const nextInChain;
-    void * coreWindow = nullptr;
-};
-SurfaceDescriptorFromWindowsCoreWindow::SurfaceDescriptorFromWindowsCoreWindow(SurfaceDescriptorFromWindowsCoreWindow::Init&& init)
-  : ChainedStruct { init.nextInChain, SType::SurfaceDescriptorFromWindowsCoreWindow }, 
-    coreWindow(std::move(init.coreWindow)){}
-
-SurfaceDescriptorFromWindowsCoreWindow::operator const WGPUSurfaceDescriptorFromWindowsCoreWindow&() const noexcept {
-    return *reinterpret_cast<const WGPUSurfaceDescriptorFromWindowsCoreWindow*>(this);
-}
-
-static_assert(sizeof(SurfaceDescriptorFromWindowsCoreWindow) == sizeof(WGPUSurfaceDescriptorFromWindowsCoreWindow), "sizeof mismatch for SurfaceDescriptorFromWindowsCoreWindow");
-static_assert(alignof(SurfaceDescriptorFromWindowsCoreWindow) == alignof(WGPUSurfaceDescriptorFromWindowsCoreWindow), "alignof mismatch for SurfaceDescriptorFromWindowsCoreWindow");
-static_assert(offsetof(SurfaceDescriptorFromWindowsCoreWindow, coreWindow) == offsetof(WGPUSurfaceDescriptorFromWindowsCoreWindow, coreWindow),
-        "offsetof mismatch for SurfaceDescriptorFromWindowsCoreWindow::coreWindow");
-
-// SurfaceSourceXCBWindow implementation
-SurfaceSourceXCBWindow::SurfaceSourceXCBWindow()
-  : ChainedStruct { nullptr, SType::SurfaceSourceXCBWindow } {}
-struct SurfaceSourceXCBWindow::Init {
-    ChainedStruct * const nextInChain;
-    void * connection = nullptr;
-    uint32_t window;
-};
-SurfaceSourceXCBWindow::SurfaceSourceXCBWindow(SurfaceSourceXCBWindow::Init&& init)
-  : ChainedStruct { init.nextInChain, SType::SurfaceSourceXCBWindow }, 
-    connection(std::move(init.connection)), 
-    window(std::move(init.window)){}
-
-SurfaceSourceXCBWindow::operator const WGPUSurfaceSourceXCBWindow&() const noexcept {
-    return *reinterpret_cast<const WGPUSurfaceSourceXCBWindow*>(this);
-}
-
-static_assert(sizeof(SurfaceSourceXCBWindow) == sizeof(WGPUSurfaceSourceXCBWindow), "sizeof mismatch for SurfaceSourceXCBWindow");
-static_assert(alignof(SurfaceSourceXCBWindow) == alignof(WGPUSurfaceSourceXCBWindow), "alignof mismatch for SurfaceSourceXCBWindow");
-static_assert(offsetof(SurfaceSourceXCBWindow, connection) == offsetof(WGPUSurfaceSourceXCBWindow, connection),
-        "offsetof mismatch for SurfaceSourceXCBWindow::connection");
-static_assert(offsetof(SurfaceSourceXCBWindow, window) == offsetof(WGPUSurfaceSourceXCBWindow, window),
-        "offsetof mismatch for SurfaceSourceXCBWindow::window");
 
 // SurfaceSourceAndroidNativeWindow implementation
 SurfaceSourceAndroidNativeWindow::SurfaceSourceAndroidNativeWindow()
@@ -5900,6 +6356,30 @@ static_assert(offsetof(SurfaceSourceWindowsHWND, hinstance) == offsetof(WGPUSurf
         "offsetof mismatch for SurfaceSourceWindowsHWND::hinstance");
 static_assert(offsetof(SurfaceSourceWindowsHWND, hwnd) == offsetof(WGPUSurfaceSourceWindowsHWND, hwnd),
         "offsetof mismatch for SurfaceSourceWindowsHWND::hwnd");
+
+// SurfaceSourceXCBWindow implementation
+SurfaceSourceXCBWindow::SurfaceSourceXCBWindow()
+  : ChainedStruct { nullptr, SType::SurfaceSourceXCBWindow } {}
+struct SurfaceSourceXCBWindow::Init {
+    ChainedStruct * const nextInChain;
+    void * connection = nullptr;
+    uint32_t window;
+};
+SurfaceSourceXCBWindow::SurfaceSourceXCBWindow(SurfaceSourceXCBWindow::Init&& init)
+  : ChainedStruct { init.nextInChain, SType::SurfaceSourceXCBWindow }, 
+    connection(std::move(init.connection)), 
+    window(std::move(init.window)){}
+
+SurfaceSourceXCBWindow::operator const WGPUSurfaceSourceXCBWindow&() const noexcept {
+    return *reinterpret_cast<const WGPUSurfaceSourceXCBWindow*>(this);
+}
+
+static_assert(sizeof(SurfaceSourceXCBWindow) == sizeof(WGPUSurfaceSourceXCBWindow), "sizeof mismatch for SurfaceSourceXCBWindow");
+static_assert(alignof(SurfaceSourceXCBWindow) == alignof(WGPUSurfaceSourceXCBWindow), "alignof mismatch for SurfaceSourceXCBWindow");
+static_assert(offsetof(SurfaceSourceXCBWindow, connection) == offsetof(WGPUSurfaceSourceXCBWindow, connection),
+        "offsetof mismatch for SurfaceSourceXCBWindow::connection");
+static_assert(offsetof(SurfaceSourceXCBWindow, window) == offsetof(WGPUSurfaceSourceXCBWindow, window),
+        "offsetof mismatch for SurfaceSourceXCBWindow::window");
 
 // SurfaceSourceXlibWindow implementation
 SurfaceSourceXlibWindow::SurfaceSourceXlibWindow()
@@ -5992,6 +6472,23 @@ static_assert(alignof(TextureBindingViewDimensionDescriptor) == alignof(WGPUText
 static_assert(offsetof(TextureBindingViewDimensionDescriptor, textureBindingViewDimension) == offsetof(WGPUTextureBindingViewDimensionDescriptor, textureBindingViewDimension),
         "offsetof mismatch for TextureBindingViewDimensionDescriptor::textureBindingViewDimension");
 
+// TextureComponentSwizzle implementation
+
+TextureComponentSwizzle::operator const WGPUTextureComponentSwizzle&() const noexcept {
+    return *reinterpret_cast<const WGPUTextureComponentSwizzle*>(this);
+}
+
+static_assert(sizeof(TextureComponentSwizzle) == sizeof(WGPUTextureComponentSwizzle), "sizeof mismatch for TextureComponentSwizzle");
+static_assert(alignof(TextureComponentSwizzle) == alignof(WGPUTextureComponentSwizzle), "alignof mismatch for TextureComponentSwizzle");
+static_assert(offsetof(TextureComponentSwizzle, r) == offsetof(WGPUTextureComponentSwizzle, r),
+        "offsetof mismatch for TextureComponentSwizzle::r");
+static_assert(offsetof(TextureComponentSwizzle, g) == offsetof(WGPUTextureComponentSwizzle, g),
+        "offsetof mismatch for TextureComponentSwizzle::g");
+static_assert(offsetof(TextureComponentSwizzle, b) == offsetof(WGPUTextureComponentSwizzle, b),
+        "offsetof mismatch for TextureComponentSwizzle::b");
+static_assert(offsetof(TextureComponentSwizzle, a) == offsetof(WGPUTextureComponentSwizzle, a),
+        "offsetof mismatch for TextureComponentSwizzle::a");
+
 // VertexAttribute implementation
 
 VertexAttribute::operator const WGPUVertexAttribute&() const noexcept {
@@ -6072,17 +6569,6 @@ static_assert(offsetof(YCbCrVkDescriptor, forceExplicitReconstruction) == offset
         "offsetof mismatch for YCbCrVkDescriptor::forceExplicitReconstruction");
 static_assert(offsetof(YCbCrVkDescriptor, externalFormat) == offsetof(WGPUYCbCrVkDescriptor, externalFormat),
         "offsetof mismatch for YCbCrVkDescriptor::externalFormat");
-
-// AHardwareBufferProperties implementation
-
-AHardwareBufferProperties::operator const WGPUAHardwareBufferProperties&() const noexcept {
-    return *reinterpret_cast<const WGPUAHardwareBufferProperties*>(this);
-}
-
-static_assert(sizeof(AHardwareBufferProperties) == sizeof(WGPUAHardwareBufferProperties), "sizeof mismatch for AHardwareBufferProperties");
-static_assert(alignof(AHardwareBufferProperties) == alignof(WGPUAHardwareBufferProperties), "alignof mismatch for AHardwareBufferProperties");
-static_assert(offsetof(AHardwareBufferProperties, yCbCrInfo) == offsetof(WGPUAHardwareBufferProperties, yCbCrInfo),
-        "offsetof mismatch for AHardwareBufferProperties::yCbCrInfo");
 
 // AdapterPropertiesMemoryHeaps implementation
 AdapterPropertiesMemoryHeaps::AdapterPropertiesMemoryHeaps()
@@ -6200,6 +6686,17 @@ static_assert(offsetof(AdapterPropertiesSubgroupMatrixConfigs, configCount) == o
 static_assert(offsetof(AdapterPropertiesSubgroupMatrixConfigs, configs) == offsetof(WGPUAdapterPropertiesSubgroupMatrixConfigs, configs),
         "offsetof mismatch for AdapterPropertiesSubgroupMatrixConfigs::configs");
 
+// AHardwareBufferProperties implementation
+
+AHardwareBufferProperties::operator const WGPUAHardwareBufferProperties&() const noexcept {
+    return *reinterpret_cast<const WGPUAHardwareBufferProperties*>(this);
+}
+
+static_assert(sizeof(AHardwareBufferProperties) == sizeof(WGPUAHardwareBufferProperties), "sizeof mismatch for AHardwareBufferProperties");
+static_assert(alignof(AHardwareBufferProperties) == alignof(WGPUAHardwareBufferProperties), "alignof mismatch for AHardwareBufferProperties");
+static_assert(offsetof(AHardwareBufferProperties, yCbCrInfo) == offsetof(WGPUAHardwareBufferProperties, yCbCrInfo),
+        "offsetof mismatch for AHardwareBufferProperties::yCbCrInfo");
+
 // BindGroupEntry implementation
 
 BindGroupEntry::operator const WGPUBindGroupEntry&() const noexcept {
@@ -6237,6 +6734,8 @@ static_assert(offsetof(BindGroupLayoutEntry, binding) == offsetof(WGPUBindGroupL
         "offsetof mismatch for BindGroupLayoutEntry::binding");
 static_assert(offsetof(BindGroupLayoutEntry, visibility) == offsetof(WGPUBindGroupLayoutEntry, visibility),
         "offsetof mismatch for BindGroupLayoutEntry::visibility");
+static_assert(offsetof(BindGroupLayoutEntry, bindingArraySize) == offsetof(WGPUBindGroupLayoutEntry, bindingArraySize),
+        "offsetof mismatch for BindGroupLayoutEntry::bindingArraySize");
 static_assert(offsetof(BindGroupLayoutEntry, buffer) == offsetof(WGPUBindGroupLayoutEntry, buffer),
         "offsetof mismatch for BindGroupLayoutEntry::buffer");
 static_assert(offsetof(BindGroupLayoutEntry, sampler) == offsetof(WGPUBindGroupLayoutEntry, sampler),
@@ -6277,19 +6776,6 @@ static_assert(offsetof(BufferDescriptor, size) == offsetof(WGPUBufferDescriptor,
         "offsetof mismatch for BufferDescriptor::size");
 static_assert(offsetof(BufferDescriptor, mappedAtCreation) == offsetof(WGPUBufferDescriptor, mappedAtCreation),
         "offsetof mismatch for BufferDescriptor::mappedAtCreation");
-
-// CommandBufferDescriptor implementation
-
-CommandBufferDescriptor::operator const WGPUCommandBufferDescriptor&() const noexcept {
-    return *reinterpret_cast<const WGPUCommandBufferDescriptor*>(this);
-}
-
-static_assert(sizeof(CommandBufferDescriptor) == sizeof(WGPUCommandBufferDescriptor), "sizeof mismatch for CommandBufferDescriptor");
-static_assert(alignof(CommandBufferDescriptor) == alignof(WGPUCommandBufferDescriptor), "alignof mismatch for CommandBufferDescriptor");
-static_assert(offsetof(CommandBufferDescriptor, nextInChain) == offsetof(WGPUCommandBufferDescriptor, nextInChain),
-        "offsetof mismatch for CommandBufferDescriptor::nextInChain");
-static_assert(offsetof(CommandBufferDescriptor, label) == offsetof(WGPUCommandBufferDescriptor, label),
-        "offsetof mismatch for CommandBufferDescriptor::label");
 
 // CommandEncoderDescriptor implementation
 
@@ -6342,52 +6828,24 @@ static_assert(offsetof(ComputePassDescriptor, label) == offsetof(WGPUComputePass
 static_assert(offsetof(ComputePassDescriptor, timestampWrites) == offsetof(WGPUComputePassDescriptor, timestampWrites),
         "offsetof mismatch for ComputePassDescriptor::timestampWrites");
 
-// ConstantEntry implementation
+// ComputeState implementation
 
-ConstantEntry::operator const WGPUConstantEntry&() const noexcept {
-    return *reinterpret_cast<const WGPUConstantEntry*>(this);
+ComputeState::operator const WGPUComputeState&() const noexcept {
+    return *reinterpret_cast<const WGPUComputeState*>(this);
 }
 
-static_assert(sizeof(ConstantEntry) == sizeof(WGPUConstantEntry), "sizeof mismatch for ConstantEntry");
-static_assert(alignof(ConstantEntry) == alignof(WGPUConstantEntry), "alignof mismatch for ConstantEntry");
-static_assert(offsetof(ConstantEntry, nextInChain) == offsetof(WGPUConstantEntry, nextInChain),
-        "offsetof mismatch for ConstantEntry::nextInChain");
-static_assert(offsetof(ConstantEntry, key) == offsetof(WGPUConstantEntry, key),
-        "offsetof mismatch for ConstantEntry::key");
-static_assert(offsetof(ConstantEntry, value) == offsetof(WGPUConstantEntry, value),
-        "offsetof mismatch for ConstantEntry::value");
-
-// DawnCacheDeviceDescriptor implementation
-DawnCacheDeviceDescriptor::DawnCacheDeviceDescriptor()
-  : ChainedStruct { nullptr, SType::DawnCacheDeviceDescriptor } {}
-struct DawnCacheDeviceDescriptor::Init {
-    ChainedStruct * const nextInChain;
-    StringView isolationKey = {};
-    DawnLoadCacheDataFunction loadDataFunction = nullptr;
-    DawnStoreCacheDataFunction storeDataFunction = nullptr;
-    void * functionUserdata = nullptr;
-};
-DawnCacheDeviceDescriptor::DawnCacheDeviceDescriptor(DawnCacheDeviceDescriptor::Init&& init)
-  : ChainedStruct { init.nextInChain, SType::DawnCacheDeviceDescriptor }, 
-    isolationKey(std::move(init.isolationKey)), 
-    loadDataFunction(std::move(init.loadDataFunction)), 
-    storeDataFunction(std::move(init.storeDataFunction)), 
-    functionUserdata(std::move(init.functionUserdata)){}
-
-DawnCacheDeviceDescriptor::operator const WGPUDawnCacheDeviceDescriptor&() const noexcept {
-    return *reinterpret_cast<const WGPUDawnCacheDeviceDescriptor*>(this);
-}
-
-static_assert(sizeof(DawnCacheDeviceDescriptor) == sizeof(WGPUDawnCacheDeviceDescriptor), "sizeof mismatch for DawnCacheDeviceDescriptor");
-static_assert(alignof(DawnCacheDeviceDescriptor) == alignof(WGPUDawnCacheDeviceDescriptor), "alignof mismatch for DawnCacheDeviceDescriptor");
-static_assert(offsetof(DawnCacheDeviceDescriptor, isolationKey) == offsetof(WGPUDawnCacheDeviceDescriptor, isolationKey),
-        "offsetof mismatch for DawnCacheDeviceDescriptor::isolationKey");
-static_assert(offsetof(DawnCacheDeviceDescriptor, loadDataFunction) == offsetof(WGPUDawnCacheDeviceDescriptor, loadDataFunction),
-        "offsetof mismatch for DawnCacheDeviceDescriptor::loadDataFunction");
-static_assert(offsetof(DawnCacheDeviceDescriptor, storeDataFunction) == offsetof(WGPUDawnCacheDeviceDescriptor, storeDataFunction),
-        "offsetof mismatch for DawnCacheDeviceDescriptor::storeDataFunction");
-static_assert(offsetof(DawnCacheDeviceDescriptor, functionUserdata) == offsetof(WGPUDawnCacheDeviceDescriptor, functionUserdata),
-        "offsetof mismatch for DawnCacheDeviceDescriptor::functionUserdata");
+static_assert(sizeof(ComputeState) == sizeof(WGPUComputeState), "sizeof mismatch for ComputeState");
+static_assert(alignof(ComputeState) == alignof(WGPUComputeState), "alignof mismatch for ComputeState");
+static_assert(offsetof(ComputeState, nextInChain) == offsetof(WGPUComputeState, nextInChain),
+        "offsetof mismatch for ComputeState::nextInChain");
+static_assert(offsetof(ComputeState, module) == offsetof(WGPUComputeState, module),
+        "offsetof mismatch for ComputeState::module");
+static_assert(offsetof(ComputeState, entryPoint) == offsetof(WGPUComputeState, entryPoint),
+        "offsetof mismatch for ComputeState::entryPoint");
+static_assert(offsetof(ComputeState, constantCount) == offsetof(WGPUComputeState, constantCount),
+        "offsetof mismatch for ComputeState::constantCount");
+static_assert(offsetof(ComputeState, constants) == offsetof(WGPUComputeState, constants),
+        "offsetof mismatch for ComputeState::constants");
 
 // DawnDrmFormatCapabilities implementation
 DawnDrmFormatCapabilities::DawnDrmFormatCapabilities()
@@ -6555,8 +7013,12 @@ static_assert(sizeof(InstanceDescriptor) == sizeof(WGPUInstanceDescriptor), "siz
 static_assert(alignof(InstanceDescriptor) == alignof(WGPUInstanceDescriptor), "alignof mismatch for InstanceDescriptor");
 static_assert(offsetof(InstanceDescriptor, nextInChain) == offsetof(WGPUInstanceDescriptor, nextInChain),
         "offsetof mismatch for InstanceDescriptor::nextInChain");
-static_assert(offsetof(InstanceDescriptor, capabilities) == offsetof(WGPUInstanceDescriptor, capabilities),
-        "offsetof mismatch for InstanceDescriptor::capabilities");
+static_assert(offsetof(InstanceDescriptor, requiredFeatureCount) == offsetof(WGPUInstanceDescriptor, requiredFeatureCount),
+        "offsetof mismatch for InstanceDescriptor::requiredFeatureCount");
+static_assert(offsetof(InstanceDescriptor, requiredFeatures) == offsetof(WGPUInstanceDescriptor, requiredFeatures),
+        "offsetof mismatch for InstanceDescriptor::requiredFeatures");
+static_assert(offsetof(InstanceDescriptor, requiredLimits) == offsetof(WGPUInstanceDescriptor, requiredLimits),
+        "offsetof mismatch for InstanceDescriptor::requiredLimits");
 
 // Limits implementation
 
@@ -6630,14 +7092,8 @@ static_assert(offsetof(Limits, maxComputeWorkgroupSizeZ) == offsetof(WGPULimits,
         "offsetof mismatch for Limits::maxComputeWorkgroupSizeZ");
 static_assert(offsetof(Limits, maxComputeWorkgroupsPerDimension) == offsetof(WGPULimits, maxComputeWorkgroupsPerDimension),
         "offsetof mismatch for Limits::maxComputeWorkgroupsPerDimension");
-static_assert(offsetof(Limits, maxStorageBuffersInVertexStage) == offsetof(WGPULimits, maxStorageBuffersInVertexStage),
-        "offsetof mismatch for Limits::maxStorageBuffersInVertexStage");
-static_assert(offsetof(Limits, maxStorageTexturesInVertexStage) == offsetof(WGPULimits, maxStorageTexturesInVertexStage),
-        "offsetof mismatch for Limits::maxStorageTexturesInVertexStage");
-static_assert(offsetof(Limits, maxStorageBuffersInFragmentStage) == offsetof(WGPULimits, maxStorageBuffersInFragmentStage),
-        "offsetof mismatch for Limits::maxStorageBuffersInFragmentStage");
-static_assert(offsetof(Limits, maxStorageTexturesInFragmentStage) == offsetof(WGPULimits, maxStorageTexturesInFragmentStage),
-        "offsetof mismatch for Limits::maxStorageTexturesInFragmentStage");
+static_assert(offsetof(Limits, maxImmediateSize) == offsetof(WGPULimits, maxImmediateSize),
+        "offsetof mismatch for Limits::maxImmediateSize");
 
 // PipelineLayoutPixelLocalStorage implementation
 PipelineLayoutPixelLocalStorage::PipelineLayoutPixelLocalStorage()
@@ -6666,74 +7122,6 @@ static_assert(offsetof(PipelineLayoutPixelLocalStorage, storageAttachmentCount) 
         "offsetof mismatch for PipelineLayoutPixelLocalStorage::storageAttachmentCount");
 static_assert(offsetof(PipelineLayoutPixelLocalStorage, storageAttachments) == offsetof(WGPUPipelineLayoutPixelLocalStorage, storageAttachments),
         "offsetof mismatch for PipelineLayoutPixelLocalStorage::storageAttachments");
-
-// QuerySetDescriptor implementation
-
-QuerySetDescriptor::operator const WGPUQuerySetDescriptor&() const noexcept {
-    return *reinterpret_cast<const WGPUQuerySetDescriptor*>(this);
-}
-
-static_assert(sizeof(QuerySetDescriptor) == sizeof(WGPUQuerySetDescriptor), "sizeof mismatch for QuerySetDescriptor");
-static_assert(alignof(QuerySetDescriptor) == alignof(WGPUQuerySetDescriptor), "alignof mismatch for QuerySetDescriptor");
-static_assert(offsetof(QuerySetDescriptor, nextInChain) == offsetof(WGPUQuerySetDescriptor, nextInChain),
-        "offsetof mismatch for QuerySetDescriptor::nextInChain");
-static_assert(offsetof(QuerySetDescriptor, label) == offsetof(WGPUQuerySetDescriptor, label),
-        "offsetof mismatch for QuerySetDescriptor::label");
-static_assert(offsetof(QuerySetDescriptor, type) == offsetof(WGPUQuerySetDescriptor, type),
-        "offsetof mismatch for QuerySetDescriptor::type");
-static_assert(offsetof(QuerySetDescriptor, count) == offsetof(WGPUQuerySetDescriptor, count),
-        "offsetof mismatch for QuerySetDescriptor::count");
-
-// QueueDescriptor implementation
-
-QueueDescriptor::operator const WGPUQueueDescriptor&() const noexcept {
-    return *reinterpret_cast<const WGPUQueueDescriptor*>(this);
-}
-
-static_assert(sizeof(QueueDescriptor) == sizeof(WGPUQueueDescriptor), "sizeof mismatch for QueueDescriptor");
-static_assert(alignof(QueueDescriptor) == alignof(WGPUQueueDescriptor), "alignof mismatch for QueueDescriptor");
-static_assert(offsetof(QueueDescriptor, nextInChain) == offsetof(WGPUQueueDescriptor, nextInChain),
-        "offsetof mismatch for QueueDescriptor::nextInChain");
-static_assert(offsetof(QueueDescriptor, label) == offsetof(WGPUQueueDescriptor, label),
-        "offsetof mismatch for QueueDescriptor::label");
-
-// RenderBundleDescriptor implementation
-
-RenderBundleDescriptor::operator const WGPURenderBundleDescriptor&() const noexcept {
-    return *reinterpret_cast<const WGPURenderBundleDescriptor*>(this);
-}
-
-static_assert(sizeof(RenderBundleDescriptor) == sizeof(WGPURenderBundleDescriptor), "sizeof mismatch for RenderBundleDescriptor");
-static_assert(alignof(RenderBundleDescriptor) == alignof(WGPURenderBundleDescriptor), "alignof mismatch for RenderBundleDescriptor");
-static_assert(offsetof(RenderBundleDescriptor, nextInChain) == offsetof(WGPURenderBundleDescriptor, nextInChain),
-        "offsetof mismatch for RenderBundleDescriptor::nextInChain");
-static_assert(offsetof(RenderBundleDescriptor, label) == offsetof(WGPURenderBundleDescriptor, label),
-        "offsetof mismatch for RenderBundleDescriptor::label");
-
-// RenderBundleEncoderDescriptor implementation
-
-RenderBundleEncoderDescriptor::operator const WGPURenderBundleEncoderDescriptor&() const noexcept {
-    return *reinterpret_cast<const WGPURenderBundleEncoderDescriptor*>(this);
-}
-
-static_assert(sizeof(RenderBundleEncoderDescriptor) == sizeof(WGPURenderBundleEncoderDescriptor), "sizeof mismatch for RenderBundleEncoderDescriptor");
-static_assert(alignof(RenderBundleEncoderDescriptor) == alignof(WGPURenderBundleEncoderDescriptor), "alignof mismatch for RenderBundleEncoderDescriptor");
-static_assert(offsetof(RenderBundleEncoderDescriptor, nextInChain) == offsetof(WGPURenderBundleEncoderDescriptor, nextInChain),
-        "offsetof mismatch for RenderBundleEncoderDescriptor::nextInChain");
-static_assert(offsetof(RenderBundleEncoderDescriptor, label) == offsetof(WGPURenderBundleEncoderDescriptor, label),
-        "offsetof mismatch for RenderBundleEncoderDescriptor::label");
-static_assert(offsetof(RenderBundleEncoderDescriptor, colorFormatCount) == offsetof(WGPURenderBundleEncoderDescriptor, colorFormatCount),
-        "offsetof mismatch for RenderBundleEncoderDescriptor::colorFormatCount");
-static_assert(offsetof(RenderBundleEncoderDescriptor, colorFormats) == offsetof(WGPURenderBundleEncoderDescriptor, colorFormats),
-        "offsetof mismatch for RenderBundleEncoderDescriptor::colorFormats");
-static_assert(offsetof(RenderBundleEncoderDescriptor, depthStencilFormat) == offsetof(WGPURenderBundleEncoderDescriptor, depthStencilFormat),
-        "offsetof mismatch for RenderBundleEncoderDescriptor::depthStencilFormat");
-static_assert(offsetof(RenderBundleEncoderDescriptor, sampleCount) == offsetof(WGPURenderBundleEncoderDescriptor, sampleCount),
-        "offsetof mismatch for RenderBundleEncoderDescriptor::sampleCount");
-static_assert(offsetof(RenderBundleEncoderDescriptor, depthReadOnly) == offsetof(WGPURenderBundleEncoderDescriptor, depthReadOnly),
-        "offsetof mismatch for RenderBundleEncoderDescriptor::depthReadOnly");
-static_assert(offsetof(RenderBundleEncoderDescriptor, stencilReadOnly) == offsetof(WGPURenderBundleEncoderDescriptor, stencilReadOnly),
-        "offsetof mismatch for RenderBundleEncoderDescriptor::stencilReadOnly");
 
 // RenderPassColorAttachment implementation
 
@@ -6833,38 +7221,18 @@ static_assert(offsetof(SamplerDescriptor, compare) == offsetof(WGPUSamplerDescri
 static_assert(offsetof(SamplerDescriptor, maxAnisotropy) == offsetof(WGPUSamplerDescriptor, maxAnisotropy),
         "offsetof mismatch for SamplerDescriptor::maxAnisotropy");
 
-// ShaderSourceWGSL implementation
-ShaderSourceWGSL::ShaderSourceWGSL()
-  : ChainedStruct { nullptr, SType::ShaderSourceWGSL } {}
-struct ShaderSourceWGSL::Init {
-    ChainedStruct * const nextInChain;
-    StringView code = {};
-};
-ShaderSourceWGSL::ShaderSourceWGSL(ShaderSourceWGSL::Init&& init)
-  : ChainedStruct { init.nextInChain, SType::ShaderSourceWGSL }, 
-    code(std::move(init.code)){}
+// ShaderModuleDescriptor implementation
 
-ShaderSourceWGSL::operator const WGPUShaderSourceWGSL&() const noexcept {
-    return *reinterpret_cast<const WGPUShaderSourceWGSL*>(this);
+ShaderModuleDescriptor::operator const WGPUShaderModuleDescriptor&() const noexcept {
+    return *reinterpret_cast<const WGPUShaderModuleDescriptor*>(this);
 }
 
-static_assert(sizeof(ShaderSourceWGSL) == sizeof(WGPUShaderSourceWGSL), "sizeof mismatch for ShaderSourceWGSL");
-static_assert(alignof(ShaderSourceWGSL) == alignof(WGPUShaderSourceWGSL), "alignof mismatch for ShaderSourceWGSL");
-static_assert(offsetof(ShaderSourceWGSL, code) == offsetof(WGPUShaderSourceWGSL, code),
-        "offsetof mismatch for ShaderSourceWGSL::code");
-
-// SharedBufferMemoryDescriptor implementation
-
-SharedBufferMemoryDescriptor::operator const WGPUSharedBufferMemoryDescriptor&() const noexcept {
-    return *reinterpret_cast<const WGPUSharedBufferMemoryDescriptor*>(this);
-}
-
-static_assert(sizeof(SharedBufferMemoryDescriptor) == sizeof(WGPUSharedBufferMemoryDescriptor), "sizeof mismatch for SharedBufferMemoryDescriptor");
-static_assert(alignof(SharedBufferMemoryDescriptor) == alignof(WGPUSharedBufferMemoryDescriptor), "alignof mismatch for SharedBufferMemoryDescriptor");
-static_assert(offsetof(SharedBufferMemoryDescriptor, nextInChain) == offsetof(WGPUSharedBufferMemoryDescriptor, nextInChain),
-        "offsetof mismatch for SharedBufferMemoryDescriptor::nextInChain");
-static_assert(offsetof(SharedBufferMemoryDescriptor, label) == offsetof(WGPUSharedBufferMemoryDescriptor, label),
-        "offsetof mismatch for SharedBufferMemoryDescriptor::label");
+static_assert(sizeof(ShaderModuleDescriptor) == sizeof(WGPUShaderModuleDescriptor), "sizeof mismatch for ShaderModuleDescriptor");
+static_assert(alignof(ShaderModuleDescriptor) == alignof(WGPUShaderModuleDescriptor), "alignof mismatch for ShaderModuleDescriptor");
+static_assert(offsetof(ShaderModuleDescriptor, nextInChain) == offsetof(WGPUShaderModuleDescriptor, nextInChain),
+        "offsetof mismatch for ShaderModuleDescriptor::nextInChain");
+static_assert(offsetof(ShaderModuleDescriptor, label) == offsetof(WGPUShaderModuleDescriptor, label),
+        "offsetof mismatch for ShaderModuleDescriptor::label");
 
 // SharedFenceDescriptor implementation
 
@@ -7072,6 +7440,26 @@ static_assert(offsetof(TexelCopyTextureInfo, origin) == offsetof(WGPUTexelCopyTe
 static_assert(offsetof(TexelCopyTextureInfo, aspect) == offsetof(WGPUTexelCopyTextureInfo, aspect),
         "offsetof mismatch for TexelCopyTextureInfo::aspect");
 
+// TextureComponentSwizzleDescriptor implementation
+TextureComponentSwizzleDescriptor::TextureComponentSwizzleDescriptor()
+  : ChainedStruct { nullptr, SType::TextureComponentSwizzleDescriptor } {}
+struct TextureComponentSwizzleDescriptor::Init {
+    ChainedStruct * const nextInChain;
+    TextureComponentSwizzle swizzle = {};
+};
+TextureComponentSwizzleDescriptor::TextureComponentSwizzleDescriptor(TextureComponentSwizzleDescriptor::Init&& init)
+  : ChainedStruct { init.nextInChain, SType::TextureComponentSwizzleDescriptor }, 
+    swizzle(std::move(init.swizzle)){}
+
+TextureComponentSwizzleDescriptor::operator const WGPUTextureComponentSwizzleDescriptor&() const noexcept {
+    return *reinterpret_cast<const WGPUTextureComponentSwizzleDescriptor*>(this);
+}
+
+static_assert(sizeof(TextureComponentSwizzleDescriptor) == sizeof(WGPUTextureComponentSwizzleDescriptor), "sizeof mismatch for TextureComponentSwizzleDescriptor");
+static_assert(alignof(TextureComponentSwizzleDescriptor) == alignof(WGPUTextureComponentSwizzleDescriptor), "alignof mismatch for TextureComponentSwizzleDescriptor");
+static_assert(offsetof(TextureComponentSwizzleDescriptor, swizzle) == offsetof(WGPUTextureComponentSwizzleDescriptor, swizzle),
+        "offsetof mismatch for TextureComponentSwizzleDescriptor::swizzle");
+
 // TextureDescriptor implementation
 
 TextureDescriptor::operator const WGPUTextureDescriptor&() const noexcept {
@@ -7100,35 +7488,6 @@ static_assert(offsetof(TextureDescriptor, viewFormatCount) == offsetof(WGPUTextu
         "offsetof mismatch for TextureDescriptor::viewFormatCount");
 static_assert(offsetof(TextureDescriptor, viewFormats) == offsetof(WGPUTextureDescriptor, viewFormats),
         "offsetof mismatch for TextureDescriptor::viewFormats");
-
-// TextureViewDescriptor implementation
-
-TextureViewDescriptor::operator const WGPUTextureViewDescriptor&() const noexcept {
-    return *reinterpret_cast<const WGPUTextureViewDescriptor*>(this);
-}
-
-static_assert(sizeof(TextureViewDescriptor) == sizeof(WGPUTextureViewDescriptor), "sizeof mismatch for TextureViewDescriptor");
-static_assert(alignof(TextureViewDescriptor) == alignof(WGPUTextureViewDescriptor), "alignof mismatch for TextureViewDescriptor");
-static_assert(offsetof(TextureViewDescriptor, nextInChain) == offsetof(WGPUTextureViewDescriptor, nextInChain),
-        "offsetof mismatch for TextureViewDescriptor::nextInChain");
-static_assert(offsetof(TextureViewDescriptor, label) == offsetof(WGPUTextureViewDescriptor, label),
-        "offsetof mismatch for TextureViewDescriptor::label");
-static_assert(offsetof(TextureViewDescriptor, format) == offsetof(WGPUTextureViewDescriptor, format),
-        "offsetof mismatch for TextureViewDescriptor::format");
-static_assert(offsetof(TextureViewDescriptor, dimension) == offsetof(WGPUTextureViewDescriptor, dimension),
-        "offsetof mismatch for TextureViewDescriptor::dimension");
-static_assert(offsetof(TextureViewDescriptor, baseMipLevel) == offsetof(WGPUTextureViewDescriptor, baseMipLevel),
-        "offsetof mismatch for TextureViewDescriptor::baseMipLevel");
-static_assert(offsetof(TextureViewDescriptor, mipLevelCount) == offsetof(WGPUTextureViewDescriptor, mipLevelCount),
-        "offsetof mismatch for TextureViewDescriptor::mipLevelCount");
-static_assert(offsetof(TextureViewDescriptor, baseArrayLayer) == offsetof(WGPUTextureViewDescriptor, baseArrayLayer),
-        "offsetof mismatch for TextureViewDescriptor::baseArrayLayer");
-static_assert(offsetof(TextureViewDescriptor, arrayLayerCount) == offsetof(WGPUTextureViewDescriptor, arrayLayerCount),
-        "offsetof mismatch for TextureViewDescriptor::arrayLayerCount");
-static_assert(offsetof(TextureViewDescriptor, aspect) == offsetof(WGPUTextureViewDescriptor, aspect),
-        "offsetof mismatch for TextureViewDescriptor::aspect");
-static_assert(offsetof(TextureViewDescriptor, usage) == offsetof(WGPUTextureViewDescriptor, usage),
-        "offsetof mismatch for TextureViewDescriptor::usage");
 
 // VertexBufferLayout implementation
 
@@ -7307,24 +7666,22 @@ static_assert(offsetof(CompilationInfo, messageCount) == offsetof(WGPUCompilatio
 static_assert(offsetof(CompilationInfo, messages) == offsetof(WGPUCompilationInfo, messages),
         "offsetof mismatch for CompilationInfo::messages");
 
-// ComputeState implementation
+// ComputePipelineDescriptor implementation
 
-ComputeState::operator const WGPUComputeState&() const noexcept {
-    return *reinterpret_cast<const WGPUComputeState*>(this);
+ComputePipelineDescriptor::operator const WGPUComputePipelineDescriptor&() const noexcept {
+    return *reinterpret_cast<const WGPUComputePipelineDescriptor*>(this);
 }
 
-static_assert(sizeof(ComputeState) == sizeof(WGPUComputeState), "sizeof mismatch for ComputeState");
-static_assert(alignof(ComputeState) == alignof(WGPUComputeState), "alignof mismatch for ComputeState");
-static_assert(offsetof(ComputeState, nextInChain) == offsetof(WGPUComputeState, nextInChain),
-        "offsetof mismatch for ComputeState::nextInChain");
-static_assert(offsetof(ComputeState, module) == offsetof(WGPUComputeState, module),
-        "offsetof mismatch for ComputeState::module");
-static_assert(offsetof(ComputeState, entryPoint) == offsetof(WGPUComputeState, entryPoint),
-        "offsetof mismatch for ComputeState::entryPoint");
-static_assert(offsetof(ComputeState, constantCount) == offsetof(WGPUComputeState, constantCount),
-        "offsetof mismatch for ComputeState::constantCount");
-static_assert(offsetof(ComputeState, constants) == offsetof(WGPUComputeState, constants),
-        "offsetof mismatch for ComputeState::constants");
+static_assert(sizeof(ComputePipelineDescriptor) == sizeof(WGPUComputePipelineDescriptor), "sizeof mismatch for ComputePipelineDescriptor");
+static_assert(alignof(ComputePipelineDescriptor) == alignof(WGPUComputePipelineDescriptor), "alignof mismatch for ComputePipelineDescriptor");
+static_assert(offsetof(ComputePipelineDescriptor, nextInChain) == offsetof(WGPUComputePipelineDescriptor, nextInChain),
+        "offsetof mismatch for ComputePipelineDescriptor::nextInChain");
+static_assert(offsetof(ComputePipelineDescriptor, label) == offsetof(WGPUComputePipelineDescriptor, label),
+        "offsetof mismatch for ComputePipelineDescriptor::label");
+static_assert(offsetof(ComputePipelineDescriptor, layout) == offsetof(WGPUComputePipelineDescriptor, layout),
+        "offsetof mismatch for ComputePipelineDescriptor::layout");
+static_assert(offsetof(ComputePipelineDescriptor, compute) == offsetof(WGPUComputePipelineDescriptor, compute),
+        "offsetof mismatch for ComputePipelineDescriptor::compute");
 
 // DawnFormatCapabilities implementation
 
@@ -7353,8 +7710,8 @@ static_assert(offsetof(PipelineLayoutDescriptor, bindGroupLayoutCount) == offset
         "offsetof mismatch for PipelineLayoutDescriptor::bindGroupLayoutCount");
 static_assert(offsetof(PipelineLayoutDescriptor, bindGroupLayouts) == offsetof(WGPUPipelineLayoutDescriptor, bindGroupLayouts),
         "offsetof mismatch for PipelineLayoutDescriptor::bindGroupLayouts");
-static_assert(offsetof(PipelineLayoutDescriptor, immediateDataRangeByteSize) == offsetof(WGPUPipelineLayoutDescriptor, immediateDataRangeByteSize),
-        "offsetof mismatch for PipelineLayoutDescriptor::immediateDataRangeByteSize");
+static_assert(offsetof(PipelineLayoutDescriptor, immediateSize) == offsetof(WGPUPipelineLayoutDescriptor, immediateSize),
+        "offsetof mismatch for PipelineLayoutDescriptor::immediateSize");
 
 // RenderPassPixelLocalStorage implementation
 RenderPassPixelLocalStorage::RenderPassPixelLocalStorage()
@@ -7383,19 +7740,6 @@ static_assert(offsetof(RenderPassPixelLocalStorage, storageAttachmentCount) == o
         "offsetof mismatch for RenderPassPixelLocalStorage::storageAttachmentCount");
 static_assert(offsetof(RenderPassPixelLocalStorage, storageAttachments) == offsetof(WGPURenderPassPixelLocalStorage, storageAttachments),
         "offsetof mismatch for RenderPassPixelLocalStorage::storageAttachments");
-
-// ShaderModuleDescriptor implementation
-
-ShaderModuleDescriptor::operator const WGPUShaderModuleDescriptor&() const noexcept {
-    return *reinterpret_cast<const WGPUShaderModuleDescriptor*>(this);
-}
-
-static_assert(sizeof(ShaderModuleDescriptor) == sizeof(WGPUShaderModuleDescriptor), "sizeof mismatch for ShaderModuleDescriptor");
-static_assert(alignof(ShaderModuleDescriptor) == alignof(WGPUShaderModuleDescriptor), "alignof mismatch for ShaderModuleDescriptor");
-static_assert(offsetof(ShaderModuleDescriptor, nextInChain) == offsetof(WGPUShaderModuleDescriptor, nextInChain),
-        "offsetof mismatch for ShaderModuleDescriptor::nextInChain");
-static_assert(offsetof(ShaderModuleDescriptor, label) == offsetof(WGPUShaderModuleDescriptor, label),
-        "offsetof mismatch for ShaderModuleDescriptor::label");
 
 // SharedTextureMemoryDescriptor implementation
 
@@ -7427,6 +7771,35 @@ static_assert(offsetof(SharedTextureMemoryProperties, size) == offsetof(WGPUShar
 static_assert(offsetof(SharedTextureMemoryProperties, format) == offsetof(WGPUSharedTextureMemoryProperties, format),
         "offsetof mismatch for SharedTextureMemoryProperties::format");
 
+// TextureViewDescriptor implementation
+
+TextureViewDescriptor::operator const WGPUTextureViewDescriptor&() const noexcept {
+    return *reinterpret_cast<const WGPUTextureViewDescriptor*>(this);
+}
+
+static_assert(sizeof(TextureViewDescriptor) == sizeof(WGPUTextureViewDescriptor), "sizeof mismatch for TextureViewDescriptor");
+static_assert(alignof(TextureViewDescriptor) == alignof(WGPUTextureViewDescriptor), "alignof mismatch for TextureViewDescriptor");
+static_assert(offsetof(TextureViewDescriptor, nextInChain) == offsetof(WGPUTextureViewDescriptor, nextInChain),
+        "offsetof mismatch for TextureViewDescriptor::nextInChain");
+static_assert(offsetof(TextureViewDescriptor, label) == offsetof(WGPUTextureViewDescriptor, label),
+        "offsetof mismatch for TextureViewDescriptor::label");
+static_assert(offsetof(TextureViewDescriptor, format) == offsetof(WGPUTextureViewDescriptor, format),
+        "offsetof mismatch for TextureViewDescriptor::format");
+static_assert(offsetof(TextureViewDescriptor, dimension) == offsetof(WGPUTextureViewDescriptor, dimension),
+        "offsetof mismatch for TextureViewDescriptor::dimension");
+static_assert(offsetof(TextureViewDescriptor, baseMipLevel) == offsetof(WGPUTextureViewDescriptor, baseMipLevel),
+        "offsetof mismatch for TextureViewDescriptor::baseMipLevel");
+static_assert(offsetof(TextureViewDescriptor, mipLevelCount) == offsetof(WGPUTextureViewDescriptor, mipLevelCount),
+        "offsetof mismatch for TextureViewDescriptor::mipLevelCount");
+static_assert(offsetof(TextureViewDescriptor, baseArrayLayer) == offsetof(WGPUTextureViewDescriptor, baseArrayLayer),
+        "offsetof mismatch for TextureViewDescriptor::baseArrayLayer");
+static_assert(offsetof(TextureViewDescriptor, arrayLayerCount) == offsetof(WGPUTextureViewDescriptor, arrayLayerCount),
+        "offsetof mismatch for TextureViewDescriptor::arrayLayerCount");
+static_assert(offsetof(TextureViewDescriptor, aspect) == offsetof(WGPUTextureViewDescriptor, aspect),
+        "offsetof mismatch for TextureViewDescriptor::aspect");
+static_assert(offsetof(TextureViewDescriptor, usage) == offsetof(WGPUTextureViewDescriptor, usage),
+        "offsetof mismatch for TextureViewDescriptor::usage");
+
 // VertexState implementation
 
 VertexState::operator const WGPUVertexState&() const noexcept {
@@ -7449,23 +7822,6 @@ static_assert(offsetof(VertexState, bufferCount) == offsetof(WGPUVertexState, bu
         "offsetof mismatch for VertexState::bufferCount");
 static_assert(offsetof(VertexState, buffers) == offsetof(WGPUVertexState, buffers),
         "offsetof mismatch for VertexState::buffers");
-
-// ComputePipelineDescriptor implementation
-
-ComputePipelineDescriptor::operator const WGPUComputePipelineDescriptor&() const noexcept {
-    return *reinterpret_cast<const WGPUComputePipelineDescriptor*>(this);
-}
-
-static_assert(sizeof(ComputePipelineDescriptor) == sizeof(WGPUComputePipelineDescriptor), "sizeof mismatch for ComputePipelineDescriptor");
-static_assert(alignof(ComputePipelineDescriptor) == alignof(WGPUComputePipelineDescriptor), "alignof mismatch for ComputePipelineDescriptor");
-static_assert(offsetof(ComputePipelineDescriptor, nextInChain) == offsetof(WGPUComputePipelineDescriptor, nextInChain),
-        "offsetof mismatch for ComputePipelineDescriptor::nextInChain");
-static_assert(offsetof(ComputePipelineDescriptor, label) == offsetof(WGPUComputePipelineDescriptor, label),
-        "offsetof mismatch for ComputePipelineDescriptor::label");
-static_assert(offsetof(ComputePipelineDescriptor, layout) == offsetof(WGPUComputePipelineDescriptor, layout),
-        "offsetof mismatch for ComputePipelineDescriptor::layout");
-static_assert(offsetof(ComputePipelineDescriptor, compute) == offsetof(WGPUComputePipelineDescriptor, compute),
-        "offsetof mismatch for ComputePipelineDescriptor::compute");
 
 // FragmentState implementation
 
@@ -7668,20 +8024,20 @@ void DeviceDescriptor::SetUncapturedErrorCallback(L callback) {
 // Adapter implementation
 
 Device Adapter::CreateDevice(DeviceDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientAdapterCreateDevice(Get(), reinterpret_cast<WGPUDeviceDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientAdapterCreateDevice(Get(), reinterpret_cast<WGPUDeviceDescriptor const *>(descriptor));
     return Device::Acquire(result);
 }
 void Adapter::GetFeatures(SupportedFeatures * features) const {
     *features = SupportedFeatures();
-    wgpuDawnWireClientAdapterGetFeatures(Get(), reinterpret_cast<WGPUSupportedFeatures * >(features));
+    wgpuDawnWireClientAdapterGetFeatures(Get(), reinterpret_cast<WGPUSupportedFeatures *>(features));
 }
 ConvertibleStatus Adapter::GetFormatCapabilities(TextureFormat format, DawnFormatCapabilities * capabilities) const {
-    auto result = wgpuDawnWireClientAdapterGetFormatCapabilities(Get(), static_cast<WGPUTextureFormat>(format), reinterpret_cast<WGPUDawnFormatCapabilities * >(capabilities));
+    auto result = wgpuDawnWireClientAdapterGetFormatCapabilities(Get(), static_cast<WGPUTextureFormat>(format), reinterpret_cast<WGPUDawnFormatCapabilities *>(capabilities));
     return static_cast<Status>(result);
 }
 ConvertibleStatus Adapter::GetInfo(AdapterInfo * info) const {
     *info = AdapterInfo();
-    auto result = wgpuDawnWireClientAdapterGetInfo(Get(), reinterpret_cast<WGPUAdapterInfo * >(info));
+    auto result = wgpuDawnWireClientAdapterGetInfo(Get(), reinterpret_cast<WGPUAdapterInfo *>(info));
     return static_cast<Status>(result);
 }
 Instance Adapter::GetInstance() const {
@@ -7689,7 +8045,7 @@ Instance Adapter::GetInstance() const {
     return Instance::Acquire(result);
 }
 ConvertibleStatus Adapter::GetLimits(Limits * limits) const {
-    auto result = wgpuDawnWireClientAdapterGetLimits(Get(), reinterpret_cast<WGPULimits * >(limits));
+    auto result = wgpuDawnWireClientAdapterGetLimits(Get(), reinterpret_cast<WGPULimits *>(limits));
     return static_cast<Status>(result);
 }
 Bool Adapter::HasFeature(FeatureName feature) const {
@@ -7700,7 +8056,7 @@ template <typename F, typename T,
           typename Cb,
           typename CbChar,
           typename>
-Future Adapter::RequestDevice(DeviceDescriptor const * options, CallbackMode callbackMode,F callback, T userdata) const {
+Future Adapter::RequestDevice(DeviceDescriptor const * descriptor, CallbackMode callbackMode,F callback, T userdata) const {
     WGPURequestDeviceCallbackInfo callbackInfo = {};
     callbackInfo.mode = static_cast<WGPUCallbackMode>(callbackMode);
     if constexpr (std::is_convertible_v<F, Cb*>) {
@@ -7719,7 +8075,7 @@ Future Adapter::RequestDevice(DeviceDescriptor const * options, CallbackMode cal
     }
     callbackInfo.userdata1 = reinterpret_cast<void*>(+callback);
     callbackInfo.userdata2 = reinterpret_cast<void*>(userdata);
-    auto result = wgpuDawnWireClientAdapterRequestDevice(Get(), reinterpret_cast<WGPUDeviceDescriptor const * >(options), callbackInfo);
+    auto result = wgpuDawnWireClientAdapterRequestDevice(Get(), reinterpret_cast<WGPUDeviceDescriptor const *>(descriptor), callbackInfo);
     return Future {
         result.id
     };
@@ -7728,7 +8084,7 @@ template <typename L,
           typename Cb,
           typename CbChar,
           typename>
-Future Adapter::RequestDevice(DeviceDescriptor const * options, CallbackMode callbackMode,L callback) const {
+Future Adapter::RequestDevice(DeviceDescriptor const * descriptor, CallbackMode callbackMode,L callback) const {
     using F = RequestDeviceCallback<void>;
 
     WGPURequestDeviceCallbackInfo callbackInfo = {};
@@ -7752,7 +8108,7 @@ Future Adapter::RequestDevice(DeviceDescriptor const * options, CallbackMode cal
         callbackInfo.userdata1 = reinterpret_cast<void*>(lambda);
         callbackInfo.userdata2 = nullptr;
     }
-    auto result = wgpuDawnWireClientAdapterRequestDevice(Get(), reinterpret_cast<WGPUDeviceDescriptor const * >(options), callbackInfo);
+    auto result = wgpuDawnWireClientAdapterRequestDevice(Get(), reinterpret_cast<WGPUDeviceDescriptor const *>(descriptor), callbackInfo);
     return Future {
             result.id
         };
@@ -7821,13 +8177,13 @@ void const * Buffer::GetConstMappedRange(size_t offset, size_t size) const {
     auto result = wgpuDawnWireClientBufferGetConstMappedRange(Get(), offset, size);
     return result;
 }
-BufferMapState Buffer::GetMapState() const {
-    auto result = wgpuDawnWireClientBufferGetMapState(Get());
-    return static_cast<BufferMapState>(result);
-}
 void * Buffer::GetMappedRange(size_t offset, size_t size) const {
     auto result = wgpuDawnWireClientBufferGetMappedRange(Get(), offset, size);
     return result;
+}
+BufferMapState Buffer::GetMapState() const {
+    auto result = wgpuDawnWireClientBufferGetMapState(Get());
+    return static_cast<BufferMapState>(result);
 }
 uint64_t Buffer::GetSize() const {
     auto result = wgpuDawnWireClientBufferGetSize(Get());
@@ -7899,7 +8255,7 @@ Future Buffer::MapAsync(MapMode mode, size_t offset, size_t size, CallbackMode c
         };
 }
 ConvertibleStatus Buffer::ReadMappedRange(size_t offset, void * data, size_t size) const {
-    auto result = wgpuDawnWireClientBufferReadMappedRange(Get(), offset, reinterpret_cast<void * >(data), size);
+    auto result = wgpuDawnWireClientBufferReadMappedRange(Get(), offset, reinterpret_cast<void *>(data), size);
     return static_cast<Status>(result);
 }
 void Buffer::SetLabel(StringView label) const {
@@ -7909,7 +8265,7 @@ void Buffer::Unmap() const {
     wgpuDawnWireClientBufferUnmap(Get());
 }
 ConvertibleStatus Buffer::WriteMappedRange(size_t offset, void const * data, size_t size) const {
-    auto result = wgpuDawnWireClientBufferWriteMappedRange(Get(), offset, reinterpret_cast<void const * >(data), size);
+    auto result = wgpuDawnWireClientBufferWriteMappedRange(Get(), offset, reinterpret_cast<void const *>(data), size);
     return static_cast<Status>(result);
 }
 
@@ -7950,11 +8306,11 @@ static_assert(alignof(CommandBuffer) == alignof(WGPUCommandBuffer), "alignof mis
 // CommandEncoder implementation
 
 ComputePassEncoder CommandEncoder::BeginComputePass(ComputePassDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientCommandEncoderBeginComputePass(Get(), reinterpret_cast<WGPUComputePassDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientCommandEncoderBeginComputePass(Get(), reinterpret_cast<WGPUComputePassDescriptor const *>(descriptor));
     return ComputePassEncoder::Acquire(result);
 }
 RenderPassEncoder CommandEncoder::BeginRenderPass(RenderPassDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientCommandEncoderBeginRenderPass(Get(), reinterpret_cast<WGPURenderPassDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientCommandEncoderBeginRenderPass(Get(), reinterpret_cast<WGPURenderPassDescriptor const *>(descriptor));
     return RenderPassEncoder::Acquire(result);
 }
 void CommandEncoder::ClearBuffer(Buffer const& buffer, uint64_t offset, uint64_t size) const {
@@ -7964,16 +8320,16 @@ void CommandEncoder::CopyBufferToBuffer(Buffer const& source, uint64_t sourceOff
     wgpuDawnWireClientCommandEncoderCopyBufferToBuffer(Get(), source.Get(), sourceOffset, destination.Get(), destinationOffset, size);
 }
 void CommandEncoder::CopyBufferToTexture(TexelCopyBufferInfo const * source, TexelCopyTextureInfo const * destination, Extent3D const * copySize) const {
-    wgpuDawnWireClientCommandEncoderCopyBufferToTexture(Get(), reinterpret_cast<WGPUTexelCopyBufferInfo const * >(source), reinterpret_cast<WGPUTexelCopyTextureInfo const * >(destination), reinterpret_cast<WGPUExtent3D const * >(copySize));
+    wgpuDawnWireClientCommandEncoderCopyBufferToTexture(Get(), reinterpret_cast<WGPUTexelCopyBufferInfo const *>(source), reinterpret_cast<WGPUTexelCopyTextureInfo const *>(destination), reinterpret_cast<WGPUExtent3D const *>(copySize));
 }
 void CommandEncoder::CopyTextureToBuffer(TexelCopyTextureInfo const * source, TexelCopyBufferInfo const * destination, Extent3D const * copySize) const {
-    wgpuDawnWireClientCommandEncoderCopyTextureToBuffer(Get(), reinterpret_cast<WGPUTexelCopyTextureInfo const * >(source), reinterpret_cast<WGPUTexelCopyBufferInfo const * >(destination), reinterpret_cast<WGPUExtent3D const * >(copySize));
+    wgpuDawnWireClientCommandEncoderCopyTextureToBuffer(Get(), reinterpret_cast<WGPUTexelCopyTextureInfo const *>(source), reinterpret_cast<WGPUTexelCopyBufferInfo const *>(destination), reinterpret_cast<WGPUExtent3D const *>(copySize));
 }
 void CommandEncoder::CopyTextureToTexture(TexelCopyTextureInfo const * source, TexelCopyTextureInfo const * destination, Extent3D const * copySize) const {
-    wgpuDawnWireClientCommandEncoderCopyTextureToTexture(Get(), reinterpret_cast<WGPUTexelCopyTextureInfo const * >(source), reinterpret_cast<WGPUTexelCopyTextureInfo const * >(destination), reinterpret_cast<WGPUExtent3D const * >(copySize));
+    wgpuDawnWireClientCommandEncoderCopyTextureToTexture(Get(), reinterpret_cast<WGPUTexelCopyTextureInfo const *>(source), reinterpret_cast<WGPUTexelCopyTextureInfo const *>(destination), reinterpret_cast<WGPUExtent3D const *>(copySize));
 }
 CommandBuffer CommandEncoder::Finish(CommandBufferDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientCommandEncoderFinish(Get(), reinterpret_cast<WGPUCommandBufferDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientCommandEncoderFinish(Get(), reinterpret_cast<WGPUCommandBufferDescriptor const *>(descriptor));
     return CommandBuffer::Acquire(result);
 }
 void CommandEncoder::InjectValidationError(StringView message) const {
@@ -7995,7 +8351,7 @@ void CommandEncoder::SetLabel(StringView label) const {
     wgpuDawnWireClientCommandEncoderSetLabel(Get(), *reinterpret_cast<WGPUStringView const*>(&label));
 }
 void CommandEncoder::WriteBuffer(Buffer const& buffer, uint64_t bufferOffset, uint8_t const * data, uint64_t size) const {
-    wgpuDawnWireClientCommandEncoderWriteBuffer(Get(), buffer.Get(), bufferOffset, reinterpret_cast<uint8_t const * >(data), size);
+    wgpuDawnWireClientCommandEncoderWriteBuffer(Get(), buffer.Get(), bufferOffset, reinterpret_cast<uint8_t const *>(data), size);
 }
 void CommandEncoder::WriteTimestamp(QuerySet const& querySet, uint32_t queryIndex) const {
     wgpuDawnWireClientCommandEncoderWriteTimestamp(Get(), querySet.Get(), queryIndex);
@@ -8036,10 +8392,10 @@ void ComputePassEncoder::PushDebugGroup(StringView groupLabel) const {
     wgpuDawnWireClientComputePassEncoderPushDebugGroup(Get(), *reinterpret_cast<WGPUStringView const*>(&groupLabel));
 }
 void ComputePassEncoder::SetBindGroup(uint32_t groupIndex, BindGroup const& group, size_t dynamicOffsetCount, uint32_t const * dynamicOffsets) const {
-    wgpuDawnWireClientComputePassEncoderSetBindGroup(Get(), groupIndex, group.Get(), dynamicOffsetCount, reinterpret_cast<uint32_t const * >(dynamicOffsets));
+    wgpuDawnWireClientComputePassEncoderSetBindGroup(Get(), groupIndex, group.Get(), dynamicOffsetCount, reinterpret_cast<uint32_t const *>(dynamicOffsets));
 }
 void ComputePassEncoder::SetImmediateData(uint32_t offset, void const * data, size_t size) const {
-    wgpuDawnWireClientComputePassEncoderSetImmediateData(Get(), offset, reinterpret_cast<void const * >(data), size);
+    wgpuDawnWireClientComputePassEncoderSetImmediateData(Get(), offset, reinterpret_cast<void const *>(data), size);
 }
 void ComputePassEncoder::SetLabel(StringView label) const {
     wgpuDawnWireClientComputePassEncoderSetLabel(Get(), *reinterpret_cast<WGPUStringView const*>(&label));
@@ -8092,23 +8448,23 @@ static_assert(alignof(ComputePipeline) == alignof(WGPUComputePipeline), "alignof
 // Device implementation
 
 BindGroup Device::CreateBindGroup(BindGroupDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateBindGroup(Get(), reinterpret_cast<WGPUBindGroupDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreateBindGroup(Get(), reinterpret_cast<WGPUBindGroupDescriptor const *>(descriptor));
     return BindGroup::Acquire(result);
 }
 BindGroupLayout Device::CreateBindGroupLayout(BindGroupLayoutDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateBindGroupLayout(Get(), reinterpret_cast<WGPUBindGroupLayoutDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreateBindGroupLayout(Get(), reinterpret_cast<WGPUBindGroupLayoutDescriptor const *>(descriptor));
     return BindGroupLayout::Acquire(result);
 }
 Buffer Device::CreateBuffer(BufferDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateBuffer(Get(), reinterpret_cast<WGPUBufferDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreateBuffer(Get(), reinterpret_cast<WGPUBufferDescriptor const *>(descriptor));
     return Buffer::Acquire(result);
 }
 CommandEncoder Device::CreateCommandEncoder(CommandEncoderDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateCommandEncoder(Get(), reinterpret_cast<WGPUCommandEncoderDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreateCommandEncoder(Get(), reinterpret_cast<WGPUCommandEncoderDescriptor const *>(descriptor));
     return CommandEncoder::Acquire(result);
 }
 ComputePipeline Device::CreateComputePipeline(ComputePipelineDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateComputePipeline(Get(), reinterpret_cast<WGPUComputePipelineDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreateComputePipeline(Get(), reinterpret_cast<WGPUComputePipelineDescriptor const *>(descriptor));
     return ComputePipeline::Acquire(result);
 }
 template <typename F, typename T,
@@ -8134,7 +8490,7 @@ Future Device::CreateComputePipelineAsync(ComputePipelineDescriptor const * desc
     }
     callbackInfo.userdata1 = reinterpret_cast<void*>(+callback);
     callbackInfo.userdata2 = reinterpret_cast<void*>(userdata);
-    auto result = wgpuDawnWireClientDeviceCreateComputePipelineAsync(Get(), reinterpret_cast<WGPUComputePipelineDescriptor const * >(descriptor), callbackInfo);
+    auto result = wgpuDawnWireClientDeviceCreateComputePipelineAsync(Get(), reinterpret_cast<WGPUComputePipelineDescriptor const *>(descriptor), callbackInfo);
     return Future {
         result.id
     };
@@ -8167,13 +8523,13 @@ Future Device::CreateComputePipelineAsync(ComputePipelineDescriptor const * desc
         callbackInfo.userdata1 = reinterpret_cast<void*>(lambda);
         callbackInfo.userdata2 = nullptr;
     }
-    auto result = wgpuDawnWireClientDeviceCreateComputePipelineAsync(Get(), reinterpret_cast<WGPUComputePipelineDescriptor const * >(descriptor), callbackInfo);
+    auto result = wgpuDawnWireClientDeviceCreateComputePipelineAsync(Get(), reinterpret_cast<WGPUComputePipelineDescriptor const *>(descriptor), callbackInfo);
     return Future {
             result.id
         };
 }
 Buffer Device::CreateErrorBuffer(BufferDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateErrorBuffer(Get(), reinterpret_cast<WGPUBufferDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreateErrorBuffer(Get(), reinterpret_cast<WGPUBufferDescriptor const *>(descriptor));
     return Buffer::Acquire(result);
 }
 ExternalTexture Device::CreateErrorExternalTexture() const {
@@ -8181,31 +8537,31 @@ ExternalTexture Device::CreateErrorExternalTexture() const {
     return ExternalTexture::Acquire(result);
 }
 ShaderModule Device::CreateErrorShaderModule(ShaderModuleDescriptor const * descriptor, StringView errorMessage) const {
-    auto result = wgpuDawnWireClientDeviceCreateErrorShaderModule(Get(), reinterpret_cast<WGPUShaderModuleDescriptor const * >(descriptor), *reinterpret_cast<WGPUStringView const*>(&errorMessage));
+    auto result = wgpuDawnWireClientDeviceCreateErrorShaderModule(Get(), reinterpret_cast<WGPUShaderModuleDescriptor const *>(descriptor), *reinterpret_cast<WGPUStringView const*>(&errorMessage));
     return ShaderModule::Acquire(result);
 }
 Texture Device::CreateErrorTexture(TextureDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateErrorTexture(Get(), reinterpret_cast<WGPUTextureDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreateErrorTexture(Get(), reinterpret_cast<WGPUTextureDescriptor const *>(descriptor));
     return Texture::Acquire(result);
 }
 ExternalTexture Device::CreateExternalTexture(ExternalTextureDescriptor const * externalTextureDescriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateExternalTexture(Get(), reinterpret_cast<WGPUExternalTextureDescriptor const * >(externalTextureDescriptor));
+    auto result = wgpuDawnWireClientDeviceCreateExternalTexture(Get(), reinterpret_cast<WGPUExternalTextureDescriptor const *>(externalTextureDescriptor));
     return ExternalTexture::Acquire(result);
 }
 PipelineLayout Device::CreatePipelineLayout(PipelineLayoutDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreatePipelineLayout(Get(), reinterpret_cast<WGPUPipelineLayoutDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreatePipelineLayout(Get(), reinterpret_cast<WGPUPipelineLayoutDescriptor const *>(descriptor));
     return PipelineLayout::Acquire(result);
 }
 QuerySet Device::CreateQuerySet(QuerySetDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateQuerySet(Get(), reinterpret_cast<WGPUQuerySetDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreateQuerySet(Get(), reinterpret_cast<WGPUQuerySetDescriptor const *>(descriptor));
     return QuerySet::Acquire(result);
 }
 RenderBundleEncoder Device::CreateRenderBundleEncoder(RenderBundleEncoderDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateRenderBundleEncoder(Get(), reinterpret_cast<WGPURenderBundleEncoderDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreateRenderBundleEncoder(Get(), reinterpret_cast<WGPURenderBundleEncoderDescriptor const *>(descriptor));
     return RenderBundleEncoder::Acquire(result);
 }
 RenderPipeline Device::CreateRenderPipeline(RenderPipelineDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateRenderPipeline(Get(), reinterpret_cast<WGPURenderPipelineDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreateRenderPipeline(Get(), reinterpret_cast<WGPURenderPipelineDescriptor const *>(descriptor));
     return RenderPipeline::Acquire(result);
 }
 template <typename F, typename T,
@@ -8231,7 +8587,7 @@ Future Device::CreateRenderPipelineAsync(RenderPipelineDescriptor const * descri
     }
     callbackInfo.userdata1 = reinterpret_cast<void*>(+callback);
     callbackInfo.userdata2 = reinterpret_cast<void*>(userdata);
-    auto result = wgpuDawnWireClientDeviceCreateRenderPipelineAsync(Get(), reinterpret_cast<WGPURenderPipelineDescriptor const * >(descriptor), callbackInfo);
+    auto result = wgpuDawnWireClientDeviceCreateRenderPipelineAsync(Get(), reinterpret_cast<WGPURenderPipelineDescriptor const *>(descriptor), callbackInfo);
     return Future {
         result.id
     };
@@ -8264,21 +8620,21 @@ Future Device::CreateRenderPipelineAsync(RenderPipelineDescriptor const * descri
         callbackInfo.userdata1 = reinterpret_cast<void*>(lambda);
         callbackInfo.userdata2 = nullptr;
     }
-    auto result = wgpuDawnWireClientDeviceCreateRenderPipelineAsync(Get(), reinterpret_cast<WGPURenderPipelineDescriptor const * >(descriptor), callbackInfo);
+    auto result = wgpuDawnWireClientDeviceCreateRenderPipelineAsync(Get(), reinterpret_cast<WGPURenderPipelineDescriptor const *>(descriptor), callbackInfo);
     return Future {
             result.id
         };
 }
 Sampler Device::CreateSampler(SamplerDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateSampler(Get(), reinterpret_cast<WGPUSamplerDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreateSampler(Get(), reinterpret_cast<WGPUSamplerDescriptor const *>(descriptor));
     return Sampler::Acquire(result);
 }
 ShaderModule Device::CreateShaderModule(ShaderModuleDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateShaderModule(Get(), reinterpret_cast<WGPUShaderModuleDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreateShaderModule(Get(), reinterpret_cast<WGPUShaderModuleDescriptor const *>(descriptor));
     return ShaderModule::Acquire(result);
 }
 Texture Device::CreateTexture(TextureDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceCreateTexture(Get(), reinterpret_cast<WGPUTextureDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceCreateTexture(Get(), reinterpret_cast<WGPUTextureDescriptor const *>(descriptor));
     return Texture::Acquire(result);
 }
 void Device::Destroy() const {
@@ -8287,25 +8643,25 @@ void Device::Destroy() const {
 void Device::ForceLoss(DeviceLostReason type, StringView message) const {
     wgpuDawnWireClientDeviceForceLoss(Get(), static_cast<WGPUDeviceLostReason>(type), *reinterpret_cast<WGPUStringView const*>(&message));
 }
-ConvertibleStatus Device::GetAHardwareBufferProperties(void * handle, AHardwareBufferProperties * properties) const {
-    auto result = wgpuDawnWireClientDeviceGetAHardwareBufferProperties(Get(), handle, reinterpret_cast<WGPUAHardwareBufferProperties * >(properties));
-    return static_cast<Status>(result);
-}
 Adapter Device::GetAdapter() const {
     auto result = wgpuDawnWireClientDeviceGetAdapter(Get());
     return Adapter::Acquire(result);
 }
 ConvertibleStatus Device::GetAdapterInfo(AdapterInfo * adapterInfo) const {
     *adapterInfo = AdapterInfo();
-    auto result = wgpuDawnWireClientDeviceGetAdapterInfo(Get(), reinterpret_cast<WGPUAdapterInfo * >(adapterInfo));
+    auto result = wgpuDawnWireClientDeviceGetAdapterInfo(Get(), reinterpret_cast<WGPUAdapterInfo *>(adapterInfo));
+    return static_cast<Status>(result);
+}
+ConvertibleStatus Device::GetAHardwareBufferProperties(void * handle, AHardwareBufferProperties * properties) const {
+    auto result = wgpuDawnWireClientDeviceGetAHardwareBufferProperties(Get(), handle, reinterpret_cast<WGPUAHardwareBufferProperties *>(properties));
     return static_cast<Status>(result);
 }
 void Device::GetFeatures(SupportedFeatures * features) const {
     *features = SupportedFeatures();
-    wgpuDawnWireClientDeviceGetFeatures(Get(), reinterpret_cast<WGPUSupportedFeatures * >(features));
+    wgpuDawnWireClientDeviceGetFeatures(Get(), reinterpret_cast<WGPUSupportedFeatures *>(features));
 }
 ConvertibleStatus Device::GetLimits(Limits * limits) const {
-    auto result = wgpuDawnWireClientDeviceGetLimits(Get(), reinterpret_cast<WGPULimits * >(limits));
+    auto result = wgpuDawnWireClientDeviceGetLimits(Get(), reinterpret_cast<WGPULimits *>(limits));
     return static_cast<Status>(result);
 }
 Future Device::GetLostFuture() const {
@@ -8323,15 +8679,15 @@ Bool Device::HasFeature(FeatureName feature) const {
     return result;
 }
 SharedBufferMemory Device::ImportSharedBufferMemory(SharedBufferMemoryDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceImportSharedBufferMemory(Get(), reinterpret_cast<WGPUSharedBufferMemoryDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceImportSharedBufferMemory(Get(), reinterpret_cast<WGPUSharedBufferMemoryDescriptor const *>(descriptor));
     return SharedBufferMemory::Acquire(result);
 }
 SharedFence Device::ImportSharedFence(SharedFenceDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceImportSharedFence(Get(), reinterpret_cast<WGPUSharedFenceDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceImportSharedFence(Get(), reinterpret_cast<WGPUSharedFenceDescriptor const *>(descriptor));
     return SharedFence::Acquire(result);
 }
 SharedTextureMemory Device::ImportSharedTextureMemory(SharedTextureMemoryDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientDeviceImportSharedTextureMemory(Get(), reinterpret_cast<WGPUSharedTextureMemoryDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientDeviceImportSharedTextureMemory(Get(), reinterpret_cast<WGPUSharedTextureMemoryDescriptor const *>(descriptor));
     return SharedTextureMemory::Acquire(result);
 }
 void Device::InjectError(ErrorType type, StringView message) const {
@@ -8461,7 +8817,7 @@ void Device::Tick() const {
     wgpuDawnWireClientDeviceTick(Get());
 }
 void Device::ValidateTextureDescriptor(TextureDescriptor const * descriptor) const {
-    wgpuDawnWireClientDeviceValidateTextureDescriptor(Get(), reinterpret_cast<WGPUTextureDescriptor const * >(descriptor));
+    wgpuDawnWireClientDeviceValidateTextureDescriptor(Get(), reinterpret_cast<WGPUTextureDescriptor const *>(descriptor));
 }
 
 
@@ -8510,13 +8866,12 @@ static_assert(alignof(ExternalTexture) == alignof(WGPUExternalTexture), "alignof
 // Instance implementation
 
 Surface Instance::CreateSurface(SurfaceDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientInstanceCreateSurface(Get(), reinterpret_cast<WGPUSurfaceDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientInstanceCreateSurface(Get(), reinterpret_cast<WGPUSurfaceDescriptor const *>(descriptor));
     return Surface::Acquire(result);
 }
-ConvertibleStatus Instance::GetWGSLLanguageFeatures(SupportedWGSLLanguageFeatures * features) const {
+void Instance::GetWGSLLanguageFeatures(SupportedWGSLLanguageFeatures * features) const {
     *features = SupportedWGSLLanguageFeatures();
-    auto result = wgpuDawnWireClientInstanceGetWGSLLanguageFeatures(Get(), reinterpret_cast<WGPUSupportedWGSLLanguageFeatures * >(features));
-    return static_cast<Status>(result);
+    wgpuDawnWireClientInstanceGetWGSLLanguageFeatures(Get(), reinterpret_cast<WGPUSupportedWGSLLanguageFeatures *>(features));
 }
 Bool Instance::HasWGSLLanguageFeature(WGSLLanguageFeatureName feature) const {
     auto result = wgpuDawnWireClientInstanceHasWGSLLanguageFeature(Get(), static_cast<WGPUWGSLLanguageFeatureName>(feature));
@@ -8548,7 +8903,7 @@ Future Instance::RequestAdapter(RequestAdapterOptions const * options, CallbackM
     }
     callbackInfo.userdata1 = reinterpret_cast<void*>(+callback);
     callbackInfo.userdata2 = reinterpret_cast<void*>(userdata);
-    auto result = wgpuDawnWireClientInstanceRequestAdapter(Get(), reinterpret_cast<WGPURequestAdapterOptions const * >(options), callbackInfo);
+    auto result = wgpuDawnWireClientInstanceRequestAdapter(Get(), reinterpret_cast<WGPURequestAdapterOptions const *>(options), callbackInfo);
     return Future {
         result.id
     };
@@ -8581,13 +8936,13 @@ Future Instance::RequestAdapter(RequestAdapterOptions const * options, CallbackM
         callbackInfo.userdata1 = reinterpret_cast<void*>(lambda);
         callbackInfo.userdata2 = nullptr;
     }
-    auto result = wgpuDawnWireClientInstanceRequestAdapter(Get(), reinterpret_cast<WGPURequestAdapterOptions const * >(options), callbackInfo);
+    auto result = wgpuDawnWireClientInstanceRequestAdapter(Get(), reinterpret_cast<WGPURequestAdapterOptions const *>(options), callbackInfo);
     return Future {
             result.id
         };
 }
 WaitStatus Instance::WaitAny(size_t futureCount, FutureWaitInfo * futures, uint64_t timeoutNS) const {
-    auto result = wgpuDawnWireClientInstanceWaitAny(Get(), futureCount, reinterpret_cast<WGPUFutureWaitInfo * >(futures), timeoutNS);
+    auto result = wgpuDawnWireClientInstanceWaitAny(Get(), futureCount, reinterpret_cast<WGPUFutureWaitInfo *>(futures), timeoutNS);
     return static_cast<WaitStatus>(result);
 }
 
@@ -8663,10 +9018,10 @@ static_assert(alignof(QuerySet) == alignof(WGPUQuerySet), "alignof mismatch for 
 // Queue implementation
 
 void Queue::CopyExternalTextureForBrowser(ImageCopyExternalTexture const * source, TexelCopyTextureInfo const * destination, Extent3D const * copySize, CopyTextureForBrowserOptions const * options) const {
-    wgpuDawnWireClientQueueCopyExternalTextureForBrowser(Get(), reinterpret_cast<WGPUImageCopyExternalTexture const * >(source), reinterpret_cast<WGPUTexelCopyTextureInfo const * >(destination), reinterpret_cast<WGPUExtent3D const * >(copySize), reinterpret_cast<WGPUCopyTextureForBrowserOptions const * >(options));
+    wgpuDawnWireClientQueueCopyExternalTextureForBrowser(Get(), reinterpret_cast<WGPUImageCopyExternalTexture const *>(source), reinterpret_cast<WGPUTexelCopyTextureInfo const *>(destination), reinterpret_cast<WGPUExtent3D const *>(copySize), reinterpret_cast<WGPUCopyTextureForBrowserOptions const *>(options));
 }
 void Queue::CopyTextureForBrowser(TexelCopyTextureInfo const * source, TexelCopyTextureInfo const * destination, Extent3D const * copySize, CopyTextureForBrowserOptions const * options) const {
-    wgpuDawnWireClientQueueCopyTextureForBrowser(Get(), reinterpret_cast<WGPUTexelCopyTextureInfo const * >(source), reinterpret_cast<WGPUTexelCopyTextureInfo const * >(destination), reinterpret_cast<WGPUExtent3D const * >(copySize), reinterpret_cast<WGPUCopyTextureForBrowserOptions const * >(options));
+    wgpuDawnWireClientQueueCopyTextureForBrowser(Get(), reinterpret_cast<WGPUTexelCopyTextureInfo const *>(source), reinterpret_cast<WGPUTexelCopyTextureInfo const *>(destination), reinterpret_cast<WGPUExtent3D const *>(copySize), reinterpret_cast<WGPUCopyTextureForBrowserOptions const *>(options));
 }
 template <typename F, typename T,
           typename Cb,
@@ -8676,14 +9031,17 @@ Future Queue::OnSubmittedWorkDone(CallbackMode callbackMode,F callback, T userda
     WGPUQueueWorkDoneCallbackInfo callbackInfo = {};
     callbackInfo.mode = static_cast<WGPUCallbackMode>(callbackMode);
     if constexpr (std::is_convertible_v<F, Cb*>) {
-        callbackInfo.callback = [](WGPUQueueWorkDoneStatus status, void* callback_param, void* userdata_param) {
+        callbackInfo.callback = [](WGPUQueueWorkDoneStatus status, WGPUStringView message, void* callback_param, void* userdata_param) {
             auto cb = reinterpret_cast<Cb*>(callback_param);
-            (*cb)(static_cast<QueueWorkDoneStatus>(status), static_cast<T>(userdata_param));
+            (*cb)(static_cast<QueueWorkDoneStatus>(status), StringView {
+    message.data,
+    message.length
+}, static_cast<T>(userdata_param));
         };
     } else {
-        callbackInfo.callback = [](WGPUQueueWorkDoneStatus status, void* callback_param, void* userdata_param) {
+        callbackInfo.callback = [](WGPUQueueWorkDoneStatus status, WGPUStringView message, void* callback_param, void* userdata_param) {
             auto cb = reinterpret_cast<CbChar*>(callback_param);
-            (*cb)(static_cast<QueueWorkDoneStatus>(status), static_cast<T>(userdata_param));
+            (*cb)(static_cast<QueueWorkDoneStatus>(status), {detail::StringViewAdapter(message)}, static_cast<T>(userdata_param));
         };
     }
     callbackInfo.userdata1 = reinterpret_cast<void*>(+callback);
@@ -8703,17 +9061,20 @@ Future Queue::OnSubmittedWorkDone(CallbackMode callbackMode,L callback) const {
     WGPUQueueWorkDoneCallbackInfo callbackInfo = {};
     callbackInfo.mode = static_cast<WGPUCallbackMode>(callbackMode);
     if constexpr (std::is_convertible_v<L, F*>) {
-        callbackInfo.callback = [](WGPUQueueWorkDoneStatus status, void* callback_param, void*) {
+        callbackInfo.callback = [](WGPUQueueWorkDoneStatus status, WGPUStringView message, void* callback_param, void*) {
             auto cb = reinterpret_cast<F*>(callback_param);
-            (*cb)(static_cast<QueueWorkDoneStatus>(status));
+            (*cb)(static_cast<QueueWorkDoneStatus>(status), StringView {
+    message.data,
+    message.length
+});
         };
         callbackInfo.userdata1 = reinterpret_cast<void*>(+callback);
         callbackInfo.userdata2 = nullptr;
     } else {
         auto* lambda = new L(std::move(callback));
-        callbackInfo.callback = [](WGPUQueueWorkDoneStatus status, void* callback_param, void*) {
+        callbackInfo.callback = [](WGPUQueueWorkDoneStatus status, WGPUStringView message, void* callback_param, void*) {
             std::unique_ptr<L> the_lambda(reinterpret_cast<L*>(callback_param));
-            (*the_lambda)(static_cast<QueueWorkDoneStatus>(status));
+            (*the_lambda)(static_cast<QueueWorkDoneStatus>(status), {detail::StringViewAdapter(message)});
         };
         callbackInfo.userdata1 = reinterpret_cast<void*>(lambda);
         callbackInfo.userdata2 = nullptr;
@@ -8727,13 +9088,13 @@ void Queue::SetLabel(StringView label) const {
     wgpuDawnWireClientQueueSetLabel(Get(), *reinterpret_cast<WGPUStringView const*>(&label));
 }
 void Queue::Submit(size_t commandCount, CommandBuffer const * commands) const {
-    wgpuDawnWireClientQueueSubmit(Get(), commandCount, reinterpret_cast<WGPUCommandBuffer const * >(commands));
+    wgpuDawnWireClientQueueSubmit(Get(), commandCount, reinterpret_cast<WGPUCommandBuffer const *>(commands));
 }
 void Queue::WriteBuffer(Buffer const& buffer, uint64_t bufferOffset, void const * data, size_t size) const {
-    wgpuDawnWireClientQueueWriteBuffer(Get(), buffer.Get(), bufferOffset, reinterpret_cast<void const * >(data), size);
+    wgpuDawnWireClientQueueWriteBuffer(Get(), buffer.Get(), bufferOffset, reinterpret_cast<void const *>(data), size);
 }
 void Queue::WriteTexture(TexelCopyTextureInfo const * destination, void const * data, size_t dataSize, TexelCopyBufferLayout const * dataLayout, Extent3D const * writeSize) const {
-    wgpuDawnWireClientQueueWriteTexture(Get(), reinterpret_cast<WGPUTexelCopyTextureInfo const * >(destination), reinterpret_cast<void const * >(data), dataSize, reinterpret_cast<WGPUTexelCopyBufferLayout const * >(dataLayout), reinterpret_cast<WGPUExtent3D const * >(writeSize));
+    wgpuDawnWireClientQueueWriteTexture(Get(), reinterpret_cast<WGPUTexelCopyTextureInfo const *>(destination), reinterpret_cast<void const *>(data), dataSize, reinterpret_cast<WGPUTexelCopyBufferLayout const *>(dataLayout), reinterpret_cast<WGPUExtent3D const *>(writeSize));
 }
 
 
@@ -8785,7 +9146,7 @@ void RenderBundleEncoder::DrawIndirect(Buffer const& indirectBuffer, uint64_t in
     wgpuDawnWireClientRenderBundleEncoderDrawIndirect(Get(), indirectBuffer.Get(), indirectOffset);
 }
 RenderBundle RenderBundleEncoder::Finish(RenderBundleDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientRenderBundleEncoderFinish(Get(), reinterpret_cast<WGPURenderBundleDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientRenderBundleEncoderFinish(Get(), reinterpret_cast<WGPURenderBundleDescriptor const *>(descriptor));
     return RenderBundle::Acquire(result);
 }
 void RenderBundleEncoder::InsertDebugMarker(StringView markerLabel) const {
@@ -8798,10 +9159,10 @@ void RenderBundleEncoder::PushDebugGroup(StringView groupLabel) const {
     wgpuDawnWireClientRenderBundleEncoderPushDebugGroup(Get(), *reinterpret_cast<WGPUStringView const*>(&groupLabel));
 }
 void RenderBundleEncoder::SetBindGroup(uint32_t groupIndex, BindGroup const& group, size_t dynamicOffsetCount, uint32_t const * dynamicOffsets) const {
-    wgpuDawnWireClientRenderBundleEncoderSetBindGroup(Get(), groupIndex, group.Get(), dynamicOffsetCount, reinterpret_cast<uint32_t const * >(dynamicOffsets));
+    wgpuDawnWireClientRenderBundleEncoderSetBindGroup(Get(), groupIndex, group.Get(), dynamicOffsetCount, reinterpret_cast<uint32_t const *>(dynamicOffsets));
 }
 void RenderBundleEncoder::SetImmediateData(uint32_t offset, void const * data, size_t size) const {
-    wgpuDawnWireClientRenderBundleEncoderSetImmediateData(Get(), offset, reinterpret_cast<void const * >(data), size);
+    wgpuDawnWireClientRenderBundleEncoderSetImmediateData(Get(), offset, reinterpret_cast<void const *>(data), size);
 }
 void RenderBundleEncoder::SetIndexBuffer(Buffer const& buffer, IndexFormat format, uint64_t offset, uint64_t size) const {
     wgpuDawnWireClientRenderBundleEncoderSetIndexBuffer(Get(), buffer.Get(), static_cast<WGPUIndexFormat>(format), offset, size);
@@ -8854,7 +9215,7 @@ void RenderPassEncoder::EndOcclusionQuery() const {
     wgpuDawnWireClientRenderPassEncoderEndOcclusionQuery(Get());
 }
 void RenderPassEncoder::ExecuteBundles(size_t bundleCount, RenderBundle const * bundles) const {
-    wgpuDawnWireClientRenderPassEncoderExecuteBundles(Get(), bundleCount, reinterpret_cast<WGPURenderBundle const * >(bundles));
+    wgpuDawnWireClientRenderPassEncoderExecuteBundles(Get(), bundleCount, reinterpret_cast<WGPURenderBundle const *>(bundles));
 }
 void RenderPassEncoder::InsertDebugMarker(StringView markerLabel) const {
     wgpuDawnWireClientRenderPassEncoderInsertDebugMarker(Get(), *reinterpret_cast<WGPUStringView const*>(&markerLabel));
@@ -8875,13 +9236,13 @@ void RenderPassEncoder::PushDebugGroup(StringView groupLabel) const {
     wgpuDawnWireClientRenderPassEncoderPushDebugGroup(Get(), *reinterpret_cast<WGPUStringView const*>(&groupLabel));
 }
 void RenderPassEncoder::SetBindGroup(uint32_t groupIndex, BindGroup const& group, size_t dynamicOffsetCount, uint32_t const * dynamicOffsets) const {
-    wgpuDawnWireClientRenderPassEncoderSetBindGroup(Get(), groupIndex, group.Get(), dynamicOffsetCount, reinterpret_cast<uint32_t const * >(dynamicOffsets));
+    wgpuDawnWireClientRenderPassEncoderSetBindGroup(Get(), groupIndex, group.Get(), dynamicOffsetCount, reinterpret_cast<uint32_t const *>(dynamicOffsets));
 }
 void RenderPassEncoder::SetBlendConstant(Color const * color) const {
-    wgpuDawnWireClientRenderPassEncoderSetBlendConstant(Get(), reinterpret_cast<WGPUColor const * >(color));
+    wgpuDawnWireClientRenderPassEncoderSetBlendConstant(Get(), reinterpret_cast<WGPUColor const *>(color));
 }
 void RenderPassEncoder::SetImmediateData(uint32_t offset, void const * data, size_t size) const {
-    wgpuDawnWireClientRenderPassEncoderSetImmediateData(Get(), offset, reinterpret_cast<void const * >(data), size);
+    wgpuDawnWireClientRenderPassEncoderSetImmediateData(Get(), offset, reinterpret_cast<void const *>(data), size);
 }
 void RenderPassEncoder::SetIndexBuffer(Buffer const& buffer, IndexFormat format, uint64_t offset, uint64_t size) const {
     wgpuDawnWireClientRenderPassEncoderSetIndexBuffer(Get(), buffer.Get(), static_cast<WGPUIndexFormat>(format), offset, size);
@@ -9044,20 +9405,20 @@ static_assert(alignof(ShaderModule) == alignof(WGPUShaderModule), "alignof misma
 // SharedBufferMemory implementation
 
 ConvertibleStatus SharedBufferMemory::BeginAccess(Buffer const& buffer, SharedBufferMemoryBeginAccessDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientSharedBufferMemoryBeginAccess(Get(), buffer.Get(), reinterpret_cast<WGPUSharedBufferMemoryBeginAccessDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientSharedBufferMemoryBeginAccess(Get(), buffer.Get(), reinterpret_cast<WGPUSharedBufferMemoryBeginAccessDescriptor const *>(descriptor));
     return static_cast<Status>(result);
 }
 Buffer SharedBufferMemory::CreateBuffer(BufferDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientSharedBufferMemoryCreateBuffer(Get(), reinterpret_cast<WGPUBufferDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientSharedBufferMemoryCreateBuffer(Get(), reinterpret_cast<WGPUBufferDescriptor const *>(descriptor));
     return Buffer::Acquire(result);
 }
 ConvertibleStatus SharedBufferMemory::EndAccess(Buffer const& buffer, SharedBufferMemoryEndAccessState * descriptor) const {
     *descriptor = SharedBufferMemoryEndAccessState();
-    auto result = wgpuDawnWireClientSharedBufferMemoryEndAccess(Get(), buffer.Get(), reinterpret_cast<WGPUSharedBufferMemoryEndAccessState * >(descriptor));
+    auto result = wgpuDawnWireClientSharedBufferMemoryEndAccess(Get(), buffer.Get(), reinterpret_cast<WGPUSharedBufferMemoryEndAccessState *>(descriptor));
     return static_cast<Status>(result);
 }
 ConvertibleStatus SharedBufferMemory::GetProperties(SharedBufferMemoryProperties * properties) const {
-    auto result = wgpuDawnWireClientSharedBufferMemoryGetProperties(Get(), reinterpret_cast<WGPUSharedBufferMemoryProperties * >(properties));
+    auto result = wgpuDawnWireClientSharedBufferMemoryGetProperties(Get(), reinterpret_cast<WGPUSharedBufferMemoryProperties *>(properties));
     return static_cast<Status>(result);
 }
 Bool SharedBufferMemory::IsDeviceLost() const {
@@ -9085,7 +9446,7 @@ static_assert(alignof(SharedBufferMemory) == alignof(WGPUSharedBufferMemory), "a
 // SharedFence implementation
 
 void SharedFence::ExportInfo(SharedFenceExportInfo * info) const {
-    wgpuDawnWireClientSharedFenceExportInfo(Get(), reinterpret_cast<WGPUSharedFenceExportInfo * >(info));
+    wgpuDawnWireClientSharedFenceExportInfo(Get(), reinterpret_cast<WGPUSharedFenceExportInfo *>(info));
 }
 
 
@@ -9105,20 +9466,20 @@ static_assert(alignof(SharedFence) == alignof(WGPUSharedFence), "alignof mismatc
 // SharedTextureMemory implementation
 
 ConvertibleStatus SharedTextureMemory::BeginAccess(Texture const& texture, SharedTextureMemoryBeginAccessDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientSharedTextureMemoryBeginAccess(Get(), texture.Get(), reinterpret_cast<WGPUSharedTextureMemoryBeginAccessDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientSharedTextureMemoryBeginAccess(Get(), texture.Get(), reinterpret_cast<WGPUSharedTextureMemoryBeginAccessDescriptor const *>(descriptor));
     return static_cast<Status>(result);
 }
 Texture SharedTextureMemory::CreateTexture(TextureDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientSharedTextureMemoryCreateTexture(Get(), reinterpret_cast<WGPUTextureDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientSharedTextureMemoryCreateTexture(Get(), reinterpret_cast<WGPUTextureDescriptor const *>(descriptor));
     return Texture::Acquire(result);
 }
 ConvertibleStatus SharedTextureMemory::EndAccess(Texture const& texture, SharedTextureMemoryEndAccessState * descriptor) const {
     *descriptor = SharedTextureMemoryEndAccessState();
-    auto result = wgpuDawnWireClientSharedTextureMemoryEndAccess(Get(), texture.Get(), reinterpret_cast<WGPUSharedTextureMemoryEndAccessState * >(descriptor));
+    auto result = wgpuDawnWireClientSharedTextureMemoryEndAccess(Get(), texture.Get(), reinterpret_cast<WGPUSharedTextureMemoryEndAccessState *>(descriptor));
     return static_cast<Status>(result);
 }
 ConvertibleStatus SharedTextureMemory::GetProperties(SharedTextureMemoryProperties * properties) const {
-    auto result = wgpuDawnWireClientSharedTextureMemoryGetProperties(Get(), reinterpret_cast<WGPUSharedTextureMemoryProperties * >(properties));
+    auto result = wgpuDawnWireClientSharedTextureMemoryGetProperties(Get(), reinterpret_cast<WGPUSharedTextureMemoryProperties *>(properties));
     return static_cast<Status>(result);
 }
 Bool SharedTextureMemory::IsDeviceLost() const {
@@ -9146,18 +9507,19 @@ static_assert(alignof(SharedTextureMemory) == alignof(WGPUSharedTextureMemory), 
 // Surface implementation
 
 void Surface::Configure(SurfaceConfiguration const * config) const {
-    wgpuDawnWireClientSurfaceConfigure(Get(), reinterpret_cast<WGPUSurfaceConfiguration const * >(config));
+    wgpuDawnWireClientSurfaceConfigure(Get(), reinterpret_cast<WGPUSurfaceConfiguration const *>(config));
 }
 ConvertibleStatus Surface::GetCapabilities(Adapter const& adapter, SurfaceCapabilities * capabilities) const {
     *capabilities = SurfaceCapabilities();
-    auto result = wgpuDawnWireClientSurfaceGetCapabilities(Get(), adapter.Get(), reinterpret_cast<WGPUSurfaceCapabilities * >(capabilities));
+    auto result = wgpuDawnWireClientSurfaceGetCapabilities(Get(), adapter.Get(), reinterpret_cast<WGPUSurfaceCapabilities *>(capabilities));
     return static_cast<Status>(result);
 }
 void Surface::GetCurrentTexture(SurfaceTexture * surfaceTexture) const {
-    wgpuDawnWireClientSurfaceGetCurrentTexture(Get(), reinterpret_cast<WGPUSurfaceTexture * >(surfaceTexture));
+    wgpuDawnWireClientSurfaceGetCurrentTexture(Get(), reinterpret_cast<WGPUSurfaceTexture *>(surfaceTexture));
 }
-void Surface::Present() const {
-    wgpuDawnWireClientSurfacePresent(Get());
+ConvertibleStatus Surface::Present() const {
+    auto result = wgpuDawnWireClientSurfacePresent(Get());
+    return static_cast<Status>(result);
 }
 void Surface::SetLabel(StringView label) const {
     wgpuDawnWireClientSurfaceSetLabel(Get(), *reinterpret_cast<WGPUStringView const*>(&label));
@@ -9183,11 +9545,11 @@ static_assert(alignof(Surface) == alignof(WGPUSurface), "alignof mismatch for Su
 // Texture implementation
 
 TextureView Texture::CreateErrorView(TextureViewDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientTextureCreateErrorView(Get(), reinterpret_cast<WGPUTextureViewDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientTextureCreateErrorView(Get(), reinterpret_cast<WGPUTextureViewDescriptor const *>(descriptor));
     return TextureView::Acquire(result);
 }
 TextureView Texture::CreateView(TextureViewDescriptor const * descriptor) const {
-    auto result = wgpuDawnWireClientTextureCreateView(Get(), reinterpret_cast<WGPUTextureViewDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientTextureCreateView(Get(), reinterpret_cast<WGPUTextureViewDescriptor const *>(descriptor));
     return TextureView::Acquire(result);
 }
 void Texture::Destroy() const {
@@ -9293,38 +9655,42 @@ using Surface = dawn::wire::client::Surface;
 using Texture = dawn::wire::client::Texture;
 using TextureView = dawn::wire::client::TextureView;
 
+using StringView = dawn::wire::client::StringView;
 using AdapterPropertiesD3D = dawn::wire::client::AdapterPropertiesD3D;
-using AdapterPropertiesSubgroups = dawn::wire::client::AdapterPropertiesSubgroups;
 using AdapterPropertiesVk = dawn::wire::client::AdapterPropertiesVk;
-using BindGroupLayoutEntryArraySize = dawn::wire::client::BindGroupLayoutEntryArraySize;
 using BlendComponent = dawn::wire::client::BlendComponent;
 using BufferBindingLayout = dawn::wire::client::BufferBindingLayout;
 using BufferHostMappedPointer = dawn::wire::client::BufferHostMappedPointer;
 using Color = dawn::wire::client::Color;
 using ColorTargetStateExpandResolveTextureDawn = dawn::wire::client::ColorTargetStateExpandResolveTextureDawn;
+using CommandBufferDescriptor = dawn::wire::client::CommandBufferDescriptor;
+using CompatibilityModeLimits = dawn::wire::client::CompatibilityModeLimits;
+using ConstantEntry = dawn::wire::client::ConstantEntry;
 using CopyTextureForBrowserOptions = dawn::wire::client::CopyTextureForBrowserOptions;
-using DawnWGSLBlocklist = dawn::wire::client::DawnWGSLBlocklist;
 using DawnAdapterPropertiesPowerPreference = dawn::wire::client::DawnAdapterPropertiesPowerPreference;
 using DawnBufferDescriptorErrorInfoFromWireClient = dawn::wire::client::DawnBufferDescriptorErrorInfoFromWireClient;
+using DawnCacheDeviceDescriptor = dawn::wire::client::DawnCacheDeviceDescriptor;
 using DawnCompilationMessageUtf16 = dawn::wire::client::DawnCompilationMessageUtf16;
 using DawnDeviceAllocatorControl = dawn::wire::client::DawnDeviceAllocatorControl;
 using DawnDrmFormatProperties = dawn::wire::client::DawnDrmFormatProperties;
 using DawnEncoderInternalUsageDescriptor = dawn::wire::client::DawnEncoderInternalUsageDescriptor;
-using DawnExperimentalImmediateDataLimits = dawn::wire::client::DawnExperimentalImmediateDataLimits;
 using DawnFakeBufferOOMForTesting = dawn::wire::client::DawnFakeBufferOOMForTesting;
+using DawnFakeDeviceInitializeErrorForTesting = dawn::wire::client::DawnFakeDeviceInitializeErrorForTesting;
+using DawnHostMappedPointerLimits = dawn::wire::client::DawnHostMappedPointerLimits;
 using DawnInjectedInvalidSType = dawn::wire::client::DawnInjectedInvalidSType;
 using DawnRenderPassColorAttachmentRenderToSingleSampled = dawn::wire::client::DawnRenderPassColorAttachmentRenderToSingleSampled;
 using DawnShaderModuleSPIRVOptionsDescriptor = dawn::wire::client::DawnShaderModuleSPIRVOptionsDescriptor;
 using DawnTexelCopyBufferRowAlignmentLimits = dawn::wire::client::DawnTexelCopyBufferRowAlignmentLimits;
 using DawnTextureInternalUsageDescriptor = dawn::wire::client::DawnTextureInternalUsageDescriptor;
 using DawnTogglesDescriptor = dawn::wire::client::DawnTogglesDescriptor;
+using DawnWGSLBlocklist = dawn::wire::client::DawnWGSLBlocklist;
 using DawnWireWGSLControl = dawn::wire::client::DawnWireWGSLControl;
 using Extent2D = dawn::wire::client::Extent2D;
 using Extent3D = dawn::wire::client::Extent3D;
 using ExternalTextureBindingEntry = dawn::wire::client::ExternalTextureBindingEntry;
 using ExternalTextureBindingLayout = dawn::wire::client::ExternalTextureBindingLayout;
 using Future = dawn::wire::client::Future;
-using InstanceCapabilities = dawn::wire::client::InstanceCapabilities;
+using InstanceLimits = dawn::wire::client::InstanceLimits;
 using MemoryHeapInfo = dawn::wire::client::MemoryHeapInfo;
 using MultisampleState = dawn::wire::client::MultisampleState;
 using Origin2D = dawn::wire::client::Origin2D;
@@ -9332,13 +9698,22 @@ using Origin3D = dawn::wire::client::Origin3D;
 using PassTimestampWrites = dawn::wire::client::PassTimestampWrites;
 using PipelineLayoutStorageAttachment = dawn::wire::client::PipelineLayoutStorageAttachment;
 using PrimitiveState = dawn::wire::client::PrimitiveState;
+using QuerySetDescriptor = dawn::wire::client::QuerySetDescriptor;
+using QueueDescriptor = dawn::wire::client::QueueDescriptor;
+using RenderBundleDescriptor = dawn::wire::client::RenderBundleDescriptor;
+using RenderBundleEncoderDescriptor = dawn::wire::client::RenderBundleEncoderDescriptor;
 using RenderPassDepthStencilAttachment = dawn::wire::client::RenderPassDepthStencilAttachment;
 using RenderPassDescriptorExpandResolveRect = dawn::wire::client::RenderPassDescriptorExpandResolveRect;
+using RenderPassDescriptorResolveRect = dawn::wire::client::RenderPassDescriptorResolveRect;
 using RenderPassMaxDrawCount = dawn::wire::client::RenderPassMaxDrawCount;
+using RequestAdapterWebGPUBackendOptions = dawn::wire::client::RequestAdapterWebGPUBackendOptions;
+using RequestAdapterWebXROptions = dawn::wire::client::RequestAdapterWebXROptions;
 using SamplerBindingLayout = dawn::wire::client::SamplerBindingLayout;
 using ShaderModuleCompilationOptions = dawn::wire::client::ShaderModuleCompilationOptions;
 using ShaderSourceSPIRV = dawn::wire::client::ShaderSourceSPIRV;
+using ShaderSourceWGSL = dawn::wire::client::ShaderSourceWGSL;
 using SharedBufferMemoryBeginAccessDescriptor = dawn::wire::client::SharedBufferMemoryBeginAccessDescriptor;
+using SharedBufferMemoryDescriptor = dawn::wire::client::SharedBufferMemoryDescriptor;
 using SharedBufferMemoryEndAccessState = dawn::wire::client::SharedBufferMemoryEndAccessState;
 using SharedBufferMemoryProperties = dawn::wire::client::SharedBufferMemoryProperties;
 using SharedFenceDXGISharedHandleDescriptor = dawn::wire::client::SharedFenceDXGISharedHandleDescriptor;
@@ -9353,12 +9728,13 @@ using SharedFenceVkSemaphoreOpaqueFDDescriptor = dawn::wire::client::SharedFence
 using SharedFenceVkSemaphoreOpaqueFDExportInfo = dawn::wire::client::SharedFenceVkSemaphoreOpaqueFDExportInfo;
 using SharedFenceVkSemaphoreZirconHandleDescriptor = dawn::wire::client::SharedFenceVkSemaphoreZirconHandleDescriptor;
 using SharedFenceVkSemaphoreZirconHandleExportInfo = dawn::wire::client::SharedFenceVkSemaphoreZirconHandleExportInfo;
+using SharedTextureMemoryAHardwareBufferDescriptor = dawn::wire::client::SharedTextureMemoryAHardwareBufferDescriptor;
+using SharedTextureMemoryD3D11BeginState = dawn::wire::client::SharedTextureMemoryD3D11BeginState;
 using SharedTextureMemoryD3DSwapchainBeginState = dawn::wire::client::SharedTextureMemoryD3DSwapchainBeginState;
+using SharedTextureMemoryDmaBufPlane = dawn::wire::client::SharedTextureMemoryDmaBufPlane;
 using SharedTextureMemoryDXGISharedHandleDescriptor = dawn::wire::client::SharedTextureMemoryDXGISharedHandleDescriptor;
 using SharedTextureMemoryEGLImageDescriptor = dawn::wire::client::SharedTextureMemoryEGLImageDescriptor;
 using SharedTextureMemoryIOSurfaceDescriptor = dawn::wire::client::SharedTextureMemoryIOSurfaceDescriptor;
-using SharedTextureMemoryAHardwareBufferDescriptor = dawn::wire::client::SharedTextureMemoryAHardwareBufferDescriptor;
-using SharedTextureMemoryDmaBufPlane = dawn::wire::client::SharedTextureMemoryDmaBufPlane;
 using SharedTextureMemoryOpaqueFDDescriptor = dawn::wire::client::SharedTextureMemoryOpaqueFDDescriptor;
 using SharedTextureMemoryVkDedicatedAllocationDescriptor = dawn::wire::client::SharedTextureMemoryVkDedicatedAllocationDescriptor;
 using SharedTextureMemoryVkImageLayoutBeginState = dawn::wire::client::SharedTextureMemoryVkImageLayoutBeginState;
@@ -9367,40 +9743,40 @@ using SharedTextureMemoryZirconHandleDescriptor = dawn::wire::client::SharedText
 using StaticSamplerBindingLayout = dawn::wire::client::StaticSamplerBindingLayout;
 using StencilFaceState = dawn::wire::client::StencilFaceState;
 using StorageTextureBindingLayout = dawn::wire::client::StorageTextureBindingLayout;
-using StringView = dawn::wire::client::StringView;
 using SubgroupMatrixConfig = dawn::wire::client::SubgroupMatrixConfig;
-using SupportedWGSLLanguageFeatures = dawn::wire::client::SupportedWGSLLanguageFeatures;
 using SupportedFeatures = dawn::wire::client::SupportedFeatures;
+using SupportedInstanceFeatures = dawn::wire::client::SupportedInstanceFeatures;
+using SupportedWGSLLanguageFeatures = dawn::wire::client::SupportedWGSLLanguageFeatures;
 using SurfaceCapabilities = dawn::wire::client::SurfaceCapabilities;
+using SurfaceColorManagement = dawn::wire::client::SurfaceColorManagement;
 using SurfaceConfiguration = dawn::wire::client::SurfaceConfiguration;
+using SurfaceDescriptorFromWindowsCoreWindow = dawn::wire::client::SurfaceDescriptorFromWindowsCoreWindow;
 using SurfaceDescriptorFromWindowsUWPSwapChainPanel = dawn::wire::client::SurfaceDescriptorFromWindowsUWPSwapChainPanel;
 using SurfaceDescriptorFromWindowsWinUISwapChainPanel = dawn::wire::client::SurfaceDescriptorFromWindowsWinUISwapChainPanel;
-using SurfaceDescriptorFromWindowsCoreWindow = dawn::wire::client::SurfaceDescriptorFromWindowsCoreWindow;
-using SurfaceSourceXCBWindow = dawn::wire::client::SurfaceSourceXCBWindow;
 using SurfaceSourceAndroidNativeWindow = dawn::wire::client::SurfaceSourceAndroidNativeWindow;
 using SurfaceSourceMetalLayer = dawn::wire::client::SurfaceSourceMetalLayer;
 using SurfaceSourceWaylandSurface = dawn::wire::client::SurfaceSourceWaylandSurface;
 using SurfaceSourceWindowsHWND = dawn::wire::client::SurfaceSourceWindowsHWND;
+using SurfaceSourceXCBWindow = dawn::wire::client::SurfaceSourceXCBWindow;
 using SurfaceSourceXlibWindow = dawn::wire::client::SurfaceSourceXlibWindow;
 using SurfaceTexture = dawn::wire::client::SurfaceTexture;
 using TexelCopyBufferLayout = dawn::wire::client::TexelCopyBufferLayout;
 using TextureBindingLayout = dawn::wire::client::TextureBindingLayout;
 using TextureBindingViewDimensionDescriptor = dawn::wire::client::TextureBindingViewDimensionDescriptor;
+using TextureComponentSwizzle = dawn::wire::client::TextureComponentSwizzle;
 using VertexAttribute = dawn::wire::client::VertexAttribute;
 using YCbCrVkDescriptor = dawn::wire::client::YCbCrVkDescriptor;
-using AHardwareBufferProperties = dawn::wire::client::AHardwareBufferProperties;
 using AdapterPropertiesMemoryHeaps = dawn::wire::client::AdapterPropertiesMemoryHeaps;
 using AdapterPropertiesSubgroupMatrixConfigs = dawn::wire::client::AdapterPropertiesSubgroupMatrixConfigs;
+using AHardwareBufferProperties = dawn::wire::client::AHardwareBufferProperties;
 using BindGroupEntry = dawn::wire::client::BindGroupEntry;
 using BindGroupLayoutEntry = dawn::wire::client::BindGroupLayoutEntry;
 using BlendState = dawn::wire::client::BlendState;
 using BufferDescriptor = dawn::wire::client::BufferDescriptor;
-using CommandBufferDescriptor = dawn::wire::client::CommandBufferDescriptor;
 using CommandEncoderDescriptor = dawn::wire::client::CommandEncoderDescriptor;
 using CompilationMessage = dawn::wire::client::CompilationMessage;
 using ComputePassDescriptor = dawn::wire::client::ComputePassDescriptor;
-using ConstantEntry = dawn::wire::client::ConstantEntry;
-using DawnCacheDeviceDescriptor = dawn::wire::client::DawnCacheDeviceDescriptor;
+using ComputeState = dawn::wire::client::ComputeState;
 using DawnDrmFormatCapabilities = dawn::wire::client::DawnDrmFormatCapabilities;
 using DepthStencilState = dawn::wire::client::DepthStencilState;
 using ExternalTextureDescriptor = dawn::wire::client::ExternalTextureDescriptor;
@@ -9409,16 +9785,11 @@ using ImageCopyExternalTexture = dawn::wire::client::ImageCopyExternalTexture;
 using InstanceDescriptor = dawn::wire::client::InstanceDescriptor;
 using Limits = dawn::wire::client::Limits;
 using PipelineLayoutPixelLocalStorage = dawn::wire::client::PipelineLayoutPixelLocalStorage;
-using QuerySetDescriptor = dawn::wire::client::QuerySetDescriptor;
-using QueueDescriptor = dawn::wire::client::QueueDescriptor;
-using RenderBundleDescriptor = dawn::wire::client::RenderBundleDescriptor;
-using RenderBundleEncoderDescriptor = dawn::wire::client::RenderBundleEncoderDescriptor;
 using RenderPassColorAttachment = dawn::wire::client::RenderPassColorAttachment;
 using RenderPassStorageAttachment = dawn::wire::client::RenderPassStorageAttachment;
 using RequestAdapterOptions = dawn::wire::client::RequestAdapterOptions;
 using SamplerDescriptor = dawn::wire::client::SamplerDescriptor;
-using ShaderSourceWGSL = dawn::wire::client::ShaderSourceWGSL;
-using SharedBufferMemoryDescriptor = dawn::wire::client::SharedBufferMemoryDescriptor;
+using ShaderModuleDescriptor = dawn::wire::client::ShaderModuleDescriptor;
 using SharedFenceDescriptor = dawn::wire::client::SharedFenceDescriptor;
 using SharedFenceExportInfo = dawn::wire::client::SharedFenceExportInfo;
 using SharedTextureMemoryAHardwareBufferProperties = dawn::wire::client::SharedTextureMemoryAHardwareBufferProperties;
@@ -9428,24 +9799,23 @@ using SharedTextureMemoryEndAccessState = dawn::wire::client::SharedTextureMemor
 using SurfaceDescriptor = dawn::wire::client::SurfaceDescriptor;
 using TexelCopyBufferInfo = dawn::wire::client::TexelCopyBufferInfo;
 using TexelCopyTextureInfo = dawn::wire::client::TexelCopyTextureInfo;
+using TextureComponentSwizzleDescriptor = dawn::wire::client::TextureComponentSwizzleDescriptor;
 using TextureDescriptor = dawn::wire::client::TextureDescriptor;
-using TextureViewDescriptor = dawn::wire::client::TextureViewDescriptor;
 using VertexBufferLayout = dawn::wire::client::VertexBufferLayout;
 using AdapterInfo = dawn::wire::client::AdapterInfo;
 using BindGroupDescriptor = dawn::wire::client::BindGroupDescriptor;
 using BindGroupLayoutDescriptor = dawn::wire::client::BindGroupLayoutDescriptor;
 using ColorTargetState = dawn::wire::client::ColorTargetState;
 using CompilationInfo = dawn::wire::client::CompilationInfo;
-using ComputeState = dawn::wire::client::ComputeState;
+using ComputePipelineDescriptor = dawn::wire::client::ComputePipelineDescriptor;
 using DawnFormatCapabilities = dawn::wire::client::DawnFormatCapabilities;
 using DeviceDescriptor = dawn::wire::client::DeviceDescriptor;
 using PipelineLayoutDescriptor = dawn::wire::client::PipelineLayoutDescriptor;
 using RenderPassPixelLocalStorage = dawn::wire::client::RenderPassPixelLocalStorage;
-using ShaderModuleDescriptor = dawn::wire::client::ShaderModuleDescriptor;
 using SharedTextureMemoryDescriptor = dawn::wire::client::SharedTextureMemoryDescriptor;
 using SharedTextureMemoryProperties = dawn::wire::client::SharedTextureMemoryProperties;
+using TextureViewDescriptor = dawn::wire::client::TextureViewDescriptor;
 using VertexState = dawn::wire::client::VertexState;
-using ComputePipelineDescriptor = dawn::wire::client::ComputePipelineDescriptor;
 using FragmentState = dawn::wire::client::FragmentState;
 using RenderPassDescriptor = dawn::wire::client::RenderPassDescriptor;
 using RenderPipelineDescriptor = dawn::wire::client::RenderPipelineDescriptor;
@@ -9502,12 +9872,19 @@ using SurfaceDescriptorFromXlibWindow = SurfaceSourceXlibWindow;
 
 // Free Functions
 static inline Instance CreateInstance(InstanceDescriptor const * descriptor = nullptr) {
-    auto result = wgpuDawnWireClientCreateInstance(reinterpret_cast<WGPUInstanceDescriptor const * >(descriptor));
+    auto result = wgpuDawnWireClientCreateInstance(reinterpret_cast<WGPUInstanceDescriptor const *>(descriptor));
     return Instance::Acquire(result);
 }
-static inline Status GetInstanceCapabilities(InstanceCapabilities * capabilities) {
-    auto result = wgpuDawnWireClientGetInstanceCapabilities(reinterpret_cast<WGPUInstanceCapabilities * >(capabilities));
+static inline void GetInstanceFeatures(SupportedInstanceFeatures * features) {
+    wgpuDawnWireClientGetInstanceFeatures(reinterpret_cast<WGPUSupportedInstanceFeatures *>(features));
+}
+static inline Status GetInstanceLimits(InstanceLimits * limits) {
+    auto result = wgpuDawnWireClientGetInstanceLimits(reinterpret_cast<WGPUInstanceLimits *>(limits));
     return static_cast<Status>(result);
+}
+static inline Bool HasInstanceFeature(InstanceFeatureName feature) {
+    auto result = wgpuDawnWireClientHasInstanceFeature(static_cast<WGPUInstanceFeatureName>(feature));
+    return result;
 }
 static inline Proc GetProcAddress(StringView procName) {
     auto result = wgpuDawnWireClientGetProcAddress(*reinterpret_cast<WGPUStringView const*>(&procName));

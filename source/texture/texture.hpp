@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <ktx.h>
 #include <dawn/webgpu_cpp.h>
 #include <absl/log/log.h>
 #include "../wgpuContext/wgpuContext.hpp"	

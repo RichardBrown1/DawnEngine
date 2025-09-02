@@ -1,4 +1,3 @@
-#pragma once
 #include "initial.hpp"
 #include <array>
 #include "../device/device.hpp"

@@ -1,4 +1,3 @@
-#pragma once
 #include "ultimate.hpp"
 #include <array>
 #include "../device/device.hpp"

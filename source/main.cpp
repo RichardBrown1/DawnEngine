@@ -1,7 +1,5 @@
-﻿#pragma once
-#include <string>
+﻿#include <string>
 #include <iostream>
-#pragma once
 #include "absl/log/log.h"
 #include "engine/engine.hpp"
 

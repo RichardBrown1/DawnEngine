@@ -1,4 +1,3 @@
-#pragma once
 #include "lighting.hpp"
 #include "../device/device.hpp"
 #include "../enums.hpp"

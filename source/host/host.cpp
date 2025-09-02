@@ -1,4 +1,3 @@
-#pragma once
 #include "host.hpp"
 #include "../enums.hpp"	
 #include "../device/device.hpp"

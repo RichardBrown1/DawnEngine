@@ -363,6 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 #added Gitignores
+vcpkg_installed
 CMakeUserPresets.json
 /build
 /models/

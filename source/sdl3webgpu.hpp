@@ -42,6 +42,4 @@
  */
 wgpu::Surface SDL_GetWGPUSurface(wgpu::Instance instance, SDL_Window* window);
 
-std::unique_ptr<wgpu::ChainedStruct, void (*)(wgpu::ChainedStruct*)> setupWindowAndGetSurfaceDescriptor(SDL_Window* window);
-
 #endif // _sdl3_webgpu_h_

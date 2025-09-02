@@ -1,4 +1,3 @@
-#pragma once
 #include "shadowMap.hpp"
 #include "vertexBufferLayout.hpp"
 #include "../device/device.hpp"

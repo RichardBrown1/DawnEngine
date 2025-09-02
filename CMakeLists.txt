@@ -15,7 +15,6 @@ find_package(Dawn REQUIRED)
 set(ENV(DAWN_DEBUG_BREAK_ON_ERROR) 1)
 
 #vcpkg Dependendencies
-find_package(Ktx CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(fastgltf CONFIG REQUIRED)
@@ -29,7 +28,7 @@ add_executable (DawnEngine ${SRC_FILES})
 
 target_link_libraries(DawnEngine 
     PUBLIC dawn::webgpu_dawn     
-    PRIVATE SDL3::SDL3 KTX::ktx glm::glm fastgltf::fastgltf absl::log
+    PRIVATE SDL3::SDL3 glm::glm fastgltf::fastgltf absl::log
 )
 target_include_directories(DawnEngine 
     PRIVATE ${Stb_INCLUDE_DIR}
@@ -42,7 +41,7 @@ if (MSVC)
     target_compile_options(DawnEngine PRIVATE /W4 /WX)
     set_source_files_properties(${THIRD_PARTY} PROPERTIES COMPILE_FLAGS /w)
 else()
-    target_compile_options(DawnEngine PRIVATE -Wall -Wextra -Wpedantic -Werror -std=c++20 -fsanitize=undefined -fsanitize=address)
+    target_compile_options(DawnEngine PRIVATE -Wall -Wextra -Wpedantic -Werror -std=c++20 -fsanitize=undefined -fsanitize=address -Wno-missing-field-initializers)
 endif()
 
 #Models
@@ -64,7 +63,12 @@ file(MAKE_DIRECTORY ${SHADERS_DEST_DIR})
 add_custom_target(Shaders)
 
 ##WGSL
-set(WGSLPreprocessor "${CMAKE_CURRENT_SOURCE_DIR}/build_tools/wgslPreprocessor/build/Debug/WGSLPreprocessor.exe")
+if (MSVC)
+  set(WGSLPreprocessor "${CMAKE_CURRENT_SOURCE_DIR}/build_tools/wgslPreprocessor/build/Debug/WGSLPreprocessor.exe")
+else()
+  set(WGSLPreprocessor "${CMAKE_CURRENT_SOURCE_DIR}/build_tools/wgslPreprocessor/build/WGSLPreprocessor")
+endif()
+
 file(GLOB_RECURSE WGSL_SHADER_FILES "shaders/*.wgsl")
 foreach(FILE ${WGSL_SHADER_FILES})
   get_filename_component(FILE_WE ${FILE} NAME_WE)
@@ -118,12 +122,20 @@ add_dependencies(DawnEngine Shaders)
 
 
 #Dawn
-add_custom_command(TARGET DawnEngine POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-                "${CMAKE_CURRENT_SOURCE_DIR}/third-party/dawn/bin/webgpu_dawn.dll"
-                ${CMAKE_CURRENT_BINARY_DIR}/webgpu_dawn.dll)
+if (MSVC) 
+  add_custom_command(TARGET DawnEngine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_SOURCE_DIR}/third-party/dawn/bin/webgpu_dawn.dll"
+            ${CMAKE_CURRENT_BINARY_DIR}/webgpu_dawn.dll)
 
-add_custom_command(TARGET DawnEngine POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-                "${CMAKE_CURRENT_SOURCE_DIR}/third-party/dawn/bin/webgpu_dawn.pdb"
-                ${CMAKE_CURRENT_BINARY_DIR}/webgpu_dawn.pdb)
+  add_custom_command(TARGET DawnEngine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_SOURCE_DIR}/third-party/dawn/bin/webgpu_dawn.pdb"
+            ${CMAKE_CURRENT_BINARY_DIR}/webgpu_dawn.pdb)
+else()
+  add_custom_command(TARGET DawnEngine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_SOURCE_DIR}/third-party/dawn/lib/libwebgpu_dawn.so"
+            ${CMAKE_CURRENT_BINARY_DIR}/libwebgpu_dawn.so)
+endif()
+
